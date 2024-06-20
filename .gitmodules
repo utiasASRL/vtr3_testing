@@ -1,7 +1,3 @@
-[submodule "vtr3"]
-	path = vtr3
-	url = https://github.com/utiasASRL/vtr3
-	branch = sam/online_radar
 [submodule "pyboreas"]
 	path = pyboreas
 	url = https://github.com/utiasASRL/pyboreas
