@@ -1,0 +1,452 @@
+[0.000000] (-) TimerEvent: {}
+[0.000300] (vtr_testing_radar) JobQueued: {'identifier': 'vtr_testing_radar', 'dependencies': OrderedDict()}
+[0.000384] (vtr_testing_radar) JobStarted: {'identifier': 'vtr_testing_radar'}
+[0.008638] (vtr_testing_radar) JobProgress: {'identifier': 'vtr_testing_radar', 'progress': 'cmake'}
+[0.008759] (vtr_testing_radar) Command: {'cmd': ['/usr/bin/cmake', '/home/samqiao/ASRL/vtr3_testing/test/src/vtr_testing_radar', '-DCMAKE_BUILD_TYPE=Release', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar'], 'cwd': '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '11.10.3.66-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-11-7=11.7.101-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-11-7'), ('VTRROOT', '/home/samqiao/ASRL/vtr3'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '11.7.1-1'), ('HOSTNAME', 'm16'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/steam/lib:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/lgmath/lib:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf/lib:/home/samqiao/ASRL/vtr3/src/main/install/cudpp/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/opt/torch/libtorch/lib::/usr/local/opencv_cuda/lib:/usr/local/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.13.4-1'), ('HOME', '/home/samqiao'), ('OLDPWD', '/home/samqiao/ASRL/vtr3_testing/bash_scripts'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('NV_LIBCUBLAS_DEV_VERSION', '11.10.3.66-1'), ('ROS_PYTHON_VERSION', '3'), ('TORCH_LIB', '/opt/torch/libtorch'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.13.4-1'), ('NV_LIBNPP_PACKAGE', 'libnpp-11-7=11.7.4.75-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.5.0.96-1+cuda11.7'), ('CUDA_VERSION', '11.7.1'), ('VTRMODELS', '/home/samqiao/ASRL/vtr3/models'), ('COLCON_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install'), ('NV_NVPROF_VERSION', '11.7.101-1'), ('ROS_DISTRO', 'humble'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-11-7'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=11.7 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '11.7.4.91-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'compute,utility,graphics'), ('NV_CUDA_LIB_VERSION', '11.7.1-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '11.7.91-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-11-7=11.7.4.75-1'), ('TERM', 'xterm'), ('NV_CUDA_CUDART_VERSION', '11.7.99-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.5.0.96-1+cuda11.7'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-11-7'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-11-7=11.10.3.66-1'), ('WARTHOG', '/home/samqiao/ASRL/vtr3/warthog'), ('NVARCH', 'x86_64'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '11.7.4.91-1'), ('DISPLAY', ':0'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.13.4-1+cuda11.7'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '11.7.99-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROOTDIR', '/home/samqiao/ASRL/vtr3_testing'), ('AMENT_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs:/home/samqiao/ASRL/vtr3/src/main/install/steam:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs:/home/samqiao/ASRL/vtr3/src/main/install/lgmath:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf:/home/samqiao/ASRL/vtr3/src/main/install/cudpp:/opt/ros/humble'), ('DEBIAN_FRONTEND', 'noninteractive'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-11-7=11.10.3.66-1'), ('VTRTEMP', '/home/samqiao/ASRL/vtr3/temp'), ('VTRSRC', '/home/samqiao/ASRL/vtr3/src'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-11-7=11.7.1-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.13.4-1+cuda11.7'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GRIZZLY', '/home/samqiao/ASRL/vtr3/grizzly'), ('NV_NVTX_VERSION', '11.7.91-1'), ('NV_LIBNPP_VERSION', '11.7.4.75-1'), ('VTRUI', '/main/src/vtr_gui/vtr_gui/vtr-gui'), ('ASRLROOT', '/home/samqiao/ASRL'), ('NV_CUDNN_VERSION', '8.5.0.96'), ('PWD', '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar'), ('PYTHONPATH', '/home/samqiao/ASRL/vtr3/src/main/build/vtr_gui:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui/lib/python3.10/site-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.13.4-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '11.7.4.75-1'), ('VTRDATA', '/home/samqiao/ASRL/vtr3_testing/data'), ('CMAKE_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs:/home/samqiao/ASRL/vtr3/src/main/install/steam:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs:/home/samqiao/ASRL/vtr3/src/main/install/lgmath:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf:/home/samqiao/ASRL/vtr3/src/main/install/cudpp:/opt/torch/libtorch::/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble')]), 'shell': False}
+[0.068696] (vtr_testing_radar) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.099869] (-) TimerEvent: {}
+[0.112061] (vtr_testing_radar) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.118380] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.188261] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.191935] (vtr_testing_radar) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.192201] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.192524] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.194374] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.199945] (-) TimerEvent: {}
+[0.267905] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.271739] (vtr_testing_radar) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.271907] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.272178] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.300025] (-) TimerEvent: {}
+[0.400220] (-) TimerEvent: {}
+[0.452440] (vtr_testing_radar) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system thread chrono timer \n'}
+[0.500326] (-) TimerEvent: {}
+[0.600574] (-) TimerEvent: {}
+[0.677282] (vtr_testing_radar) StdoutLine: {'line': b'-- Found OpenMP_C: -fopenmp (found version "4.5") \n'}
+[0.700647] (-) TimerEvent: {}
+[0.755788] (vtr_testing_radar) StdoutLine: {'line': b'-- Found OpenMP_CXX: -fopenmp (found version "4.5") \n'}
+[0.755926] (vtr_testing_radar) StdoutLine: {'line': b'-- Found OpenMP: TRUE (found version "4.5")  \n'}
+[0.756086] (vtr_testing_radar) StderrLine: {'line': b'\x1b[33mCMake Warning at /home/samqiao/ASRL/vtr3/src/main/src/vtr_common/vtr_include.cmake:67 (message):\n'}
+[0.756189] (vtr_testing_radar) StderrLine: {'line': b'  VTR_PIPELINE not set! Compiling all! Save time by selecting\n'}
+[0.756244] (vtr_testing_radar) StderrLine: {'line': b'  VTR_PIPELINE=VISION, LIDAR, RADAR, or RADAR-LIDAR\n'}
+[0.756289] (vtr_testing_radar) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[0.756329] (vtr_testing_radar) StderrLine: {'line': b'  CMakeLists.txt:5 (include)\n'}
+[0.756369] (vtr_testing_radar) StderrLine: {'line': b'\n'}
+[0.756408] (vtr_testing_radar) StderrLine: {'line': b'\x1b[0m\n'}
+[0.761790] (vtr_testing_radar) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.9 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.800730] (-) TimerEvent: {}
+[0.878080] (vtr_testing_radar) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[0.900808] (-) TimerEvent: {}
+[0.916358] (vtr_testing_radar) StdoutLine: {'line': b'-- Override CMake install command with custom implementation using symlinks instead of copying resources\n'}
+[0.979985] (vtr_testing_radar) StdoutLine: {'line': b'-- Found rclcpp: 16.0.9 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[1.000887] (-) TimerEvent: {}
+[1.038812] (vtr_testing_radar) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.5 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[1.048168] (vtr_testing_radar) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.5 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[1.059268] (vtr_testing_radar) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.5 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[1.073730] (vtr_testing_radar) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[1.094238] (vtr_testing_radar) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[1.100965] (-) TimerEvent: {}
+[1.163849] (vtr_testing_radar) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[1.168892] (vtr_testing_radar) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.6 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[1.201043] (-) TimerEvent: {}
+[1.296061] (vtr_testing_radar) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  \n'}
+[1.301121] (-) TimerEvent: {}
+[1.323474] (vtr_testing_radar) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/humble/include  \n'}
+[1.371406] (vtr_testing_radar) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[1.387756] (vtr_testing_radar) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[1.401201] (-) TimerEvent: {}
+[1.486695] (vtr_testing_radar) StdoutLine: {'line': b'-- Found vtr_common: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_common/share/vtr_common/cmake)\n'}
+[1.501279] (-) TimerEvent: {}
+[1.544085] (vtr_testing_radar) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)\n'}
+[1.544798] (vtr_testing_radar) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[1.544862] (vtr_testing_radar) StdoutLine: {'line': b'-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target\n'}
+[1.601357] (-) TimerEvent: {}
+[1.701514] (-) TimerEvent: {}
+[1.801664] (-) TimerEvent: {}
+[1.843463] (vtr_testing_radar) StdoutLine: {'line': b'-- Found vtr_logging: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging/share/vtr_logging/cmake)\n'}
+[1.844853] (vtr_testing_radar) StdoutLine: {'line': b'-- Found vtr_radar: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar/share/vtr_radar/cmake)\n'}
+[1.876277] (vtr_testing_radar) StdoutLine: {'line': b'-- Found CUDA: /usr/local/cuda (found suitable exact version "11.7") \n'}
+[1.901743] (-) TimerEvent: {}
+[2.001893] (-) TimerEvent: {}
+[2.102042] (-) TimerEvent: {}
+[2.146509] (vtr_testing_radar) StdoutLine: {'line': b"-- Checking for module 'eigen3'\n"}
+[2.166932] (vtr_testing_radar) StdoutLine: {'line': b'--   Found eigen3, version 3.4.0\n'}
+[2.202122] (-) TimerEvent: {}
+[2.217784] (vtr_testing_radar) StdoutLine: {'line': b'-- Found Eigen: /usr/include/eigen3 (Required is at least version "3.1") \n'}
+[2.217877] (vtr_testing_radar) StdoutLine: {'line': b'-- Eigen found (include: /usr/include/eigen3, version: 3.4.0)\n'}
+[2.257856] (vtr_testing_radar) StdoutLine: {'line': b"-- Checking for module 'flann'\n"}
+[2.277459] (vtr_testing_radar) StdoutLine: {'line': b'--   Found flann, version 1.9.1\n'}
+[2.302191] (-) TimerEvent: {}
+[2.330816] (vtr_testing_radar) StdoutLine: {'line': b'-- Found FLANN: /usr/lib/x86_64-linux-gnu/libflann_cpp.so  \n'}
+[2.330885] (vtr_testing_radar) StdoutLine: {'line': b'-- FLANN found (include: /usr/include, lib: /usr/lib/x86_64-linux-gnu/libflann_cpp.so)\n'}
+[2.402278] (-) TimerEvent: {}
+[2.502480] (-) TimerEvent: {}
+[2.602698] (-) TimerEvent: {}
+[2.702932] (-) TimerEvent: {}
+[2.803149] (-) TimerEvent: {}
+[2.903382] (-) TimerEvent: {}
+[3.003624] (-) TimerEvent: {}
+[3.103885] (-) TimerEvent: {}
+[3.204122] (-) TimerEvent: {}
+[3.251309] (vtr_testing_radar) StdoutLine: {'line': b"-- Checking for module 'libusb-1.0'\n"}
+[3.271026] (vtr_testing_radar) StdoutLine: {'line': b'--   Found libusb-1.0, version 1.0.25\n'}
+[3.304194] (-) TimerEvent: {}
+[3.322508] (vtr_testing_radar) StdoutLine: {'line': b'-- Found libusb: /usr/lib/x86_64-linux-gnu/libusb-1.0.so  \n'}
+[3.323103] (vtr_testing_radar) StdoutLine: {'line': b'-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)\n'}
+[3.402190] (vtr_testing_radar) StdoutLine: {'line': b'-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)\n'}
+[3.404272] (-) TimerEvent: {}
+[3.504452] (vtr_testing_radar) StdoutLine: {'line': b'-- Eigen found (include: /usr/include/eigen3, version: 3.4.0)\n'}
+[3.504589] (-) TimerEvent: {}
+[3.510568] (vtr_testing_radar) StdoutLine: {'line': b'-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)\n'}
+[3.516718] (vtr_testing_radar) StdoutLine: {'line': b'-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)\n'}
+[3.604673] (-) TimerEvent: {}
+[3.615362] (vtr_testing_radar) StdoutLine: {'line': b'-- Found Qhull version 8.0.2\n'}
+[3.704755] (-) TimerEvent: {}
+[3.715041] (vtr_testing_radar) StdoutLine: {'line': b'-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)\n'}
+[3.804838] (-) TimerEvent: {}
+[3.809364] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_COMMON: /usr/lib/x86_64-linux-gnu/libpcl_common.so  \n'}
+[3.809792] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_KDTREE: /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so  \n'}
+[3.810139] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_OCTREE: /usr/lib/x86_64-linux-gnu/libpcl_octree.so  \n'}
+[3.810495] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_SEARCH: /usr/lib/x86_64-linux-gnu/libpcl_search.so  \n'}
+[3.810867] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_SAMPLE_CONSENSUS: /usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so  \n'}
+[3.811255] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_FILTERS: /usr/lib/x86_64-linux-gnu/libpcl_filters.so  \n'}
+[3.811461] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_2D: /usr/include/pcl-1.12  \n'}
+[3.811627] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_GEOMETRY: /usr/include/pcl-1.12  \n'}
+[3.811969] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_IO: /usr/lib/x86_64-linux-gnu/libpcl_io.so  \n'}
+[3.812382] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_FEATURES: /usr/lib/x86_64-linux-gnu/libpcl_features.so  \n'}
+[3.812789] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_ML: /usr/lib/x86_64-linux-gnu/libpcl_ml.so  \n'}
+[3.813158] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_SEGMENTATION: /usr/lib/x86_64-linux-gnu/libpcl_segmentation.so  \n'}
+[3.813596] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_VISUALIZATION: /usr/lib/x86_64-linux-gnu/libpcl_visualization.so  \n'}
+[3.814019] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_SURFACE: /usr/lib/x86_64-linux-gnu/libpcl_surface.so  \n'}
+[3.814420] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_REGISTRATION: /usr/lib/x86_64-linux-gnu/libpcl_registration.so  \n'}
+[3.814845] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_KEYPOINTS: /usr/lib/x86_64-linux-gnu/libpcl_keypoints.so  \n'}
+[3.815246] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_TRACKING: /usr/lib/x86_64-linux-gnu/libpcl_tracking.so  \n'}
+[3.815639] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_RECOGNITION: /usr/lib/x86_64-linux-gnu/libpcl_recognition.so  \n'}
+[3.816084] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_STEREO: /usr/lib/x86_64-linux-gnu/libpcl_stereo.so  \n'}
+[3.816463] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_APPS: /usr/lib/x86_64-linux-gnu/libpcl_apps.so  \n'}
+[3.816831] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_IN_HAND_SCANNER: /usr/include/pcl-1.12  \n'}
+[3.816987] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_MODELER: /usr/include/pcl-1.12  \n'}
+[3.818971] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_POINT_CLOUD_EDITOR: /usr/include/pcl-1.12  \n'}
+[3.819393] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_OUTOFCORE: /usr/lib/x86_64-linux-gnu/libpcl_outofcore.so  \n'}
+[3.819815] (vtr_testing_radar) StdoutLine: {'line': b'-- Found PCL_PEOPLE: /usr/lib/x86_64-linux-gnu/libpcl_people.so  \n'}
+[3.904914] (-) TimerEvent: {}
+[4.005079] (-) TimerEvent: {}
+[4.105241] (-) TimerEvent: {}
+[4.205404] (-) TimerEvent: {}
+[4.292971] (vtr_testing_radar) StdoutLine: {'line': b'-- Found vtr_torch: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake)\n'}
+[4.303646] (vtr_testing_radar) StdoutLine: {'line': b'-- Found CUDA: /usr/local/cuda (found version "11.7") \n'}
+[4.305475] (-) TimerEvent: {}
+[4.405651] (-) TimerEvent: {}
+[4.505884] (-) TimerEvent: {}
+[4.606056] (-) TimerEvent: {}
+[4.706236] (-) TimerEvent: {}
+[4.806438] (-) TimerEvent: {}
+[4.852194] (vtr_testing_radar) StdoutLine: {'line': b'-- The CUDA compiler identification is NVIDIA 11.7.99\n'}
+[4.856116] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CUDA compiler ABI info\n'}
+[4.906504] (-) TimerEvent: {}
+[5.006678] (-) TimerEvent: {}
+[5.106863] (-) TimerEvent: {}
+[5.207064] (-) TimerEvent: {}
+[5.307224] (-) TimerEvent: {}
+[5.376764] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CUDA compiler ABI info - done\n'}
+[5.390667] (vtr_testing_radar) StdoutLine: {'line': b'-- Check for working CUDA compiler: /usr/local/cuda/bin/nvcc - skipped\n'}
+[5.390848] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CUDA compile features\n'}
+[5.391050] (vtr_testing_radar) StdoutLine: {'line': b'-- Detecting CUDA compile features - done\n'}
+[5.391427] (vtr_testing_radar) StdoutLine: {'line': b'-- Caffe2: CUDA detected: 11.7\n'}
+[5.391459] (vtr_testing_radar) StdoutLine: {'line': b'-- Caffe2: CUDA nvcc is: /usr/local/cuda/bin/nvcc\n'}
+[5.391489] (vtr_testing_radar) StdoutLine: {'line': b'-- Caffe2: CUDA toolkit directory: /usr/local/cuda\n'}
+[5.407292] (-) TimerEvent: {}
+[5.483828] (vtr_testing_radar) StdoutLine: {'line': b'-- Caffe2: Header version is: 11.7\n'}
+[5.490212] (vtr_testing_radar) StderrLine: {'line': b'\x1b[33mCMake Warning at /opt/torch/libtorch/share/cmake/Caffe2/public/cuda.cmake:166 (message):\n'}
+[5.490284] (vtr_testing_radar) StderrLine: {'line': b'  Failed to compute shorthash for libnvrtc.so\n'}
+[5.490321] (vtr_testing_radar) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[5.490354] (vtr_testing_radar) StderrLine: {'line': b'  /opt/torch/libtorch/share/cmake/Caffe2/Caffe2Config.cmake:88 (include)\n'}
+[5.490383] (vtr_testing_radar) StderrLine: {'line': b'  /opt/torch/libtorch/share/cmake/Torch/TorchConfig.cmake:68 (find_package)\n'}
+[5.490409] (vtr_testing_radar) StderrLine: {'line': b'  /home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)\n'}
+[5.490436] (vtr_testing_radar) StderrLine: {'line': b'  /home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake/vtr_torchConfig.cmake:41 (include)\n'}
+[5.490472] (vtr_testing_radar) StderrLine: {'line': b'  CMakeLists.txt:17 (find_package)\n'}
+[5.490499] (vtr_testing_radar) StderrLine: {'line': b'\n'}
+[5.490525] (vtr_testing_radar) StderrLine: {'line': b'\x1b[0m\n'}
+[5.491438] (vtr_testing_radar) StdoutLine: {'line': b'-- USE_CUDNN is set to 0. Compiling without cuDNN support\n'}
+[5.507360] (-) TimerEvent: {}
+[5.607552] (-) TimerEvent: {}
+[5.707786] (-) TimerEvent: {}
+[5.808034] (-) TimerEvent: {}
+[5.908240] (-) TimerEvent: {}
+[6.008491] (-) TimerEvent: {}
+[6.018766] (vtr_testing_radar) StdoutLine: {'line': b'-- Autodetected CUDA architecture(s):  8.6+PTX\n'}
+[6.018893] (vtr_testing_radar) StdoutLine: {'line': b'-- Added CUDA NVCC flags for: -gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_86,code=compute_86\n'}
+[6.066115] (vtr_testing_radar) StdoutLine: {'line': b'-- Found ament_cmake_gtest: 1.3.9 (/opt/ros/humble/share/ament_cmake_gtest/cmake)\n'}
+[6.070392] (vtr_testing_radar) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.11 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[6.108564] (-) TimerEvent: {}
+[6.119891] (vtr_testing_radar) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[6.120720] (vtr_testing_radar) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[6.122628] (vtr_testing_radar) StdoutLine: {'line': b'-- Configuring done\n'}
+[6.208648] (-) TimerEvent: {}
+[6.249696] (vtr_testing_radar) StdoutLine: {'line': b'-- Generating done\n'}
+[6.251817] (vtr_testing_radar) StdoutLine: {'line': b'-- Build files have been written to: /home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar\n'}
+[6.264420] (vtr_testing_radar) CommandEnded: {'returncode': 0}
+[6.264942] (vtr_testing_radar) JobProgress: {'identifier': 'vtr_testing_radar', 'progress': 'build'}
+[6.265809] (vtr_testing_radar) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar', '--', '-j24', '-l24'], 'cwd': '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '11.10.3.66-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-11-7=11.7.101-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-11-7'), ('VTRROOT', '/home/samqiao/ASRL/vtr3'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '11.7.1-1'), ('HOSTNAME', 'm16'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/steam/lib:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/lgmath/lib:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf/lib:/home/samqiao/ASRL/vtr3/src/main/install/cudpp/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/opt/torch/libtorch/lib::/usr/local/opencv_cuda/lib:/usr/local/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.13.4-1'), ('HOME', '/home/samqiao'), ('OLDPWD', '/home/samqiao/ASRL/vtr3_testing/bash_scripts'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('NV_LIBCUBLAS_DEV_VERSION', '11.10.3.66-1'), ('ROS_PYTHON_VERSION', '3'), ('TORCH_LIB', '/opt/torch/libtorch'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.13.4-1'), ('NV_LIBNPP_PACKAGE', 'libnpp-11-7=11.7.4.75-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.5.0.96-1+cuda11.7'), ('CUDA_VERSION', '11.7.1'), ('VTRMODELS', '/home/samqiao/ASRL/vtr3/models'), ('COLCON_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install'), ('NV_NVPROF_VERSION', '11.7.101-1'), ('ROS_DISTRO', 'humble'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-11-7'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=11.7 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '11.7.4.91-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'compute,utility,graphics'), ('NV_CUDA_LIB_VERSION', '11.7.1-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '11.7.91-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-11-7=11.7.4.75-1'), ('TERM', 'xterm'), ('NV_CUDA_CUDART_VERSION', '11.7.99-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.5.0.96-1+cuda11.7'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-11-7'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-11-7=11.10.3.66-1'), ('WARTHOG', '/home/samqiao/ASRL/vtr3/warthog'), ('NVARCH', 'x86_64'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '11.7.4.91-1'), ('DISPLAY', ':0'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.13.4-1+cuda11.7'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '11.7.99-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROOTDIR', '/home/samqiao/ASRL/vtr3_testing'), ('AMENT_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs:/home/samqiao/ASRL/vtr3/src/main/install/steam:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs:/home/samqiao/ASRL/vtr3/src/main/install/lgmath:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf:/home/samqiao/ASRL/vtr3/src/main/install/cudpp:/opt/ros/humble'), ('DEBIAN_FRONTEND', 'noninteractive'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-11-7=11.10.3.66-1'), ('VTRTEMP', '/home/samqiao/ASRL/vtr3/temp'), ('VTRSRC', '/home/samqiao/ASRL/vtr3/src'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-11-7=11.7.1-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.13.4-1+cuda11.7'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GRIZZLY', '/home/samqiao/ASRL/vtr3/grizzly'), ('NV_NVTX_VERSION', '11.7.91-1'), ('NV_LIBNPP_VERSION', '11.7.4.75-1'), ('VTRUI', '/main/src/vtr_gui/vtr_gui/vtr-gui'), ('ASRLROOT', '/home/samqiao/ASRL'), ('NV_CUDNN_VERSION', '8.5.0.96'), ('PWD', '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar'), ('PYTHONPATH', '/home/samqiao/ASRL/vtr3/src/main/build/vtr_gui:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui/lib/python3.10/site-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.13.4-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '11.7.4.75-1'), ('VTRDATA', '/home/samqiao/ASRL/vtr3_testing/data'), ('CMAKE_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs:/home/samqiao/ASRL/vtr3/src/main/install/steam:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs:/home/samqiao/ASRL/vtr3/src/main/install/lgmath:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf:/home/samqiao/ASRL/vtr3/src/main/install/cudpp:/opt/torch/libtorch::/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble')]), 'shell': False}
+[6.308726] (-) TimerEvent: {}
+[6.331510] (vtr_testing_radar) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/vtr_testing_radar_radar_localization.dir/src/radar_localization.cpp.o\x1b[0m\n'}
+[6.331600] (vtr_testing_radar) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/vtr_testing_radar_radar_odometry.dir/src/radar_odometry.cpp.o\x1b[0m\n'}
+[6.331648] (vtr_testing_radar) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/vtr_testing_radar_radar_preprocessing.dir/src/radar_preprocessing.cpp.o\x1b[0m\n'}
+[6.408828] (-) TimerEvent: {}
+[6.509063] (-) TimerEvent: {}
+[6.609314] (-) TimerEvent: {}
+[6.709557] (-) TimerEvent: {}
+[6.809812] (-) TimerEvent: {}
+[6.910067] (-) TimerEvent: {}
+[7.010299] (-) TimerEvent: {}
+[7.110539] (-) TimerEvent: {}
+[7.210780] (-) TimerEvent: {}
+[7.311016] (-) TimerEvent: {}
+[7.411249] (-) TimerEvent: {}
+[7.511508] (-) TimerEvent: {}
+[7.611774] (-) TimerEvent: {}
+[7.712048] (-) TimerEvent: {}
+[7.812328] (-) TimerEvent: {}
+[7.912593] (-) TimerEvent: {}
+[8.012858] (-) TimerEvent: {}
+[8.113127] (-) TimerEvent: {}
+[8.213379] (-) TimerEvent: {}
+[8.313667] (-) TimerEvent: {}
+[8.413930] (-) TimerEvent: {}
+[8.514176] (-) TimerEvent: {}
+[8.614408] (-) TimerEvent: {}
+[8.714649] (-) TimerEvent: {}
+[8.814885] (-) TimerEvent: {}
+[8.915122] (-) TimerEvent: {}
+[9.015368] (-) TimerEvent: {}
+[9.115634] (-) TimerEvent: {}
+[9.215900] (-) TimerEvent: {}
+[9.316167] (-) TimerEvent: {}
+[9.416437] (-) TimerEvent: {}
+[9.516706] (-) TimerEvent: {}
+[9.616975] (-) TimerEvent: {}
+[9.717245] (-) TimerEvent: {}
+[9.817528] (-) TimerEvent: {}
+[9.917904] (-) TimerEvent: {}
+[10.018173] (-) TimerEvent: {}
+[10.118447] (-) TimerEvent: {}
+[10.218723] (-) TimerEvent: {}
+[10.318995] (-) TimerEvent: {}
+[10.419266] (-) TimerEvent: {}
+[10.519543] (-) TimerEvent: {}
+[10.619813] (-) TimerEvent: {}
+[10.720082] (-) TimerEvent: {}
+[10.820351] (-) TimerEvent: {}
+[10.920615] (-) TimerEvent: {}
+[11.020883] (-) TimerEvent: {}
+[11.121150] (-) TimerEvent: {}
+[11.221421] (-) TimerEvent: {}
+[11.321729] (-) TimerEvent: {}
+[11.422001] (-) TimerEvent: {}
+[11.522270] (-) TimerEvent: {}
+[11.622542] (-) TimerEvent: {}
+[11.722812] (-) TimerEvent: {}
+[11.823084] (-) TimerEvent: {}
+[11.923341] (-) TimerEvent: {}
+[12.023588] (-) TimerEvent: {}
+[12.123860] (-) TimerEvent: {}
+[12.224134] (-) TimerEvent: {}
+[12.324410] (-) TimerEvent: {}
+[12.424680] (-) TimerEvent: {}
+[12.524952] (-) TimerEvent: {}
+[12.625234] (-) TimerEvent: {}
+[12.725522] (-) TimerEvent: {}
+[12.825791] (-) TimerEvent: {}
+[12.926069] (-) TimerEvent: {}
+[13.026331] (-) TimerEvent: {}
+[13.126587] (-) TimerEvent: {}
+[13.226861] (-) TimerEvent: {}
+[13.327131] (-) TimerEvent: {}
+[13.427399] (-) TimerEvent: {}
+[13.527674] (-) TimerEvent: {}
+[13.627950] (-) TimerEvent: {}
+[13.728221] (-) TimerEvent: {}
+[13.828491] (-) TimerEvent: {}
+[13.928755] (-) TimerEvent: {}
+[14.029027] (-) TimerEvent: {}
+[14.129291] (-) TimerEvent: {}
+[14.229567] (-) TimerEvent: {}
+[14.329840] (-) TimerEvent: {}
+[14.430113] (-) TimerEvent: {}
+[14.530388] (-) TimerEvent: {}
+[14.630663] (-) TimerEvent: {}
+[14.730934] (-) TimerEvent: {}
+[14.831197] (-) TimerEvent: {}
+[14.931451] (-) TimerEvent: {}
+[15.031730] (-) TimerEvent: {}
+[15.132003] (-) TimerEvent: {}
+[15.232277] (-) TimerEvent: {}
+[15.332552] (-) TimerEvent: {}
+[15.432825] (-) TimerEvent: {}
+[15.533098] (-) TimerEvent: {}
+[15.633373] (-) TimerEvent: {}
+[15.733656] (-) TimerEvent: {}
+[15.833914] (-) TimerEvent: {}
+[15.934174] (-) TimerEvent: {}
+[16.034442] (-) TimerEvent: {}
+[16.134683] (-) TimerEvent: {}
+[16.234933] (-) TimerEvent: {}
+[16.335184] (-) TimerEvent: {}
+[16.435431] (-) TimerEvent: {}
+[16.535688] (-) TimerEvent: {}
+[16.635945] (-) TimerEvent: {}
+[16.736213] (-) TimerEvent: {}
+[16.836478] (-) TimerEvent: {}
+[16.936750] (-) TimerEvent: {}
+[17.037022] (-) TimerEvent: {}
+[17.137295] (-) TimerEvent: {}
+[17.237565] (-) TimerEvent: {}
+[17.337836] (-) TimerEvent: {}
+[17.438100] (-) TimerEvent: {}
+[17.538364] (-) TimerEvent: {}
+[17.638610] (-) TimerEvent: {}
+[17.738837] (-) TimerEvent: {}
+[17.839062] (-) TimerEvent: {}
+[17.939297] (-) TimerEvent: {}
+[18.039556] (-) TimerEvent: {}
+[18.139830] (-) TimerEvent: {}
+[18.240104] (-) TimerEvent: {}
+[18.340379] (-) TimerEvent: {}
+[18.440650] (-) TimerEvent: {}
+[18.540917] (-) TimerEvent: {}
+[18.641178] (-) TimerEvent: {}
+[18.741450] (-) TimerEvent: {}
+[18.841735] (-) TimerEvent: {}
+[18.942007] (-) TimerEvent: {}
+[19.042264] (-) TimerEvent: {}
+[19.142514] (-) TimerEvent: {}
+[19.242758] (-) TimerEvent: {}
+[19.343022] (-) TimerEvent: {}
+[19.443278] (-) TimerEvent: {}
+[19.543564] (-) TimerEvent: {}
+[19.643827] (-) TimerEvent: {}
+[19.744090] (-) TimerEvent: {}
+[19.844356] (-) TimerEvent: {}
+[19.944654] (-) TimerEvent: {}
+[20.044939] (-) TimerEvent: {}
+[20.145230] (-) TimerEvent: {}
+[20.245503] (-) TimerEvent: {}
+[20.345767] (-) TimerEvent: {}
+[20.445996] (-) TimerEvent: {}
+[20.546232] (-) TimerEvent: {}
+[20.646474] (-) TimerEvent: {}
+[20.746720] (-) TimerEvent: {}
+[20.846967] (-) TimerEvent: {}
+[20.947223] (-) TimerEvent: {}
+[21.047470] (-) TimerEvent: {}
+[21.147726] (-) TimerEvent: {}
+[21.247992] (-) TimerEvent: {}
+[21.348260] (-) TimerEvent: {}
+[21.448494] (-) TimerEvent: {}
+[21.548747] (-) TimerEvent: {}
+[21.649002] (-) TimerEvent: {}
+[21.749256] (-) TimerEvent: {}
+[21.849521] (-) TimerEvent: {}
+[21.949764] (-) TimerEvent: {}
+[22.050005] (-) TimerEvent: {}
+[22.150260] (-) TimerEvent: {}
+[22.250521] (-) TimerEvent: {}
+[22.350757] (-) TimerEvent: {}
+[22.451002] (-) TimerEvent: {}
+[22.551268] (-) TimerEvent: {}
+[22.651537] (-) TimerEvent: {}
+[22.751796] (-) TimerEvent: {}
+[22.852058] (-) TimerEvent: {}
+[22.952326] (-) TimerEvent: {}
+[23.052583] (-) TimerEvent: {}
+[23.152851] (-) TimerEvent: {}
+[23.253097] (-) TimerEvent: {}
+[23.353356] (-) TimerEvent: {}
+[23.453617] (-) TimerEvent: {}
+[23.553880] (-) TimerEvent: {}
+[23.654130] (-) TimerEvent: {}
+[23.754362] (-) TimerEvent: {}
+[23.854601] (-) TimerEvent: {}
+[23.954830] (-) TimerEvent: {}
+[24.055075] (-) TimerEvent: {}
+[24.155304] (-) TimerEvent: {}
+[24.255550] (-) TimerEvent: {}
+[24.355807] (-) TimerEvent: {}
+[24.456084] (-) TimerEvent: {}
+[24.556346] (-) TimerEvent: {}
+[24.656597] (-) TimerEvent: {}
+[24.756859] (-) TimerEvent: {}
+[24.857122] (-) TimerEvent: {}
+[24.957382] (-) TimerEvent: {}
+[25.057645] (-) TimerEvent: {}
+[25.069443] (vtr_testing_radar) StdoutLine: {'line': b'[ 66%] \x1b[32m\x1b[1mLinking CXX executable vtr_testing_radar_radar_odometry\x1b[0m\n'}
+[25.099306] (vtr_testing_radar) StdoutLine: {'line': b'[ 83%] \x1b[32m\x1b[1mLinking CXX executable vtr_testing_radar_radar_preprocessing\x1b[0m\n'}
+[25.157756] (-) TimerEvent: {}
+[25.228167] (vtr_testing_radar) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable vtr_testing_radar_radar_localization\x1b[0m\n'}
+[25.257847] (-) TimerEvent: {}
+[25.358093] (-) TimerEvent: {}
+[25.458366] (-) TimerEvent: {}
+[25.558661] (-) TimerEvent: {}
+[25.658989] (-) TimerEvent: {}
+[25.759304] (-) TimerEvent: {}
+[25.859579] (-) TimerEvent: {}
+[25.959856] (-) TimerEvent: {}
+[26.060096] (-) TimerEvent: {}
+[26.160260] (-) TimerEvent: {}
+[26.260447] (-) TimerEvent: {}
+[26.360726] (-) TimerEvent: {}
+[26.460971] (-) TimerEvent: {}
+[26.538664] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.406\n'}
+[26.539727] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.406\n'}
+[26.540803] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.406\n'}
+[26.561049] (-) TimerEvent: {}
+[26.661200] (-) TimerEvent: {}
+[26.676870] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.406\n'}
+[26.677818] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.406\n'}
+[26.678828] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.406\n'}
+[26.761327] (-) TimerEvent: {}
+[26.765712] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.406\n'}
+[26.766681] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.406\n'}
+[26.767705] (vtr_testing_radar) StderrLine: {'line': b'/usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.406\n'}
+[26.861443] (-) TimerEvent: {}
+[26.958851] (vtr_testing_radar) StdoutLine: {'line': b'[100%] Built target vtr_testing_radar_radar_preprocessing\n'}
+[26.961519] (-) TimerEvent: {}
+[27.061750] (-) TimerEvent: {}
+[27.108542] (vtr_testing_radar) StdoutLine: {'line': b'[100%] Built target vtr_testing_radar_radar_odometry\n'}
+[27.161840] (-) TimerEvent: {}
+[27.192089] (vtr_testing_radar) StdoutLine: {'line': b'[100%] Built target vtr_testing_radar_radar_localization\n'}
+[27.204371] (vtr_testing_radar) CommandEnded: {'returncode': 0}
+[27.256063] (vtr_testing_radar) JobProgress: {'identifier': 'vtr_testing_radar', 'progress': 'install'}
+[27.261915] (-) TimerEvent: {}
+[27.266380] (vtr_testing_radar) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar'], 'cwd': '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '11.10.3.66-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-11-7=11.7.101-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-11-7'), ('VTRROOT', '/home/samqiao/ASRL/vtr3'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '11.7.1-1'), ('HOSTNAME', 'm16'), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common/lib:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/steam/lib:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs/lib:/home/samqiao/ASRL/vtr3/src/main/install/lgmath/lib:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf/lib:/home/samqiao/ASRL/vtr3/src/main/install/cudpp/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/opt/torch/libtorch/lib::/usr/local/opencv_cuda/lib:/usr/local/lib:/usr/local/nvidia/lib:/usr/local/nvidia/lib64'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.13.4-1'), ('HOME', '/home/samqiao'), ('OLDPWD', '/home/samqiao/ASRL/vtr3_testing/bash_scripts'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('NV_LIBCUBLAS_DEV_VERSION', '11.10.3.66-1'), ('ROS_PYTHON_VERSION', '3'), ('TORCH_LIB', '/opt/torch/libtorch'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.13.4-1'), ('NV_LIBNPP_PACKAGE', 'libnpp-11-7=11.7.4.75-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.5.0.96-1+cuda11.7'), ('CUDA_VERSION', '11.7.1'), ('VTRMODELS', '/home/samqiao/ASRL/vtr3/models'), ('COLCON_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install'), ('NV_NVPROF_VERSION', '11.7.101-1'), ('ROS_DISTRO', 'humble'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-11-7'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=11.7 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '11.7.4.91-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'compute,utility,graphics'), ('NV_CUDA_LIB_VERSION', '11.7.1-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '11.7.91-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-11-7=11.7.4.75-1'), ('TERM', 'xterm'), ('NV_CUDA_CUDART_VERSION', '11.7.99-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.5.0.96-1+cuda11.7'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-11-7'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-11-7=11.10.3.66-1'), ('WARTHOG', '/home/samqiao/ASRL/vtr3/warthog'), ('NVARCH', 'x86_64'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '11.7.4.91-1'), ('DISPLAY', ':0'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.13.4-1+cuda11.7'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '11.7.99-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROOTDIR', '/home/samqiao/ASRL/vtr3_testing'), ('AMENT_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs:/home/samqiao/ASRL/vtr3/src/main/install/steam:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs:/home/samqiao/ASRL/vtr3/src/main/install/lgmath:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf:/home/samqiao/ASRL/vtr3/src/main/install/cudpp:/opt/ros/humble'), ('DEBIAN_FRONTEND', 'noninteractive'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-11-7=11.10.3.66-1'), ('VTRTEMP', '/home/samqiao/ASRL/vtr3/temp'), ('VTRSRC', '/home/samqiao/ASRL/vtr3/src'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-11-7=11.7.1-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.13.4-1+cuda11.7'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GRIZZLY', '/home/samqiao/ASRL/vtr3/grizzly'), ('NV_NVTX_VERSION', '11.7.91-1'), ('NV_LIBNPP_VERSION', '11.7.4.75-1'), ('VTRUI', '/main/src/vtr_gui/vtr_gui/vtr-gui'), ('ASRLROOT', '/home/samqiao/ASRL'), ('NV_CUDNN_VERSION', '8.5.0.96'), ('PWD', '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar'), ('PYTHONPATH', '/home/samqiao/ASRL/vtr3/src/main/build/vtr_gui:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui/lib/python3.10/site-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs/local/lib/python3.10/dist-packages:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.13.4-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '11.7.4.75-1'), ('VTRDATA', '/home/samqiao/ASRL/vtr3_testing/data'), ('CMAKE_PREFIX_PATH', '/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision:/home/samqiao/ASRL/vtr3/src/main/install/vtr_vision_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch:/home/samqiao/ASRL/vtr3/src/main/install/vtr_mission_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_route_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar:/home/samqiao/ASRL/vtr3/src/main/install/vtr_path_planning:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic:/home/samqiao/ASRL/vtr3/src/main/install/vtr_tactic_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph:/home/samqiao/ASRL/vtr3/src/main/install/vtr_storage:/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_pose_graph_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_navigation_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging:/home/samqiao/ASRL/vtr3/src/main/install/vtr_lidar_msgs:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common:/home/samqiao/ASRL/vtr3/src/main/install/vtr_common_msgs:/home/samqiao/ASRL/vtr3/src/main/install/steam:/home/samqiao/ASRL/vtr3/src/main/install/navtech_msgs:/home/samqiao/ASRL/vtr3/src/main/install/lgmath:/home/samqiao/ASRL/vtr3/src/main/install/gpusurf:/home/samqiao/ASRL/vtr3/src/main/install/cudpp:/opt/torch/libtorch::/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble')]), 'shell': False}
+[27.274753] (vtr_testing_radar) StdoutLine: {'line': b'-- Install configuration: "Release"\n'}
+[27.275048] (vtr_testing_radar) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[27.275333] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/include/vtr_testing_radar/utils.hpp\n'}
+[27.284962] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar//config/radar.yaml\n'}
+[27.294191] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar//config/radar_new.yaml\n'}
+[27.303314] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/ament_index/resource_index/package_run_dependencies/vtr_testing_radar\n'}
+[27.312400] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/ament_index/resource_index/parent_prefix_path/vtr_testing_radar\n'}
+[27.321949] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/ament_prefix_path.sh\n'}
+[27.331895] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/ament_prefix_path.dsv\n'}
+[27.341052] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/path.sh\n'}
+[27.350739] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/path.dsv\n'}
+[27.359703] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.bash\n'}
+[27.361994] (-) TimerEvent: {}
+[27.369408] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.sh\n'}
+[27.378573] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.zsh\n'}
+[27.388479] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.dsv\n'}
+[27.398366] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/package.dsv\n'}
+[27.407837] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/ament_index/resource_index/packages/vtr_testing_radar\n'}
+[27.417047] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/cmake/vtr_testing_radarConfig.cmake\n'}
+[27.426291] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/cmake/vtr_testing_radarConfig-version.cmake\n'}
+[27.435671] (vtr_testing_radar) StdoutLine: {'line': b'-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/package.xml\n'}
+[27.444762] (vtr_testing_radar) StdoutLine: {'line': b'-- Installing: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_preprocessing\n'}
+[27.449179] (vtr_testing_radar) StdoutLine: {'line': b'-- Set runtime path of "/home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_preprocessing" to ""\n'}
+[27.449272] (vtr_testing_radar) StdoutLine: {'line': b'-- Installing: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_odometry\n'}
+[27.453639] (vtr_testing_radar) StdoutLine: {'line': b'-- Set runtime path of "/home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_odometry" to ""\n'}
+[27.453735] (vtr_testing_radar) StdoutLine: {'line': b'-- Installing: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_localization\n'}
+[27.458092] (vtr_testing_radar) StdoutLine: {'line': b'-- Set runtime path of "/home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_localization" to ""\n'}
+[27.459781] (vtr_testing_radar) CommandEnded: {'returncode': 0}
+[27.462140] (-) TimerEvent: {}
+[27.519361] (vtr_testing_radar) JobEnded: {'identifier': 'vtr_testing_radar', 'rc': 0}
+[27.519692] (-) EventReactorShutdown: {}

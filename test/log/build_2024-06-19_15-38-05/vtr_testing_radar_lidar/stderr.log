@@ -1,0 +1,24 @@
+[33mCMake Warning at /home/samqiao/ASRL/vtr3/src/main/src/vtr_common/vtr_include.cmake:67 (message):
+  VTR_PIPELINE not set! Compiling all! Save time by selecting
+  VTR_PIPELINE=VISION, LIDAR, RADAR, or RADAR-LIDAR
+Call Stack (most recent call first):
+  CMakeLists.txt:5 (include)
+
+[0m
+[31mCMake Error at CMakeLists.txt:14 (find_package):
+  By not providing "Findvtr_common.cmake" in CMAKE_MODULE_PATH this project
+  has asked CMake to find a package configuration file provided by
+  "vtr_common", but CMake did not find one.
+
+  Could not find a package configuration file provided by "vtr_common" with
+  any of the following names:
+
+    vtr_commonConfig.cmake
+    vtr_common-config.cmake
+
+  Add the installation prefix of "vtr_common" to CMAKE_PREFIX_PATH or set
+  "vtr_common_DIR" to a directory containing one of the above files.  If
+  "vtr_common" provides a separate development package or SDK, be sure it has
+  been installed.
+
+[0m

@@ -1,0 +1,4 @@
+source;share/vtr_testing_radar/local_setup.bash
+source;share/vtr_testing_radar/local_setup.dsv
+source;share/vtr_testing_radar/local_setup.sh
+source;share/vtr_testing_radar/local_setup.zsh

@@ -1,0 +1,56 @@
+[35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_preprocessing[0m
+[35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_odometry[0m
+[35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_localization[0m
+[ 33%] [32m[1mLinking CXX executable vtr_testing_radar_radar_preprocessing[0m
+[ 33%] [32m[1mLinking CXX executable vtr_testing_radar_radar_localization[0m
+[ 50%] [32m[1mLinking CXX executable vtr_testing_radar_radar_odometry[0m
+/usr/bin/ld: cannot find -lopencv_gapi: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaarithm: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudabgsegm: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudafeatures2d: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudafilters: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaimgproc: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudalegacy: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaobjdetect: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaoptflow: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudastereo: No such file or directory
+/usr/bin/ld: cannot find -lopencv_gapi: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudawarping: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudev: No such file or directory
+/usr/bin/ld: cannot find -lopencv_gapi: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaarithm: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudabgsegm: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudafeatures2d: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaarithm: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudafilters: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudabgsegm: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaimgproc: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudafeatures2d: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudalegacy: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudafilters: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaobjdetect: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaimgproc: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaoptflow: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudalegacy: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudastereo: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaobjdetect: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudawarping: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudaoptflow: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudev: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudastereo: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudawarping: No such file or directory
+/usr/bin/ld: cannot find -lopencv_cudev: No such file or directory
+/usr/bin/ld: cannot find -lopencv_xfeatures2d: No such file or directory
+/usr/bin/ld: cannot find -lopencv_xfeatures2d: No such file or directory
+/usr/bin/ld: cannot find -lopencv_xfeatures2d: No such file or directory
+collect2: error: ld returned 1 exit status
+gmake[2]: *** [CMakeFiles/vtr_testing_radar_radar_preprocessing.dir/build.make:503: vtr_testing_radar_radar_preprocessing] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:141: CMakeFiles/vtr_testing_radar_radar_preprocessing.dir/all] Error 2
+gmake[1]: *** Waiting for unfinished jobs....
+collect2: error: ld returned 1 exit status
+gmake[2]: *** [CMakeFiles/vtr_testing_radar_radar_odometry.dir/build.make:503: vtr_testing_radar_radar_odometry] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:167: CMakeFiles/vtr_testing_radar_radar_odometry.dir/all] Error 2
+collect2: error: ld returned 1 exit status
+gmake[2]: *** [CMakeFiles/vtr_testing_radar_radar_localization.dir/build.make:503: vtr_testing_radar_radar_localization] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:193: CMakeFiles/vtr_testing_radar_radar_localization.dir/all] Error 2
+gmake: *** [Makefile:146: all] Error 2

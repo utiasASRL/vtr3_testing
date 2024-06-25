@@ -1,0 +1,150 @@
+[0.009s] Invoking command in '/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/src/vtr_testing_radar -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar
+[0.031s] [33mCMake Warning at /home/samqiao/ASRL/vtr3/src/main/src/vtr_common/vtr_include.cmake:67 (message):
+[0.031s]   VTR_PIPELINE not set! Compiling all! Save time by selecting
+[0.032s]   VTR_PIPELINE=VISION, LIDAR, RADAR, or RADAR-LIDAR
+[0.032s] Call Stack (most recent call first):
+[0.032s]   CMakeLists.txt:5 (include)
+[0.032s] 
+[0.032s] [0m
+[0.032s] -- Found ament_cmake: 1.3.9 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.111s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.115s] -- Found rclcpp: 16.0.9 (/opt/ros/humble/share/rclcpp/cmake)
+[0.143s] -- Found rosidl_generator_c: 3.1.5 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.144s] -- Found rosidl_adapter: 3.1.5 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.148s] -- Found rosidl_generator_cpp: 3.1.5 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.154s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.162s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.193s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.194s] -- Found rmw_fastrtps_cpp: 6.2.6 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[0.300s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.385s] -- Found vtr_common: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_common/share/vtr_common/cmake)
+[0.447s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+[0.448s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[0.448s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[0.761s] -- Found vtr_logging: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_logging/share/vtr_logging/cmake)
+[0.766s] -- Found vtr_radar: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_radar/share/vtr_radar/cmake)
+[0.800s] -- Found CUDA: /usr/local/cuda (found suitable exact version "11.8") 
+[1.061s] -- Checking for module 'eigen3'
+[1.078s] --   Found eigen3, version 3.4.0
+[1.126s] -- Found Eigen: /usr/include/eigen3 (Required is at least version "3.1") 
+[1.126s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[1.167s] -- Checking for module 'flann'
+[1.183s] --   Found flann, version 1.9.1
+[1.230s] -- Found FLANN: /usr/lib/x86_64-linux-gnu/libflann_cpp.so  
+[1.230s] -- FLANN found (include: /usr/include, lib: /usr/lib/x86_64-linux-gnu/libflann_cpp.so)
+[2.115s] -- Checking for module 'libusb-1.0'
+[2.132s] --   Found libusb-1.0, version 1.0.25
+[2.178s] -- Found libusb: /usr/lib/x86_64-linux-gnu/libusb-1.0.so  
+[2.178s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[2.248s] -- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[2.347s] -- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+[2.353s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[2.359s] -- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+[2.454s] -- Found Qhull version 8.0.2
+[2.547s] -- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+[2.636s] -- Found PCL_COMMON: /usr/lib/x86_64-linux-gnu/libpcl_common.so  
+[2.637s] -- Found PCL_KDTREE: /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so  
+[2.637s] -- Found PCL_OCTREE: /usr/lib/x86_64-linux-gnu/libpcl_octree.so  
+[2.637s] -- Found PCL_SEARCH: /usr/lib/x86_64-linux-gnu/libpcl_search.so  
+[2.638s] -- Found PCL_SAMPLE_CONSENSUS: /usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so  
+[2.638s] -- Found PCL_FILTERS: /usr/lib/x86_64-linux-gnu/libpcl_filters.so  
+[2.638s] -- Found PCL_2D: /usr/include/pcl-1.12  
+[2.639s] -- Found PCL_GEOMETRY: /usr/include/pcl-1.12  
+[2.639s] -- Found PCL_IO: /usr/lib/x86_64-linux-gnu/libpcl_io.so  
+[2.639s] -- Found PCL_FEATURES: /usr/lib/x86_64-linux-gnu/libpcl_features.so  
+[2.640s] -- Found PCL_ML: /usr/lib/x86_64-linux-gnu/libpcl_ml.so  
+[2.640s] -- Found PCL_SEGMENTATION: /usr/lib/x86_64-linux-gnu/libpcl_segmentation.so  
+[2.640s] -- Found PCL_VISUALIZATION: /usr/lib/x86_64-linux-gnu/libpcl_visualization.so  
+[2.641s] -- Found PCL_SURFACE: /usr/lib/x86_64-linux-gnu/libpcl_surface.so  
+[2.641s] -- Found PCL_REGISTRATION: /usr/lib/x86_64-linux-gnu/libpcl_registration.so  
+[2.642s] -- Found PCL_KEYPOINTS: /usr/lib/x86_64-linux-gnu/libpcl_keypoints.so  
+[2.642s] -- Found PCL_TRACKING: /usr/lib/x86_64-linux-gnu/libpcl_tracking.so  
+[2.642s] -- Found PCL_RECOGNITION: /usr/lib/x86_64-linux-gnu/libpcl_recognition.so  
+[2.643s] -- Found PCL_STEREO: /usr/lib/x86_64-linux-gnu/libpcl_stereo.so  
+[2.643s] -- Found PCL_APPS: /usr/lib/x86_64-linux-gnu/libpcl_apps.so  
+[2.644s] -- Found PCL_IN_HAND_SCANNER: /usr/include/pcl-1.12  
+[2.644s] -- Found PCL_MODELER: /usr/include/pcl-1.12  
+[2.644s] -- Found PCL_POINT_CLOUD_EDITOR: /usr/include/pcl-1.12  
+[2.644s] -- Found PCL_OUTOFCORE: /usr/lib/x86_64-linux-gnu/libpcl_outofcore.so  
+[2.645s] -- Found PCL_PEOPLE: /usr/lib/x86_64-linux-gnu/libpcl_people.so  
+[3.155s] -- Found vtr_torch: 0.0.0 (/home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake)
+[3.167s] -- Found CUDA: /usr/local/cuda (found version "11.8") 
+[3.719s] -- The CUDA compiler identification is NVIDIA 11.8.89
+[3.723s] -- Detecting CUDA compiler ABI info
+[4.273s] -- Detecting CUDA compiler ABI info - done
+[4.287s] -- Check for working CUDA compiler: /usr/local/cuda/bin/nvcc - skipped
+[4.287s] -- Detecting CUDA compile features
+[4.288s] -- Detecting CUDA compile features - done
+[4.288s] -- Caffe2: CUDA detected: 11.8
+[4.288s] -- Caffe2: CUDA nvcc is: /usr/local/cuda/bin/nvcc
+[4.288s] -- Caffe2: CUDA toolkit directory: /usr/local/cuda
+[4.379s] -- Caffe2: Header version is: 11.8
+[4.386s] [33mCMake Warning at /opt/torch/libtorch/share/cmake/Caffe2/public/cuda.cmake:166 (message):
+[4.386s]   Failed to compute shorthash for libnvrtc.so
+[4.386s] Call Stack (most recent call first):
+[4.386s]   /opt/torch/libtorch/share/cmake/Caffe2/Caffe2Config.cmake:88 (include)
+[4.386s]   /opt/torch/libtorch/share/cmake/Torch/TorchConfig.cmake:68 (find_package)
+[4.386s]   /home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+[4.386s]   /home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake/vtr_torchConfig.cmake:41 (include)
+[4.386s]   CMakeLists.txt:17 (find_package)
+[4.386s] 
+[4.386s] [0m
+[4.387s] -- USE_CUDNN is set to 0. Compiling without cuDNN support
+[4.939s] -- Autodetected CUDA architecture(s):  8.9
+[4.939s] -- Added CUDA NVCC flags for: -gencode;arch=compute_89,code=sm_89
+[4.987s] -- Found ament_cmake_gtest: 1.3.9 (/opt/ros/humble/share/ament_cmake_gtest/cmake)
+[4.992s] -- Found ament_lint_auto: 0.12.11 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[5.042s] -- Added test 'lint_cmake' to check CMake code style
+[5.043s] -- Added test 'xmllint' to check XML markup files
+[5.045s] -- Configuring done
+[5.182s] -- Generating done
+[5.184s] -- Build files have been written to: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar
+[5.197s] Invoked command in '/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/src/vtr_testing_radar -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar
+[5.198s] Invoking command in '/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake --build /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar -- -j24 -l24
+[5.262s] [ 33%] [32mBuilding CXX object CMakeFiles/vtr_testing_radar_boreas_odometry.dir/src/boreas_odometry.cpp.o[0m
+[5.262s] [ 33%] [32mBuilding CXX object CMakeFiles/vtr_testing_radar_boreas_localization.dir/src/boreas_localization.cpp.o[0m
+[5.265s] [ 50%] [32mBuilding CXX object CMakeFiles/vtr_testing_radar_boreas_preprocessing.dir/src/boreas_preprocessing.cpp.o[0m
+[25.098s] [ 66%] [32m[1mLinking CXX executable vtr_testing_radar_boreas_odometry[0m
+[25.931s] [ 83%] [32m[1mLinking CXX executable vtr_testing_radar_boreas_preprocessing[0m
+[26.213s] [100%] [32m[1mLinking CXX executable vtr_testing_radar_boreas_localization[0m
+[26.794s] /usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.410
+[26.795s] /usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.410
+[26.796s] /usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.410
+[27.251s] [100%] Built target vtr_testing_radar_boreas_odometry
+[27.504s] /usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.410
+[27.505s] /usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.410
+[27.506s] /usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.410
+[27.827s] /usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.410
+[27.828s] /usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.410
+[27.830s] /usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.410
+[27.942s] [100%] Built target vtr_testing_radar_boreas_preprocessing
+[28.307s] [100%] Built target vtr_testing_radar_boreas_localization
+[28.320s] Invoked command in '/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake --build /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar -- -j24 -l24
+[28.382s] Invoking command in '/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake --install /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar
+[28.391s] -- Install configuration: ""
+[28.391s] -- Execute custom install script
+[28.391s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/include/vtr_testing_radar/utils.hpp
+[28.401s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar//config/boreas.yaml
+[28.410s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar//config/boreas_new_radar.yaml
+[28.420s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/ament_index/resource_index/package_run_dependencies/vtr_testing_radar
+[28.429s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/ament_index/resource_index/parent_prefix_path/vtr_testing_radar
+[28.440s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/environment/ament_prefix_path.sh
+[28.450s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/environment/ament_prefix_path.dsv
+[28.459s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/environment/path.sh
+[28.468s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/environment/path.dsv
+[28.477s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.bash
+[28.486s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.sh
+[28.495s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.zsh
+[28.504s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.dsv
+[28.513s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/package.dsv
+[28.523s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/ament_index/resource_index/packages/vtr_testing_radar
+[28.532s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/cmake/vtr_testing_radarConfig.cmake
+[28.541s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/cmake/vtr_testing_radarConfig-version.cmake
+[28.550s] -- Symlinking: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/share/vtr_testing_radar/package.xml
+[28.559s] -- Installing: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_boreas_preprocessing
+[28.564s] -- Set runtime path of "/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_boreas_preprocessing" to ""
+[28.564s] -- Installing: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_boreas_odometry
+[28.569s] -- Set runtime path of "/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_boreas_odometry" to ""
+[28.569s] -- Installing: /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_boreas_localization
+[28.573s] -- Set runtime path of "/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_boreas_localization" to ""
+[28.574s] Invoked command in '/home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake --install /home/samqiao/ASRL/vtr3_testing/test_radar_rosbag/build/vtr_testing_radar

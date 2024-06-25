@@ -1,0 +1,26 @@
+[ 66%] Built target vtr_testing_radar_radar_preprocessing
+[ 66%] Built target vtr_testing_radar_radar_localization
+[100%] Built target vtr_testing_radar_radar_odometry
+-- Install configuration: "Release"
+-- Execute custom install script
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/include/vtr_testing_radar/utils.hpp
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar//config/radar.yaml
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar//config/radar_new.yaml
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/ament_index/resource_index/package_run_dependencies/vtr_testing_radar
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/ament_index/resource_index/parent_prefix_path/vtr_testing_radar
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/ament_prefix_path.sh
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/ament_prefix_path.dsv
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/path.sh
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/environment/path.dsv
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.bash
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.sh
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.zsh
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/local_setup.dsv
+-- Symlinking: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/package.dsv
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/ament_index/resource_index/packages/vtr_testing_radar
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/cmake/vtr_testing_radarConfig.cmake
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/cmake/vtr_testing_radarConfig-version.cmake
+-- Up-to-date symlink: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/share/vtr_testing_radar/package.xml
+-- Up-to-date: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_preprocessing
+-- Up-to-date: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_odometry
+-- Up-to-date: /home/samqiao/ASRL/vtr3_testing/test/install/vtr_testing_radar/lib/vtr_testing_radar/vtr_testing_radar_radar_localization

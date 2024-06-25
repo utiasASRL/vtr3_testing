@@ -1,0 +1,26 @@
+[33mCMake Warning at /home/samqiao/ASRL/vtr3/src/main/src/vtr_common/vtr_include.cmake:67 (message):
+  VTR_PIPELINE not set! Compiling all! Save time by selecting
+  VTR_PIPELINE=VISION, LIDAR, RADAR, or RADAR-LIDAR
+Call Stack (most recent call first):
+  CMakeLists.txt:5 (include)
+
+[0m
+[33mCMake Warning at /opt/torch/libtorch/share/cmake/Caffe2/public/cuda.cmake:166 (message):
+  Failed to compute shorthash for libnvrtc.so
+Call Stack (most recent call first):
+  /opt/torch/libtorch/share/cmake/Caffe2/Caffe2Config.cmake:88 (include)
+  /opt/torch/libtorch/share/cmake/Torch/TorchConfig.cmake:68 (find_package)
+  /home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/samqiao/ASRL/vtr3/src/main/install/vtr_torch/share/vtr_torch/cmake/vtr_torchConfig.cmake:41 (include)
+  CMakeLists.txt:17 (find_package)
+
+[0m
+/usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.406
+/usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.406
+/usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.406
+/usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.406
+/usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.406
+/usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.406
+/usr/bin/ld: warning: libopencv_imgcodecs.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgcodecs.so.406
+/usr/bin/ld: warning: libopencv_imgproc.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_imgproc.so.406
+/usr/bin/ld: warning: libopencv_core.so.4.5d, needed by /opt/ros/humble/lib/libcv_bridge.so, may conflict with libopencv_core.so.406

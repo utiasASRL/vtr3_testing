@@ -1,0 +1,3 @@
+[ 33%] [32mBuilding CXX object CMakeFiles/vtr_testing_radar_radar_localization.dir/src/radar_localization.cpp.o[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/vtr_testing_radar_radar_odometry.dir/src/radar_odometry.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/vtr_testing_radar_radar_preprocessing.dir/src/radar_preprocessing.cpp.o[0m

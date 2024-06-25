@@ -1,0 +1,6 @@
+[35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_preprocessing[0m
+[35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_odometry[0m
+[35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_localization[0m
+[ 33%] [32m[1mLinking CXX executable vtr_testing_radar_radar_preprocessing[0m
+[ 33%] [32m[1mLinking CXX executable vtr_testing_radar_radar_localization[0m
+[ 50%] [32m[1mLinking CXX executable vtr_testing_radar_radar_odometry[0m

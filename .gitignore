@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Debug files
+data/*
+
+# Local configuration file
+build/*
+install/*
+
+# # CMake files
+# CMakeFiles
+
+bash_scripts/radar/*

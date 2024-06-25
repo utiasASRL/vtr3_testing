@@ -1,0 +1,58 @@
+[0.010s] Invoking command in '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake --build /home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar -- -j24 -l24
+[0.067s] [35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_preprocessing[0m
+[0.068s] [35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_odometry[0m
+[0.068s] [35m[1mConsolidate compiler generated dependencies of target vtr_testing_radar_radar_localization[0m
+[0.119s] [ 33%] [32m[1mLinking CXX executable vtr_testing_radar_radar_preprocessing[0m
+[0.119s] [ 33%] [32m[1mLinking CXX executable vtr_testing_radar_radar_localization[0m
+[0.120s] [ 50%] [32m[1mLinking CXX executable vtr_testing_radar_radar_odometry[0m
+[0.243s] /usr/bin/ld: cannot find -lopencv_gapi: No such file or directory
+[0.244s] /usr/bin/ld: cannot find -lopencv_cudaarithm: No such file or directory
+[0.245s] /usr/bin/ld: cannot find -lopencv_cudabgsegm: No such file or directory
+[0.245s] /usr/bin/ld: cannot find -lopencv_cudafeatures2d: No such file or directory
+[0.246s] /usr/bin/ld: cannot find -lopencv_cudafilters: No such file or directory
+[0.246s] /usr/bin/ld: cannot find -lopencv_cudaimgproc: No such file or directory
+[0.246s] /usr/bin/ld: cannot find -lopencv_cudalegacy: No such file or directory
+[0.247s] /usr/bin/ld: cannot find -lopencv_cudaobjdetect: No such file or directory
+[0.247s] /usr/bin/ld: cannot find -lopencv_cudaoptflow: No such file or directory
+[0.247s] /usr/bin/ld: cannot find -lopencv_cudastereo: No such file or directory
+[0.247s] /usr/bin/ld: cannot find -lopencv_gapi: No such file or directory
+[0.248s] /usr/bin/ld: cannot find -lopencv_cudawarping: No such file or directory
+[0.248s] /usr/bin/ld: cannot find -lopencv_cudev: No such file or directory
+[0.249s] /usr/bin/ld: cannot find -lopencv_gapi: No such file or directory
+[0.250s] /usr/bin/ld: cannot find -lopencv_cudaarithm: No such file or directory
+[0.250s] /usr/bin/ld: cannot find -lopencv_cudabgsegm: No such file or directory
+[0.250s] /usr/bin/ld: cannot find -lopencv_cudafeatures2d: No such file or directory
+[0.251s] /usr/bin/ld: cannot find -lopencv_cudaarithm: No such file or directory
+[0.251s] /usr/bin/ld: cannot find -lopencv_cudafilters: No such file or directory
+[0.251s] /usr/bin/ld: cannot find -lopencv_cudabgsegm: No such file or directory
+[0.251s] /usr/bin/ld: cannot find -lopencv_cudaimgproc: No such file or directory
+[0.251s] /usr/bin/ld: cannot find -lopencv_cudafeatures2d: No such file or directory
+[0.251s] /usr/bin/ld: cannot find -lopencv_cudalegacy: No such file or directory
+[0.252s] /usr/bin/ld: cannot find -lopencv_cudafilters: No such file or directory
+[0.252s] /usr/bin/ld: cannot find -lopencv_cudaobjdetect: No such file or directory
+[0.252s] /usr/bin/ld: cannot find -lopencv_cudaimgproc: No such file or directory
+[0.252s] /usr/bin/ld: cannot find -lopencv_cudaoptflow: No such file or directory
+[0.252s] /usr/bin/ld: cannot find -lopencv_cudalegacy: No such file or directory
+[0.253s] /usr/bin/ld: cannot find -lopencv_cudastereo: No such file or directory
+[0.253s] /usr/bin/ld: cannot find -lopencv_cudaobjdetect: No such file or directory
+[0.253s] /usr/bin/ld: cannot find -lopencv_cudawarping: No such file or directory
+[0.253s] /usr/bin/ld: cannot find -lopencv_cudaoptflow: No such file or directory
+[0.253s] /usr/bin/ld: cannot find -lopencv_cudev: No such file or directory
+[0.254s] /usr/bin/ld: cannot find -lopencv_cudastereo: No such file or directory
+[0.254s] /usr/bin/ld: cannot find -lopencv_cudawarping: No such file or directory
+[0.254s] /usr/bin/ld: cannot find -lopencv_cudev: No such file or directory
+[0.272s] /usr/bin/ld: cannot find -lopencv_xfeatures2d: No such file or directory
+[0.278s] /usr/bin/ld: cannot find -lopencv_xfeatures2d: No such file or directory
+[0.278s] /usr/bin/ld: cannot find -lopencv_xfeatures2d: No such file or directory
+[0.688s] collect2: error: ld returned 1 exit status
+[0.689s] gmake[2]: *** [CMakeFiles/vtr_testing_radar_radar_preprocessing.dir/build.make:503: vtr_testing_radar_radar_preprocessing] Error 1
+[0.690s] gmake[1]: *** [CMakeFiles/Makefile2:141: CMakeFiles/vtr_testing_radar_radar_preprocessing.dir/all] Error 2
+[0.690s] gmake[1]: *** Waiting for unfinished jobs....
+[0.741s] collect2: error: ld returned 1 exit status
+[0.743s] gmake[2]: *** [CMakeFiles/vtr_testing_radar_radar_odometry.dir/build.make:503: vtr_testing_radar_radar_odometry] Error 1
+[0.743s] gmake[1]: *** [CMakeFiles/Makefile2:167: CMakeFiles/vtr_testing_radar_radar_odometry.dir/all] Error 2
+[0.758s] collect2: error: ld returned 1 exit status
+[0.759s] gmake[2]: *** [CMakeFiles/vtr_testing_radar_radar_localization.dir/build.make:503: vtr_testing_radar_radar_localization] Error 1
+[0.760s] gmake[1]: *** [CMakeFiles/Makefile2:193: CMakeFiles/vtr_testing_radar_radar_localization.dir/all] Error 2
+[0.760s] gmake: *** [Makefile:146: all] Error 2
+[0.762s] Invoked command in '/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/samqiao/ASRL/vtr3/src/main/install/vtr_gui:/opt/ros/humble /usr/bin/cmake --build /home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar -- -j24 -l24

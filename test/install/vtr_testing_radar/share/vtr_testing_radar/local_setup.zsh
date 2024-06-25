@@ -1,0 +1,1 @@
+/home/samqiao/ASRL/vtr3_testing/test/build/vtr_testing_radar/ament_cmake_environment_hooks/local_setup.zsh
