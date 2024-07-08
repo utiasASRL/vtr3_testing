@@ -8,6 +8,8 @@
 #include "rosbag2_cpp/readers/sequential_reader.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
+#include "rclcpp/serialization.hpp"
+
 #include "vtr_common/timing/utils.hpp"
 #include "vtr_common/utils/filesystem.hpp"
 #include "vtr_logging/logging_init.hpp"
@@ -17,6 +19,9 @@
 #include "vtr_tactic/tactic.hpp"
 
 #include "vtr_testing_radar/utils.hpp"
+
+// custom radar message type
+#include "navtech_msgs/msg/radar_b_scan_msg.hpp"
 
 namespace fs = std::filesystem;
 using namespace vtr;
@@ -35,7 +40,7 @@ int64_t getStampFromPath(const std::string &path) {
 }
 
 EdgeTransform load_T_robot_radar(const fs::path &path) {
-#if true
+#if false
   std::ifstream ifs1(path / "calib" / "T_applanix_lidar.txt", std::ios::in);
   std::ifstream ifs2(path / "calib" / "T_radar_lidar.txt", std::ios::in);
 
@@ -56,7 +61,12 @@ EdgeTransform load_T_robot_radar(const fs::path &path) {
 #else
   (void)path;
   // robot frame == radar frame
-  EdgeTransform T_robot_radar(Eigen::Matrix4d(Eigen::Matrix4d::Identity()),
+  Eigen::Matrix4d T_RAS3;
+  T_RAS3 << 1, 0, 0, -0.025, 
+                0, -1, 0, -0.002, 
+                0, 0, -1, 1.03218, 
+                0, 0, 0, 1;
+  EdgeTransform T_robot_radar(Eigen::Matrix4d(T_RAS3),
                               Eigen::Matrix<double, 6, 6>::Zero());
 #endif
 
@@ -102,9 +112,9 @@ int main(int argc, char **argv) {
   auto stem = parts.back();
   boost::replace_all(stem, "-", "_");
   CLOG(WARNING, "test") << "Publishing status to topic: "
-                        << (stem + "_radar_odometry");
+                        << ("vtr3_testing" + stem + "_radar_odometry");
   const auto status_publisher = node->create_publisher<std_msgs::msg::String>(
-      stem + "_radar_odometry", 1);
+      "vtr3_testing" + stem + "_radar_odometry", 1);
 
   // Pose graph
   auto graph = tactic::Graph::MakeShared((data_dir / "graph").string(), false);
@@ -146,19 +156,44 @@ int main(int argc, char **argv) {
       node->create_publisher<rosgraph_msgs::msg::Clock>("/clock", 10);
 
   // List of radar data
-  std::vector<fs::directory_entry> files;
-  for (const auto &dir_entry : fs::directory_iterator{odo_dir / "radar"})
-    if (!fs::is_directory(dir_entry)) files.push_back(dir_entry);
-  std::sort(files.begin(), files.end());
-  CLOG(WARNING, "test") << "Found " << files.size() << " radar data";
+  // std::vector<fs::directory_entry> files;
+  // for (const auto &dir_entry : fs::directory_iterator{odo_dir / "radar"})
+  //   if (!fs::is_directory(dir_entry)) files.push_back(dir_entry);
+  // std::sort(files.begin(), files.end());
+  // CLOG(WARNING, "test") << "Found " << files.size() << " radar data";
 
   // thread handling variables
   TestControl test_control(node);
 
   // main loop
   int frame = 0;
-  auto it = files.begin();
-  while (it != files.end()) {
+
+  std::string rosbag_path = odo_dir;
+
+  // Create a SequentialReader
+  rosbag2_cpp::readers::SequentialReader reader_;
+
+  // Reader options
+  rosbag2_storage::StorageOptions storage_options{};
+  storage_options.uri = odo_dir;
+  storage_options.storage_id = "sqlite3";
+
+  // Converter options (not strictly necessary unless converting between serialization formats)
+  rosbag2_cpp::ConverterOptions converter_options{};
+  converter_options.input_serialization_format = "cdr";
+  converter_options.output_serialization_format = "cdr";
+
+  // Open the bag with these options
+  reader_.open(storage_options,converter_options);
+
+  // Check if reader is opened
+    if (!reader_.has_next()) {
+        std::cerr << "The bag is empty or the file path is incorrect." << std::endl;
+        return 1;
+    }
+
+  // auto it = files.begin();
+  while (reader_.has_next()) {
     if (!rclcpp::ok()) break;
     rclcpp::spin_some(node);
     if (test_control.terminate()) break;
@@ -166,9 +201,30 @@ int main(int argc, char **argv) {
     std::this_thread::sleep_for(
         std::chrono::milliseconds(test_control.delay()));
 
-    ///
-    const auto timestamp = getStampFromPath(it->path().string());
-    const auto scan = cv::imread(it->path().string(), cv::IMREAD_GRAYSCALE);
+
+    // Load radar data from the rosbag 
+    rosbag2_storage::SerializedBagMessageSharedPtr msg = reader_.read_next();
+     if (msg->topic_name != "/radar_data/b_scan_msg") {
+          continue;
+        }
+    // Get serialized data from the specific topic
+
+    // Deserialize data to a specific message type
+    auto b_scan_msg = std::make_shared<navtech_msgs::msg::RadarBScanMsg>();
+    rclcpp::SerializedMessage serialized_message(*msg->serialized_data);
+
+    // type support thingy
+    // rclcpp::TypeSupport type_support = rosbag2_cpp::get_typesupport_handle(
+    //     "navtech_msgs/msg/RadarBScanMsg", "rosidl_typesupport_cpp");
+    rclcpp::Serialization<navtech_msgs::msg::RadarBScanMsg> serializer;
+
+    // deserialize the message
+    serializer.deserialize_message(&serialized_message, b_scan_msg.get());
+
+    /// populate the timestamp and azimuth angles
+    const auto timestamp = b_scan_msg->b_scan_img.header.stamp.sec * 1e9 +
+                           b_scan_msg->b_scan_img.header.stamp.nanosec;
+
 
     CLOG(WARNING, "test") << "Loading radar frame " << frame
                           << " with timestamp " << timestamp;
@@ -192,8 +248,8 @@ int main(int argc, char **argv) {
     env_info.terrain_type = 0;
     query_data->env_info.emplace(env_info);
 
-    // set radar frame
-    query_data->scan.emplace(scan);
+    // set radar frame MSG
+    query_data->scan_msg = b_scan_msg;
 
     // fill in the vehicle to sensor transform and frame name
     query_data->T_s_r.emplace(T_radar_robot);
@@ -207,7 +263,7 @@ int main(int argc, char **argv) {
                       std::to_string(timestamp);
     status_publisher->publish(status_msg);
 
-    ++it;
+    // ++it;
     ++frame;
   }
 

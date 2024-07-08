@@ -14,8 +14,16 @@ source venv/bin/activate
 
 cd $ROOTDIR/pyboreas
 pip install -e .
+
 pip install pyyaml
 pip install pandas
+
+pip install rosbags
+pip install utm
+
+# lets install the posegraph tool
+cd ${ASRLROOT}/vtr3_testing/vtr3_pose_graph
+pip install -e .
 
 deactivate
 
@@ -27,8 +35,8 @@ source ${VTRSRC}/main/install/setup.bash # source the vtr3 environment
 source ${ASRLROOT}/vtr3_testing/test/install/setup.bash # source the vtr_testing_radar environment
 
 
-export ODO_INPUT=boreas-2020-11-26-13-58
-export LOC_INPUT=boreas-2021-02-02-14-07
+export ODO_INPUT=20240708_teach
+export LOC_INPUT=20240708_repeat2_forward
 
 # Get arguments
 MODE=localization         # [odometry, localization]
@@ -48,9 +56,10 @@ echo "Evaluating localization to reference sequence ${ODO_INPUT}, storing result
 
 source ${ROOTDIR}/venv/bin/activate
 #   - dump localization result to boreas expected format (txt file)
-python ${ASRLROOT}/vtr3_testing/test/src/vtr_testing_radar/script/boreas_generate_localization_result.py --dataset ${VTRDATA} --path ${VTRRRESULT}/${ODO_INPUT}
-#   - evaluate the result using the evaluation script
-python -m pyboreas.eval.localization --gt ${VTRDATA} --pred ${VTRRRESULT}/${ODO_INPUT}/localization_result --ref_seq ${ODO_INPUT} --ref_sensor radar --test_sensor radar --dim 2  --plot ${VTRRRESULT}/${ODO_INPUT}/localization_result/radar-radar
+python ${ASRLROOT}/vtr3_testing/localization_error_eval/eval_loc.py --dataset ${VTRDATA} --path ${VTRRRESULT}/${ODO_INPUT}
+
+# #   - evaluate the result using the evaluation script
+# python -m pyboreas.eval.localization --gt ${VTRDATA} --pred ${VTRRRESULT}/${ODO_INPUT}/localization_result --ref_seq ${ODO_INPUT} --ref_sensor radar --test_sensor radar --dim 2  --plot ${VTRRRESULT}/${ODO_INPUT}/localization_result/radar-radar
 
 # # Call corresponding script from vtr_testing_radar
 # bash ${ASRLROOT}/vtr3_testing/test/src/vtr_testing_${SENSOR}/script/test_${MODE}_eval.sh ${ODO_INPUT} ${PARAM_FILE}

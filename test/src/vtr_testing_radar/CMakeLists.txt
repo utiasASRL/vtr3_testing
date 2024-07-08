@@ -9,7 +9,11 @@ include("$ENV{VTRSRC}/main/src/vtr_common/vtr_include.cmake")
 find_package(ament_cmake REQUIRED)
 
 find_package(rclcpp REQUIRED)
+# sam added
+find_package(rosbag2_cpp REQUIRED)
 find_package(std_msgs REQUIRED)
+# sam added
+find_package(navtech_msgs REQUIRED)
 
 find_package(vtr_common REQUIRED)
 find_package(vtr_logging REQUIRED)
@@ -17,6 +21,7 @@ find_package(vtr_radar REQUIRED)
 find_package(vtr_torch REQUIRED)
 
 ## C++ Libraries
+
 
 ## Executables
 include_directories(
@@ -29,10 +34,10 @@ add_executable(${PROJECT_NAME}_radar_preprocessing src/radar_preprocessing.cpp)
 ament_target_dependencies(${PROJECT_NAME}_radar_preprocessing rclcpp std_msgs vtr_common vtr_logging vtr_radar vtr_torch)
 
 add_executable(${PROJECT_NAME}_radar_odometry src/radar_odometry.cpp)
-ament_target_dependencies(${PROJECT_NAME}_radar_odometry rclcpp std_msgs vtr_common vtr_logging vtr_radar vtr_torch)
+ament_target_dependencies(${PROJECT_NAME}_radar_odometry rclcpp std_msgs vtr_common vtr_logging vtr_radar vtr_torch rosbag2_cpp navtech_msgs)
 
 add_executable(${PROJECT_NAME}_radar_localization src/radar_localization.cpp)
-ament_target_dependencies(${PROJECT_NAME}_radar_localization rclcpp std_msgs vtr_common vtr_logging vtr_radar vtr_torch)
+ament_target_dependencies(${PROJECT_NAME}_radar_localization rclcpp std_msgs vtr_common vtr_logging vtr_radar vtr_torch rosbag2_cpp navtech_msgs)
 
 install(
   DIRECTORY include/
