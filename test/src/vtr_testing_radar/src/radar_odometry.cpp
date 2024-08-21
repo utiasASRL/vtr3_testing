@@ -141,13 +141,13 @@ int main(int argc, char **argv) {
   std::string radar_frame = "radar";
 
   const auto T_robot_radar = load_T_robot_radar(odo_dir);
-  const auto T_radar_robot = T_robot_radar.inverse();
+
+  const auto T_radar_robot = T_robot_radar;
   CLOG(WARNING, "test") << "Transform from " << robot_frame << " to "
                         << radar_frame << " has been set to" << T_radar_robot;
 
   auto tf_sbc = std::make_shared<tf2_ros::StaticTransformBroadcaster>(node);
-  auto msg =
-      tf2::eigenToTransform(Eigen::Affine3d(T_radar_robot.inverse().matrix()));
+  auto msg = tf2::eigenToTransform(Eigen::Affine3d(T_radar_robot.inverse().matrix()));
   msg.header.frame_id = robot_frame;
   msg.child_frame_id = radar_frame;
   tf_sbc->sendTransform(msg);
@@ -229,7 +229,7 @@ int main(int argc, char **argv) {
     CLOG(WARNING, "test") << "Loading radar frame " << frame
                           << " with timestamp " << timestamp;
 
-    // publish clock for sim time
+    // publish clock for sim time check this
     auto time_msg = rosgraph_msgs::msg::Clock();
     time_msg.clock = rclcpp::Time(timestamp);
     clock_publisher->publish(time_msg);

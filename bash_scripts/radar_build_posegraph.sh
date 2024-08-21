@@ -10,18 +10,20 @@ export WARTHOG=${VTRROOT}/warthog  # warthog source (this repo)
 
 echo $VTRDATA
  
-source ~/.bashrc
+# source ~/.bashrc
 source /opt/ros/humble/setup.bash
 source ${VTRSRC}/main/install/setup.bash # source the vtr3 environment
 
 
 cd ${ASRLROOT}/vtr3_testing/test
+rm -rf build/
+rm -rf install/
  # go to where vtr_testing_radar is located
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 source ${ASRLROOT}/vtr3_testing/test/install/setup.bash # source the vtr_testing_radar environment
 
-export ODO_INPUT=20240708_teach
-export LOC_INPUT=20240708_repeat2_forward
+export ODO_INPUT=20240819/0819_big_loop1
+# export LOC_INPUT=20240708_repeat2_forward
 
 # Get arguments
 MODE=localization         # [odometry, localization]
@@ -62,33 +64,33 @@ ros2 run vtr_testing_radar vtr_testing_radar_radar_odometry \
   -p odo_dir:=${VTRDATA}/${ODO_INPUT}
 
 
-# then run localization
-# Log
-echo "Running localization on sequence ${LOC_INPUT} to reference sequence ${ODO_INPUT}, storing result to ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}"
+# # then run localization
+# # Log
+# echo "Running localization on sequence ${LOC_INPUT} to reference sequence ${ODO_INPUT}, storing result to ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}"
 
-# Source the VTR environment with the testing package
-source ${VTRROOT}/install/setup.bash
+# # Source the VTR environment with the testing package
+# source ${VTRROOT}/install/setup.bash
 
-graph_dir=${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}/graph
-if [ -d $graph_dir ]; then
-  # Count the number of directories inside "graph"
-  dir_count=$(ls -l $graph_dir | grep -c ^d)
+# graph_dir=${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}/graph
+# if [ -d $graph_dir ]; then
+#   # Count the number of directories inside "graph"
+#   dir_count=$(ls -l $graph_dir | grep -c ^d)
   
-  if [ $dir_count -gt 1 ]; then
-    read -p "The directory $graph_dir is not empty and contains $dir_count other directories. Do you want to delete it and create an empty one? (yes/no) " response
-    if [ "$response" == "no" ]; then
-      exit
-    fi
-  fi
-fi
+#   if [ $dir_count -gt 1 ]; then
+#     read -p "The directory $graph_dir is not empty and contains $dir_count other directories. Do you want to delete it and create an empty one? (yes/no) " response
+#     if [ "$response" == "no" ]; then
+#       exit
+#     fi
+#   fi
+# fi
 
-rm -r ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}
-mkdir -p ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}
-cp -r ${VTRRRESULT}/${ODO_INPUT}/${ODO_INPUT}/* ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}
-ros2 run vtr_testing_radar vtr_testing_radar_radar_localization \
-  --ros-args -p use_sim_time:=false \
-  -r __ns:=/vtr \
-  --params-file ${PARAM_FILE} \
-  -p data_dir:=${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT} \
-  -p odo_dir:=${VTRDATA}/${ODO_INPUT} \
-  -p loc_dir:=${VTRDATA}/${LOC_INPUT}
+# rm -r ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}
+# mkdir -p ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}
+# cp -r ${VTRRRESULT}/${ODO_INPUT}/${ODO_INPUT}/* ${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT}
+# ros2 run vtr_testing_radar vtr_testing_radar_radar_localization \
+#   --ros-args -p use_sim_time:=false \
+#   -r __ns:=/vtr \
+#   --params-file ${PARAM_FILE} \
+#   -p data_dir:=${VTRRRESULT}/${ODO_INPUT}/${LOC_INPUT} \
+#   -p odo_dir:=${VTRDATA}/${ODO_INPUT} \
+#   -p loc_dir:=${VTRDATA}/${LOC_INPUT}

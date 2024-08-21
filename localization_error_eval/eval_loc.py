@@ -142,8 +142,9 @@ def main(dataset_dir, result_dir):
   y_teach = np.array(y_teach)
   t_teach = np.array(t_teach).reshape(-1,1)
   t_teach_offset = t_teach[0]
-  # reset to zero
-  t_teach = np.squeeze(t_teach - t_teach_offset)
+  # don't reset to zero
+  # t_teach = np.squeeze(t_teach - t_teach_offset)
+  t_teach = np.squeeze(t_teach)
 
   # print(x_teach.shape)
   # print(y_teach.shape)
@@ -183,8 +184,9 @@ def main(dataset_dir, result_dir):
   y_repeat = np.array(y_repeat)
   t_repeat = np.array(t_repeat).reshape(-1,1)
   t_repeat_offset = t_repeat[0]
-  # reset to zero
-  t_repeat = np.squeeze(t_repeat - t_repeat_offset)
+  # don't reset to zero
+  # t_repeat = np.squeeze(t_repeat - t_repeat_offset)
+  t_repeat = np.squeeze(t_repeat)
 
   proj_dist = np.array(proj_dist)
   
@@ -200,25 +202,27 @@ def main(dataset_dir, result_dir):
   repeat_rosbag_path = os.path.join(dataset_dir, loc_inputs[0])
 
   x_teach_gps, y_teach_gps, t_teach_gps = get_xy_gps(teach_rosbag_path)
+  # this is to convert radar time to ros time
+  # look_up_tb_teach = get_radar_time_ros_time_lookup(teach_rosbag_path)
+  radar_times_teach, ros_times_teach, look_up_tb_teach = get_radar_time_ros_time_lookup(teach_rosbag_path)
+  print("The lookup table for the teach pass", look_up_tb_teach)
+
   x_gps_offset = x_teach_gps[0]
   y_gps_offset = y_teach_gps[0]
   t_gps_teach_0 = t_teach_gps[0]
-  # reset to zero
-  t_teach_gps = t_teach_gps - t_gps_teach_0
+  # don't reset to zero
+  # t_teach_gps = t_teach_gps - t_gps_teach_0
 
   # print(t_teach[0:10])
   # print(t_teach_gps[0:10])
-
   x_repeat_gps, y_repeat_gps, t_repeat_gps = get_xy_gps(repeat_rosbag_path)
-  # # subtract the origin
-  # # because I am repeating backwards temporary TODO
-  # x_repeat_gps = x_repeat_gps[::-1]
-  # y_repeat_gps = y_repeat_gps[::-1]
-  # t_repeat_gps = t_repeat_gps[::-1]
-  # t_repeat_last = t_repeat_gps[-1]
-  # reset to zero
+  # this is to convert radar time to ros time
+  radar_times_repeat, ros_times_repeat, look_up_tb_repeat = get_radar_time_ros_time_lookup(repeat_rosbag_path)
+  print("the lookup tavle for the repeat pass",look_up_tb_repeat)
+
+  # don't reset to zero
   t_repeat_gps_0 = t_repeat_gps[0]
-  t_repeat_gps = t_repeat_gps - t_repeat_gps_0
+  # t_repeat_gps = t_repeat_gps - t_repeat_gps_0
 
   if DEBUG:
     print("GPS debug:: \n")
@@ -261,39 +265,48 @@ def main(dataset_dir, result_dir):
   for v, e in TemporalIterator(v_start_repeat):      
         print("Processing new repeat vertex: ------------------- ",vertex_cnt)
         repeat_vertex = v
-        repeat_vertex_timestamp = (repeat_vertex.stamp/1e9) - t_repeat_offset
+        repeat_vertex_timestamp = (repeat_vertex.stamp/1e9) 
 
-        print("repeat_vertex_timestamp: ",repeat_vertex_timestamp[0])
+        print("repeat_vertex_timestamp: ",repeat_vertex_timestamp)
 
-        repeat_x, repeat_y = repeat_vtr_dict[repeat_vertex_timestamp[0]]
+        repeat_x, repeat_y = repeat_vtr_dict[repeat_vertex_timestamp]
 
         # print("Sam debug repeat: ",repeat_vertex_timestamp,repeat_x,repeat_y)
 
         # get the closest teach vertex
         closest_teach_vertex = g_utils.get_closest_teach_vertex(v)
-        closest_teach_vertex_timestamp = (closest_teach_vertex.stamp / 1e9)-t_teach_offset
-        print("closest_teach_vertex_timestamp: ",closest_teach_vertex_timestamp[0])
-        teach_x, teach_y = teach_vtr_dict[closest_teach_vertex_timestamp[0]]
+        closest_teach_vertex_timestamp = (closest_teach_vertex.stamp / 1e9)
+        print("closest_teach_vertex_timestamp: ",closest_teach_vertex_timestamp)
+        teach_x, teach_y = teach_vtr_dict[closest_teach_vertex_timestamp]
         # print("Sam debug teach: ",closest_teach_vertex_timestamp,teach_x,teach_y)
 
-        estimated_vtr_distance = np.linalg.norm(np.array([repeat_x,repeat_y]) - np.array([teach_x,teach_y]))
+        estimated_vtr_distance = np.array([repeat_x,repeat_y]) - np.array([teach_x,teach_y])
         print("estimated_vtr_distance: ",estimated_vtr_distance)
 
         # lets get the gps data
-        repeat_gps_timestamp = get_closest_timestamp(repeat_vertex_timestamp[0],t_repeat_gps)
+        # when you pass into the lookup table, right now we are only matching 3 significant digits
+        repeat_vertex_timestamp_rostime = look_up_tb_repeat[round(repeat_vertex_timestamp,3)]
+        print("I am new repeat ros time",repeat_vertex_timestamp_rostime)
+        repeat_gps_timestamp = get_closest_timestamp(repeat_vertex_timestamp_rostime,t_repeat_gps)
         print("repeat_gps_timestamp: ",repeat_gps_timestamp)
         repeat_gps_x, repeat_gps_y = repeat_gps_dict[repeat_gps_timestamp]
         print("repeat_gps_x, repeat_gps_y: ",repeat_gps_x,repeat_gps_y)
 
-        teach_gps_timestamp = get_closest_timestamp(closest_teach_vertex_timestamp[0],t_teach_gps)
+
+        # similarly need to convert to ros time first
+        # when you pass into the lookup table, right now we are only matching 3 significant digits
+        closest_teach_vertex_timestamp_rostime = look_up_tb_teach[round(closest_teach_vertex_timestamp,3)]
+        print("I am new teach ros time",closest_teach_vertex_timestamp_rostime)
+        teach_gps_timestamp = get_closest_timestamp(closest_teach_vertex_timestamp_rostime,t_teach_gps)
         print("teach_gps_timestamp: ",teach_gps_timestamp)
         teach_gps_x, teach_gps_y = teach_gps_dict[teach_gps_timestamp]
         print("teach_gps_x, teach_gps_y: ",teach_gps_x,teach_gps_y)
 
-        estimated_gps_distance = np.linalg.norm(np.array([repeat_gps_x,repeat_gps_y]) - np.array([teach_gps_x,teach_gps_y]))
+        estimated_gps_distance = np.array([repeat_gps_x,repeat_gps_y]) - np.array([teach_gps_x,teach_gps_y])
         print("estimated_gps_distance: ",estimated_gps_distance)
 
-        error = estimated_gps_distance - estimated_vtr_distance
+        error = np.linalg.norm(estimated_gps_distance - estimated_vtr_distance)
+
         if abs(error) >3:
            print("error exceed 3m at vertex cnt",vertex_cnt)
         print("loc error: ",error)
@@ -308,16 +321,16 @@ def main(dataset_dir, result_dir):
   print("localization_error_mean: ",np.mean(localization_error))
 
   if PLOT:
-    fs = 30
+    fs = 20
     plt.figure(0)
     plt.scatter(x_teach, y_teach, label="Teach")
     plt.scatter(x_repeat, y_repeat, label="Repeat")
     # plt.scatter(x_teach_gps, y_teach_gps, label="Teach GPS")
     # plt.scatter(x_repeat_gps, y_repeat_gps, label="Repeat GPS")
     plt.axis('equal')
-    plt.xlabel("x [m]")
-    plt.ylabel("y [m]")
-    plt.title("Teach and Repeat Path from PoseGraph")
+    plt.xlabel("X [m]")
+    plt.ylabel("Y [m]")
+    plt.title("Teach and repeat path from deterministic PoseGraph generated offline",fontsize=fs)
     plt.legend(fontsize=fs)
 
 
@@ -325,9 +338,11 @@ def main(dataset_dir, result_dir):
     # Creating plot
     plt.boxplot(localization_error,autorange=True)
     plt.axis('equal')
-    plt.title("Localization Error Boxplot",fontsize=fs)
-    plt.xticks(fontsize=fs)
-    plt.yticks(fontsize=fs)
+    plt.title("Repeat 2: Localization error boxplot (teach forward)",fontsize=fs+10)
+    plt.xticks([1],[f"Repeat forward error localization: mean {round(np.mean(localization_error),3)} m"], fontsize=fs)
+    plt.yticks(fontsize=fs-5)
+    plt.ylabel("Localization Error [m]",fontsize=fs+5)
+    plt.grid()
     # show plot
     plt.show()
   
@@ -335,10 +350,6 @@ def main(dataset_dir, result_dir):
 
   return True
   
-
-
-
-
 
 
 

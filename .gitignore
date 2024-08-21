@@ -40,5 +40,11 @@ install/*
 
 # # CMake files
 # CMakeFiles
-
 bash_scripts/radar/*
+
+# any log file
+*.log
+*.make
+
+test/build/
+test/install/
