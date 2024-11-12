@@ -48,3 +48,5 @@ bash_scripts/radar/*
 
 test/build/
 test/install/
+
+*.npz

@@ -1,3 +1,30 @@
+Metadata-Version: 2.1
+Name: vtr3-pyposegraph
+Version: 1.0.0
+Summary: Functionality for loading pose graphs for ASRL's vtr3
+Home-page: https://github.com/utiasASRL
+Author: Alec Krawciw
+Author-email: alec.krawciw@mail.utoronto.ca
+License: UNKNOWN
+Project-URL: Bug Reports, https://github.com/utiasASRL/vtr3_pyposegraph
+Keywords: sample,setuptools,development
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3 :: Only
+Requires-Python: >=3.7, <4
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+Provides-Extra: test
+License-File: LICENSE
+
 # VT&R3 Pose Graph Tools for Python
 
 Read from the graph folder to load pose graphs including transformations and data associated with all the vertices.
@@ -23,3 +50,4 @@ To run the samples, after installing
 source $VTRSRC/main/install/setup.bash #For ROS2 and VTR message types
 python3 samples/plot_repeat_path.py -g /path/to/graph
 ```
+
