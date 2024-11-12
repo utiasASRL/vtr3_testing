@@ -50,3 +50,5 @@ test/build/
 test/install/
 
 *.npz
+*.pyc
+*.avi
