@@ -92,10 +92,10 @@ def get_radar_scan_images_and_timestamps(path):
 
             # print("polar image",polar_img.shape)
             print("encoder_values",msg.encoder_values)
-            azimuths = (msg.encoder_values/5595)*2*np.pi
+            azimuths = (msg.encoder_values/16000)*2*np.pi
             print(azimuths)
             # print("azimuths",azimuths.shape)
-            resolution = 0.175238 # change to your own resolution
+            resolution = 0.040308  # change to your own resolution
             cart_resolution = 0.2384
 
             # convert the radar image to cartesian
@@ -180,7 +180,7 @@ codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 video_writer = cv2.VideoWriter(output_video_path, codec, frame_rate, frame_size)
 
 # to fill rosbag path 
-radar_rosbag_path = "/home/samqiao/ASRL/vtr3_data/laval_data" # fill this in
+radar_rosbag_path = "../rosbags/20241112/gt1_teach2" # fill this in
 radar_times, radar_imgs = get_radar_scan_images_and_timestamps(radar_rosbag_path)
 
 radar_times = np.array(radar_times)

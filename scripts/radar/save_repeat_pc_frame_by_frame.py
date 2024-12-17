@@ -8,8 +8,13 @@ from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator
 import vtr_pose_graph.graph_utils as g_utils
 import vtr_regression_testing.path_comparison as vtr_path
 import argparse
-from radar.utils.helper import *
 
+import sys
+
+# Insert path at index 0 so it's searched first
+sys.path.insert(0, "scripts")
+
+from radar.utils.helper import *
 
 # point cloud vis
 from sensor_msgs_py.point_cloud2 import read_points
@@ -18,7 +23,8 @@ from pylgmath import Transformation
 from vtr_utils.plot_utils import convert_points_to_frame, extract_map_from_vertex, downsample, extract_points_from_vertex, range_crop
 import time
 
-SAVE = False
+import yaml
+
 
 print("Current working dir", os.getcwd())
 
@@ -29,36 +35,64 @@ frame_size = (512, 512)  # Frame size (width, height) of the video
 codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 
 parent_folder = "/home/samqiao/ASRL/vtr3_testing"
-# input the paths
-# rosbag_path = "/home/samqiao/ASRL/vtr3_testing/rosbags/20241114/grassy/grassy_t4_k"
-# pose_graph_path = "/home/samqiao/ASRL/vtr3_testing/posegraph/20241114/k_strong1/graph"
 
-# outpath = os.path.join(parent_folder,"npzs/grassy_k_strongest_radar_bev.npz")
-# output_video_path = os.path.join(parent_folder,'result/grassy_tr.avi')  # Output video file
+def load_config(config_path='config.yaml'):
+    """
+    Load configuration from a YAML file.
 
-# winter modified cacfar
-rosbag_path = "/home/samqiao/ASRL/vtr3_testing/rosbags/20241114/grassy/grassy_t2"
-pose_graph_path = "/home/samqiao/ASRL/vtr3_testing/posegraph/20241114/grassy2/graph"
+    :param config_path: Path to the YAML configuration file.
+    :return: A dictionary representing the configuration.
+    """
+    with open(config_path, 'r', encoding='utf-8') as file:
+        config = yaml.safe_load(file)
+    return config
 
-outpath = os.path.join(parent_folder,"npzs/grassy_cacfar_winter_radar_bev.npz")
-output_video_path = os.path.join(parent_folder,'result/grassy_cacfar_winter_tr.avi')  # Output video file
+# print current working directory
+print("Current working dir", Path.cwd())
 
-# Create a VideoWriter object
-video_writer = cv2.VideoWriter(output_video_path, codec, frame_rate, frame_size)
+config = load_config(os.path.join(parent_folder,'scripts/radar/config.yaml'))
 
+# Access database configuration
+db = config['radar_data']
+db_rosbag_path = db.get('grassy_rosbag_path')
+
+teach_rosbag_path = db_rosbag_path.get('teach')
+repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
+
+# for pose graph
+pose_graph_path = db.get('pose_graph_path').get('grassy')
+print("pose graph path:",pose_graph_path)
+
+db_bool = config['bool']
+SAVE = db_bool.get('SAVE')
+print("SAVE:",SAVE)
+PLOT = db_bool.get('PLOT')
+
+result_folder = config.get('output')
+
+# change here
+out_path_folder = os.path.join(result_folder,"ICRA_grassy_repeat2/")
+if not os.path.exists(out_path_folder):
+    os.makedirs(out_path_folder)
+    print(f"Folder '{out_path_folder}' created.")
+else:
+    print(f"Folder '{out_path_folder}' already exists.")    
+
+outpath = os.path.join(out_path_folder,"grassy_teach_radar_association.npz")
 
 if SAVE:
-    radar_times, radar_imgs = get_radar_scan_images_and_timestamps(rosbag_path)
-   
+    # print("I am in the if clause")
+    radar_times, radar_imgs = get_radar_scan_images_and_timestamps(teach_rosbag_path)
     np.savez_compressed(outpath,radar_imgs = radar_imgs, radar_times = radar_times)
-
 else:
+    # print("I am in the else clause",SAVE)
     data = np.load(outpath,allow_pickle=True)
     radar_imgs = data['radar_imgs']
     radar_times = data['radar_times']
 
-    print(radar_imgs.shape)
-    print(radar_times.shape)
+    print("radar_imgs shape:", radar_imgs.shape)
+    print("radar_times shape:", radar_times.shape)
+
     print("first radar time:",radar_times[0])
     print("last radar time:",radar_times[-1])
     radar_duration = radar_times[-1] - radar_times[0]
@@ -82,13 +116,13 @@ else:
 # cv2.imshow("First Radar Image", first_radar_img)
 
 
-
 factory = Rosbag2GraphFactory(pose_graph_path)
 
 test_graph = factory.buildGraph()
 print(f"Graph {test_graph} has {test_graph.number_of_vertices} vertices and {test_graph.number_of_edges} edges")
 
 g_utils.set_world_frame(test_graph, test_graph.root)
+
 
 # I will use the repeat path for now
 v_start = test_graph.get_vertex((1, 0))
@@ -194,18 +228,24 @@ for vertex, e in TemporalIterator(v_start):
 
     # how many frames in sec
     time_elapsed = pc_timestamp - previous_time    
-    print("time elapsed: ", time_elapsed)
+    print("time elapsed between last vertex to current one: ", time_elapsed)
 
-    if time_elapsed == 0:
-        n_frames = 1
-    else:
-        n_frames = int(time_elapsed * frame_rate)
+    frame_name = str(repeat_vertex_time) + ".png"
+    out_frame_name = os.path.join(out_path_folder,"frames/",frame_name)
+    print("writing frame to this location:", out_frame_name)
+    cv2.imwrite(out_frame_name, radar_img)
 
-    # n_frames = 1
-    print("I need to write ", n_frames, "frames")
-    for i in range(n_frames):
-        video_writer.write(radar_img)
-        frame += 1
+    
+    # if time_elapsed == 0:
+    #     n_frames = 1
+    # else:
+    #     n_frames = int(time_elapsed * frame_rate)
+
+    # # n_frames = 1
+    # print("I need to write ", n_frames, "frames")
+    # for i in range(n_frames):
+    #     video_writer.write(radar_img)
+    #     frame += 1
 
     previous_time = pc_timestamp
 
@@ -213,12 +253,6 @@ for vertex, e in TemporalIterator(v_start):
 
 
 
-
-# Release the VideoWriter objec
-video_writer.release()
-
-
-# cv2.imwrite('output_image_with_point.jpg', radar_img)
 
 
 

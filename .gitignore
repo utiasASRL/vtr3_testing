@@ -56,3 +56,6 @@ test/install/
 data/*
 result/*
 posegraph/*
+rosbags/*
+
+*.db3

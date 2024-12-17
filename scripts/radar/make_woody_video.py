@@ -8,7 +8,7 @@ from vtr_pose_graph.graph_iterators import TemporalIterator, PriviledgedIterator
 import vtr_pose_graph.graph_utils as g_utils
 import vtr_regression_testing.path_comparison as vtr_path
 import argparse
-from scripts.radar.helper import *
+from scripts.radar.utils.helper import *
 
 
 # point cloud vis
