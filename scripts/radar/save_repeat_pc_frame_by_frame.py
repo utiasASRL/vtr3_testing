@@ -57,7 +57,10 @@ db = config['radar_data']
 db_rosbag_path = db.get('grassy_rosbag_path')
 
 teach_rosbag_path = db_rosbag_path.get('teach')
-repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
+
+global repeat
+repeat = 1
+repeat_rosbag_path = db_rosbag_path.get(f'repeat{repeat}') # dont think this is needed
 
 # for pose graph
 pose_graph_path = db.get('pose_graph_path').get('grassy')
@@ -71,14 +74,14 @@ PLOT = db_bool.get('PLOT')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,"ICRA_grassy_repeat2/")
+out_path_folder = os.path.join(result_folder,f"ICRA_grassy_repeat{repeat}/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
 else:
     print(f"Folder '{out_path_folder}' already exists.")    
 
-outpath = os.path.join(out_path_folder,"grassy_teach_radar_association.npz")
+outpath = os.path.join(out_path_folder,f"grassy_teach_radar_association_repeat{repeat}.npz")
 
 if SAVE:
     # print("I am in the if clause")
@@ -125,7 +128,7 @@ g_utils.set_world_frame(test_graph, test_graph.root)
 
 
 # I will use the repeat path for now
-v_start = test_graph.get_vertex((1, 0))
+v_start = test_graph.get_vertex((repeat, 0))
 
 path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
 
@@ -231,7 +234,12 @@ for vertex, e in TemporalIterator(v_start):
     print("time elapsed between last vertex to current one: ", time_elapsed)
 
     frame_name = str(repeat_vertex_time) + ".png"
-    out_frame_name = os.path.join(out_path_folder,"frames/",frame_name)
+
+    frame_path = os.path.join(out_path_folder,"frames/")
+    if not os.path.exists(frame_path):
+        os.makedirs(frame_path)
+        print(f"Folder '{frame_path}' created.")
+    out_frame_name = os.path.join(frame_path,frame_name)
     print("writing frame to this location:", out_frame_name)
     cv2.imwrite(out_frame_name, radar_img)
 

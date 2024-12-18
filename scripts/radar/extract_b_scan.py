@@ -18,26 +18,25 @@ from pylgmath import Transformation
 from vtr_utils.plot_utils import convert_points_to_frame, extract_map_from_vertex, downsample, extract_points_from_vertex, range_crop
 import time
 
-# NOT finished 
 
 # print the current working directory
-print("Current working dir", os.getcwd())
+# print("Current working dir", os.getcwd())
 
-pose_graph_path = "../../posegraph/20241114/k_strong1/graph"
-
-
-factory = Rosbag2GraphFactory(pose_graph_path)
+# pose_graph_path = "../../posegraph/20241114/k_strong1/graph"
 
 
-test_graph = factory.buildGraph()
-print(f"Graph {test_graph} has {test_graph.number_of_vertices} vertices and {test_graph.number_of_edges} edges")
+# factory = Rosbag2GraphFactory(pose_graph_path)
 
-g_utils.set_world_frame(test_graph, test_graph.root)
 
-# I will use the repeat path for now
-v_start = test_graph.get_vertex((0, 0))
+# test_graph = factory.buildGraph()
+# print(f"Graph {test_graph} has {test_graph.number_of_vertices} vertices and {test_graph.number_of_edges} edges")
 
-frame = 0
+# g_utils.set_world_frame(test_graph, test_graph.root)
 
-for vertex, e in TemporalIterator(v_start):
-    pass
+# # I will use the repeat path for now
+# v_start = test_graph.get_vertex((0, 0))
+
+# frame = 0
+
+# for vertex, e in TemporalIterator(v_start):
+#     pass

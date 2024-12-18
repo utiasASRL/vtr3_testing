@@ -40,7 +40,7 @@ db = config['radar_data']
 db_rosbag_path = db.get('grassy_rosbag_path')
 
 teach_rosbag_path = db_rosbag_path.get('teach')
-repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
+# repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
 
 # for pose graph
 pose_graph_path = db.get('pose_graph_path').get('grassy')
@@ -52,6 +52,170 @@ print("SAVE:",SAVE)
 PLOT = db_bool.get('PLOT')
 
 result_folder = config.get('output')
+repeat = 1
+# loop through every element in the result folder
+for subfolder in sorted(os.listdir(result_folder)):
+    subfolder_path = os.path.join(result_folder, subfolder)  # Get the full path
+    print(f"Subfolder: {subfolder}")
+    print("Processing repeat: ",repeat)
+    for item in sorted(os.listdir(subfolder_path)):
+        item_path = os.path.join(subfolder_path, item)
+        print(f"Item: {item}")
+        # if an item is what I want I want to load it
+        if item == f"grassy_repeat_2.npz":
+            print(f"Item: {item}")
+            data = np.load(item_path,allow_pickle=True)
+            t_repeat=data["t_repeat"]
+            ptr_repeat=data["ptr_repeat"]
+            
+            # reset t_repeat to start from 0
+            # t_repeat = t_repeat - t_repeat[0]
+            # now I want to plot the data
+            plt.scatter(t_repeat,ptr_repeat,label=f"repeat {repeat}",s=2)
+            
+            print("t_repeat shape:", t_repeat.shape)
+            print("ptr_repeat shape:", ptr_repeat.shape)
+
+            break
+    repeat+=1
+
+
+fontsize = 12
+
+# now we can analyze the data 
+print("t_repeat shape:",t_repeat.shape)
+print("ptr_repeat shape:",ptr_repeat.shape)
+
+regions_where_ptr_larger_than_20 = np.where(ptr_repeat>0.2)
+# print("regions_where_ptr_larger_than_20:",regions_where_ptr_larger_than_20)
+
+def find_continuous_regions(indices):
+    """
+    Finds continuous regions of indices in a given numpy array.
+
+    Parameters:
+        indices (numpy.ndarray): 1D numpy array of indices.
+
+    Returns:
+        List of tuples: Each tuple contains the start and end of a continuous region.
+    """
+    # Ensure the input is a numpy array
+    indices = np.sort(np.array(indices))  # Ensure indices are sorted
+    regions = []
+
+    # Initialize start and previous index
+    start = indices[0]
+    prev = indices[0]
+
+    for i in range(1, len(indices)):
+        if indices[i] != prev + 1:  # Non-continuous point
+            regions.append((start, prev))  # End the previous region
+            start = indices[i]  # Start a new region
+        prev = indices[i]
+
+    # Append the final region
+    regions.append((start, prev))
+    return regions
+
+regions = find_continuous_regions(regions_where_ptr_larger_than_20[0])
+print("There are ",len(regions),"regions where the path tracking error is larger than 0.2")
+print("regions:",regions)
+
+paired = list(zip(t_repeat, ptr_repeat))
+
+# now I need access to folder where the frames are stored
+radar_folder = os.path.join(parent_folder,result_folder,"ICRA_grassy_repeat2/frames")
+print("radar_folder:",radar_folder)
+
+import re
+
+timestamps_list_images = []
+for filename in os.listdir(radar_folder):
+    if filename.endswith(".png"):
+        match = re.search(r"(\d+\.\d+)", filename)
+        if match:
+            timestamps_list_images.append(float(match.group(1)))
+            # timestamps_list_images.append((filename))
+
+timestamps_list_images = sorted(timestamps_list_images)
+# print("timestamps_list_images:",timestamps_list_images)
+
+regions_folder = os.path.join(parent_folder,result_folder,"ICRA_grassy_repeat2/regions")
+if(not os.path.exists(regions_folder)):
+    os.makedirs(regions_folder)
+    print(f"Folder '{regions_folder}' created.")
+
+# now I want to find the corresponding timestamps for the regions
+for region_of_interest in regions:
+    print("region:",region_of_interest)
+    region_number = regions.index(region_of_interest)
+    subregion_folder= os.path.join(regions_folder,f"region_{region_number}")
+    if(not os.path.exists(subregion_folder)):
+        os.makedirs(subregion_folder)
+        print(f"Folder '{subregion_folder}' created.")
+
+    start_idx = region_of_interest[0]
+    end_idx = region_of_interest[1]
+
+    print("start_idx:",start_idx)
+    print("end_idx:",end_idx)
+
+    start_time = t_repeat[start_idx]
+    end_time = t_repeat[end_idx]
+
+    print("start_time:",start_time)
+    print("end_time:",end_time)
+
+    # now I want to find the corresponding images using closest time stamp
+    start_closest_img_time = min(timestamps_list_images, key=lambda x:abs(x-start_time))
+    end_closest_img_time = min(timestamps_list_images, key=lambda x:abs(x-end_time))
+
+    print("start_closest_img_time:",start_closest_img_time)
+    print("end_closest_img_time:",end_closest_img_time)
+
+    # find the index of the closest image
+    start_img_idx = timestamps_list_images.index(start_closest_img_time)
+    end_img_idx = timestamps_list_images.index(end_closest_img_time)
+
+    # I want to save everything from start_img_idx to end_img_idx into the region folder
+    for i in range(start_img_idx,end_img_idx+1):
+        img = cv2.imread(os.path.join(radar_folder,str(timestamps_list_images[i])+".png"))
+        cv2.imwrite(os.path.join(subregion_folder,str(timestamps_list_images[i])+".png"),img)
+
+    print(f"Region {regions.index(region_of_interest)}: start_img_idx:",start_img_idx)
+    print(f"Region: {regions.index(region_of_interest)}: end_img_idx:",end_img_idx)
+
+    # get the images
+    start_img = cv2.imread(os.path.join(radar_folder,str(start_closest_img_time)+".png"))
+    end_img = cv2.imread(os.path.join(radar_folder,str(end_closest_img_time)+".png"))
+
+    # region_imgs_names = 
+
+    # start_img = cv2.imread(os.path.join(radar_folder,str(start_time)+".png"))
+    # end_img = cv2.imread(os.path.join(radar_folder,str(end_time)+".png"))
+
+    # now I want to plot the images
+    # fig, axs = plt.subplots(1,2)
+    # axs[0].imshow(start_img)
+    # axs[0].set_title(f"Start img time: {start_closest_img_time }")
+    # axs[1].imshow(end_img)
+    # axs[1].set_title(f"End img time: {end_closest_img_time}")
+    # plt.show()
+
+
+    break
+
+if PLOT:
+    plt.xlabel("Time (s)",fontsize=fontsize+5)
+    plt.ylabel("Path tracking error (m)",fontsize=fontsize+5)
+    plt.title(f"Path tracking error over time for grassy repeat",fontsize=fontsize+10)
+    plt.legend(fontsize=fontsize)
+    # plt.tight_layout()
+    plt.grid()
+    plt.show()
+
+
+
 
 
 

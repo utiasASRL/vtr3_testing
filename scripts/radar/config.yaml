@@ -22,8 +22,30 @@ radar_data:
   pose_graph_path: 
     grassy: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/radar/0913_grassy1/graph"
 
+lidar_data:
+# Database connection string
+  grassy_rosbag_path: 
+    teach: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/grassy_t2"
+    repeat1: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r1"
+    repeat2: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r2"
+    repeat3: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r3"
+    repeat4: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r4"
+    repeat5: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r5"
+    repeat6: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r6"
+    repeat7: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r7"
+    repeat8: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r8"
+    repeat9: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r9"
+    repeat10: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r10"
+    repeat11: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r11"
+    repeat12: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r12"
+    repeat13: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r13"
+    repeat14: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r14"
+    repeat15: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r15"
+  pose_graph_path: 
+    grassy: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/lidar/0913_grassy1/graph"
+
 bool:
   SAVE: True
   PLOT: True
 
-output: "/home/samqiao/ASRL/vtr3_testing/result/"
+output: "/home/samqiao/ASRL/vtr3_testing/result/radar/"
