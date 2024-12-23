@@ -71,13 +71,15 @@ for subfolder in sorted(os.listdir(result_folder)):
             # reset t_repeat to start from 0
             # t_repeat = t_repeat - t_repeat[0]
             # now I want to plot the data
-            plt.scatter(t_repeat,ptr_repeat,label=f"repeat {repeat}",s=2)
+            plt.plot(t_repeat,ptr_repeat,label=f"repeat {repeat}",linewidth=1)
             
             print("t_repeat shape:", t_repeat.shape)
             print("ptr_repeat shape:", ptr_repeat.shape)
 
-            break
+            # break
     repeat+=1
+    if repeat == 6:
+        break
 
 
 fontsize = 12
@@ -203,7 +205,6 @@ for region_of_interest in regions:
     # plt.show()
 
 
-    break
 
 if PLOT:
     plt.xlabel("Time (s)",fontsize=fontsize+5)

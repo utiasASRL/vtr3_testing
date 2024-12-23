@@ -59,3 +59,5 @@ posegraph/*
 rosbags/*
 
 *.db3
+
+.vscode/*
