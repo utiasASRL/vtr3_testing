@@ -12,7 +12,10 @@ import cv2
 import cv_bridge
 
 import matplotlib.pyplot as plt
-from utils.path_comparison import*
+import sys
+# Insert path at index 0 so it's searched first
+sys.path.insert(0, "scripts")
+from radar.utils.path_comparison import*
 
 # I will need to register the custom navtech message type
 # define messages
@@ -188,8 +191,11 @@ def get_radar_scan_images_and_timestamps(path):
     scan_type = RadarBScanMsg.__msgtype__
 
     # intialize the arrays
-    radar_times = []
-    radar_images = []
+    radar_timestamps = []
+    polar_images = []
+    cart_images = []
+    azimuth_angles = []
+    azimuth_timestamps_total = []
     lookup_tb = dict()
     print("Processing: Getting image_timestamp and radar image")
     with AnyReader([Path(path)]) as reader:
@@ -201,13 +207,22 @@ def get_radar_scan_images_and_timestamps(path):
             radar_time_nano_sec = msg.b_scan_img.header.stamp.nanosec
             radar_time = radar_time_sec + radar_time_nano_sec/1e9
             # round to 4 significant digits 
-            radar_time = round(radar_time,3)
-            radar_times.append(radar_time)
+            # radar_time = round(radar_time,3)
+            # this is the radar msg time to be used as file name
+            radar_timestamps.append(radar_time)
+
+            encoder_values = msg.encoder_values
+            azimuth_angles.append(encoder_values)
+
+            azimuth_timestamps = msg.timestamps
+            azimuth_timestamps_total.append(azimuth_timestamps)
 
             # now store the image
             bridge = cv_bridge.CvBridge()
             polar_img = bridge.imgmsg_to_cv2(msg.b_scan_img)
             fft_data = msg.b_scan_img.data.reshape((msg.b_scan_img.height, msg.b_scan_img.width))
+
+            polar_images.append(polar_img)
 
             # print("fft_data",fft_data.shape)
             # plt.imshow(polar_img,cmap='gray', vmin=0, vmax=255)
@@ -220,12 +235,12 @@ def get_radar_scan_images_and_timestamps(path):
             cart_resolution = 0.2384
 
             # convert the radar image to cartesian
-            radar_image = radar_polar_to_cartesian(polar_img,azimuths, resolution, cart_resolution, 512)
+            cart_image = radar_polar_to_cartesian(polar_img,azimuths, resolution, cart_resolution, 512)
 
-            radar_images.append(radar_image)
+            cart_images.append(cart_image)
 
 
-    return radar_times, radar_images
+    return polar_images,radar_timestamps, azimuth_angles, azimuth_timestamps_total, cart_images
 
 
 
@@ -402,6 +417,7 @@ def get_path_distance_from_gps(x_teach,y_teach):
     for i in range(len(x_teach)-1):
         dist += np.sqrt((x_teach[i+1]-x_teach[i])**2 + (y_teach[i+1]-y_teach[i])**2)
     return dist
+
 
 
 

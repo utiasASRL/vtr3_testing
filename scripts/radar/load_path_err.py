@@ -33,7 +33,7 @@ def load_config(config_path='config.yaml'):
 # print current working directory
 print("Current working dir", Path.cwd())
 
-config = load_config(os.path.join(parent_folder,'scripts/radar/config.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/config.yaml'))
 
 # Access database configuration
 db = config['radar_data']

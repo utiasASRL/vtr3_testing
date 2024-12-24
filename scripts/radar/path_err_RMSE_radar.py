@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # print current working directory
     print("Current working dir", Path.cwd())
 
-    config = load_config('scripts/radar/config.yaml')
+    config = load_config('scripts/config.yaml')
     # Access database configuration
     db = config['radar_data']
     db_rosbag_path = db.get('grassy_rosbag_path')

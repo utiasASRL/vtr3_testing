@@ -8,6 +8,7 @@ import vtr_pose_graph.graph_utils as g_utils
 import vtr_regression_testing.path_comparison as vtr_path
 import argparse
 
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
@@ -34,9 +35,13 @@ if __name__ == '__main__':
     t = []
 
     for v, e in PriviledgedIterator(v_start):
+
+        print(v.T_v_w.matrix())
         x.append(v.T_v_w.r_ba_ina()[0])
         y.append(v.T_v_w.r_ba_ina()[1])
         t.append(v.stamp / 1e9)
+
+        break
 
     plt.figure(0)
     plt.plot(x, y, label="Teach", linewidth=5)
