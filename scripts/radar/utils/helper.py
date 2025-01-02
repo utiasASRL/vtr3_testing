@@ -119,27 +119,32 @@ def get_xyt_gps(path):
             longtitude = msg.longitude
 
             latitude = msg.latitude
-
-            # x,y,z = get_cartesian(lat=latitude,lon=longtitude)
-            x,y = utm.from_latlon(latitude, longtitude)[:2]
-
-            if cnt == 0:
-                x_offset = x
-                y_offset = y
-                t_offset = timestamp
             
-            x_total.append(x)
-            y_total.append(y)
+            status = msg.status.status
+            if status == 2:
+                if (latitude >=-80 and latitude <= 84):
+                    # x,y,z = get_cartesian(lat=latitude,lon=longtitude)
+                    x,y = utm.from_latlon(latitude, longtitude)[:2]
+
+                    if cnt == 0:
+                        x_offset = x
+                        y_offset = y
+                        t_offset = timestamp
+                    
+                    x_total.append(x)
+                    y_total.append(y)
 
 
-            # get the ros time
-            gps_time_sec = msg.header.stamp.sec
-            gps_time_nano_sec = msg.header.stamp.nanosec
-            gps_time = gps_time_sec + gps_time_nano_sec/1e9
-            t.append(gps_time)
+                    # get the ros time
+                    gps_time_sec = msg.header.stamp.sec
+                    gps_time_nano_sec = msg.header.stamp.nanosec
+                    gps_time = gps_time_sec + gps_time_nano_sec/1e9
+                    t.append(gps_time)
 
-            # z_total.append(z)
-            cnt += 1
+                    # z_total.append(z)
+                    cnt += 1
+            else:
+                print("No GPS fix")
     return np.array(x_total),np.array(y_total),np.array(t)
 
 

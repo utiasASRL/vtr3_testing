@@ -13,6 +13,7 @@ from utils.helper import *
 
 import yaml
 import os
+import re 
 
 import sys
 
@@ -53,8 +54,15 @@ PLOT = db_bool.get('PLOT')
 
 result_folder = config.get('output')
 repeat = 1
+
+print("list dir:",os.listdir(result_folder))
+sorted_result_folder = sorted(os.listdir(result_folder),key=lambda x: int(re.search(r'repeat(\d+)', x).group(1)) if re.search(r'repeat(\d+)', x) else float('inf'))
+
+print("sorted_result_folder:",sorted_result_folder)
+
+
 # loop through every element in the result folder
-for subfolder in sorted(os.listdir(result_folder)):
+for subfolder in sorted_result_folder:
     subfolder_path = os.path.join(result_folder, subfolder)  # Get the full path
     print(f"Subfolder: {subfolder}")
     print("Processing repeat: ",repeat)
@@ -62,7 +70,7 @@ for subfolder in sorted(os.listdir(result_folder)):
         item_path = os.path.join(subfolder_path, item)
         print(f"Item: {item}")
         # if an item is what I want I want to load it
-        if item == f"grassy_repeat_2.npz":
+        if item == f"grassy_repeat_{repeat}.npz":
             print(f"Item: {item}")
             data = np.load(item_path,allow_pickle=True)
             t_repeat=data["t_repeat"]
@@ -71,19 +79,48 @@ for subfolder in sorted(os.listdir(result_folder)):
             # reset t_repeat to start from 0
             # t_repeat = t_repeat - t_repeat[0]
             # now I want to plot the data
-            plt.plot(t_repeat,ptr_repeat,label=f"repeat {repeat}",linewidth=1)
+            if PLOT:
+                plt.plot(t_repeat,ptr_repeat,label=f"path-tracking err repeat {repeat}",linewidth=0.5,alpha=0.8)
             
             print("t_repeat shape:", t_repeat.shape)
             print("ptr_repeat shape:", ptr_repeat.shape)
 
             # break
     repeat+=1
-    if repeat == 6:
-        break
+    # if repeat == 6:
+    #     break
 
 
 fontsize = 12
 
+localization_err_folder = os.path.join(result_folder, "ICRA_grassy_localization")
+sorted_localization_err_folder = sorted(os.listdir(localization_err_folder),key=lambda x: int(re.search(r'localization_error_(\d+)', x).group(1)))
+print("sorted_localization_err_folder:",sorted_localization_err_folder)
+
+for loc_error_file in sorted_localization_err_folder:
+    repeat_idx = sorted_localization_err_folder.index(loc_error_file)+1
+    data = np.load(os.path.join(localization_err_folder,loc_error_file),allow_pickle=True)
+    t=data["t"]
+    # t = t - t[0] # reset t to start from 0
+    dist = data["dist"]
+
+    if PLOT:
+        plt.plot(t,dist,label=f"localization err repeat {repeat_idx}",linewidth=1,marker = '*',markersize=7)
+
+    # if repeat_idx == 5:
+    #     break
+
+
+if PLOT:
+    plt.xlabel("Time (s)",fontsize=fontsize+5)
+    plt.ylabel("Path tracking error (m)",fontsize=fontsize+5)
+    plt.title(f"Path tracking and local error over time for grassy repeat",fontsize=fontsize+10)
+    plt.legend(fontsize=fontsize)
+    # plt.tight_layout()
+    plt.grid()
+    plt.show()
+
+# the below uses the region metric
 # now we can analyze the data 
 print("t_repeat shape:",t_repeat.shape)
 print("ptr_repeat shape:",ptr_repeat.shape)
@@ -128,8 +165,6 @@ paired = list(zip(t_repeat, ptr_repeat))
 # now I need access to folder where the frames are stored
 radar_folder = os.path.join(parent_folder,result_folder,"ICRA_grassy_repeat2/frames")
 print("radar_folder:",radar_folder)
-
-import re
 
 timestamps_list_images = []
 for filename in os.listdir(radar_folder):
@@ -203,18 +238,6 @@ for region_of_interest in regions:
     # axs[1].imshow(end_img)
     # axs[1].set_title(f"End img time: {end_closest_img_time}")
     # plt.show()
-
-
-
-if PLOT:
-    plt.xlabel("Time (s)",fontsize=fontsize+5)
-    plt.ylabel("Path tracking error (m)",fontsize=fontsize+5)
-    plt.title(f"Path tracking error over time for grassy repeat",fontsize=fontsize+10)
-    plt.legend(fontsize=fontsize)
-    # plt.tight_layout()
-    plt.grid()
-    plt.show()
-
 
 
 

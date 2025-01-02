@@ -55,7 +55,7 @@ def modifiedCACFAR(
     raw_scan: np.ndarray,
     minr=2.0,
     maxr=80.0,
-    res=0.04381,
+    res=0.040308,
     width=137,
     guard=7,
     threshold=0.50,
@@ -104,6 +104,45 @@ def modifiedCACFAR(
                 targets_polar_pixels.append((i, r))
                 peak_points = []
                 peak_point_intensities = []
+    return np.asarray(targets_polar_pixels)
+
+import heapq
+
+def KStrong(
+    raw_scan: np.ndarray,
+    minr=2.0,
+    maxr=80.0,
+    res=0.040308,
+    K=4,
+    static_threshold=0.23):
+    rows = raw_scan.shape[0]
+    cols = raw_scan.shape[1]
+    mincol = int(minr / res)
+    if mincol > cols or mincol < 0: mincol = 0
+    maxcol = int(maxr / res)
+    if maxcol > cols or maxcol < 0: maxcol = cols
+    
+    targets_polar_pixels = []
+
+    for i in range(rows):
+
+        temp_intensities = raw_scan[i]
+        max_pairs = []
+
+        for j in range(mincol, maxcol):
+            if temp_intensities[j] > static_threshold:
+                max_pairs.append((temp_intensities[j], j))
+
+        sorted_pairs = sorted(max_pairs, key=lambda x: x[0], reverse=True)
+
+        for k in range(K):
+            if k < len(sorted_pairs):
+                value, j = sorted_pairs[k]
+                assert(value==raw_scan[i, j])
+                targets_polar_pixels.append((i, j))
+            else:
+                break
+
     return np.asarray(targets_polar_pixels)
 
 def polar_to_cartesian_points(azimuths: np.ndarray, polar_points: np.ndarray, radar_resolution: float,

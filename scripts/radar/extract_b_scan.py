@@ -46,13 +46,14 @@ if __name__ == '__main__':
 
     # Access database configuration
     db = config['radar_data']
-    db_rosbag_path = db.get('grassy_rosbag_path')
+    db_loop = db.get('woody')
+    db_rosbag_path = db_loop.get('rosbag_path')
 
     teach_rosbag_path = db_rosbag_path.get('teach')
     # repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
 
     # for pose graph
-    pose_graph_path = db.get('pose_graph_path').get('grassy')
+    pose_graph_path = db_loop.get('pose_graph_path').get('woody')
     print("pose graph path:",pose_graph_path)
 
     db_bool = config['bool']
@@ -62,13 +63,14 @@ if __name__ == '__main__':
 
     result_folder = config.get('output')
 
-    save_folder = os.path.join(result_folder, "ICRA_grassy_teach")
+    save_folder = os.path.join(result_folder, "ICRA_woody_teach")
+
 
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
         print(f"Folder '{save_folder}' created.")
 
-    outpath = os.path.join(save_folder,f"grassy_teach_radar_association_teach.npz")
+    outpath = os.path.join(save_folder,f"parking_teach_radar_association_teach.npz")
 
     SAVE = True
 

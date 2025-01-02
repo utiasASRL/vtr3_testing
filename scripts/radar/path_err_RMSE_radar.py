@@ -47,7 +47,7 @@ if __name__ == '__main__':
     result_folder = config.get('output')
 
     # change here
-    repeat = 10
+    repeat = 15
 
     # change here
     out_path_folder = os.path.join(result_folder,f"ICRA_grassy_repeat{repeat}/")

@@ -89,12 +89,15 @@ if __name__ == '__main__':
         rmse = np.sqrt(np.mean(np.array(dist)**2))
         print(rmse, rmse_int)
 
-        plt.plot(t, dist, label=f"RMSE: {rmse:.3f}m for Repeat {i+1}")
+        t_duplicate = np.array(t.copy())
+        t_duplicate = t_duplicate - t_duplicate[0]
+        plt.plot(t_duplicate, dist, label=f"RMSE: {rmse:.3f}m for Repeat {i+1}")
         plt.legend()
         plt.ylabel("Path Tracking Error (m)")
         plt.xlabel("Time (s)")
         plt.title("Path Tracking Error")
-
+        plt.grid()
+   
         plt.figure(3)
         x = np.array(x).squeeze()
         y = np.array(y).squeeze()
@@ -116,5 +119,10 @@ if __name__ == '__main__':
         plt.legend()
         plt.ylabel("Acceleration (m/s^2)")
         plt.xlabel("Time (s)")
+
+         # temporary save
+        out_path = os.path.join('./', f"repeat_localization_error_{i+1}.npz")
+        np.savez_compressed(out_path, x=x, y=y, t=t, dist=dist)
+
     plt.show()
 

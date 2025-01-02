@@ -2,25 +2,47 @@
 # Database configuration
 radar_data:
 # Database connection string
-  grassy_rosbag_path: 
-    teach: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/grassy_t2"
-    repeat1: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r1"
-    repeat2: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r2"
-    repeat3: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r3"
-    repeat4: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r4"
-    repeat5: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r5"
-    repeat6: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r6"
-    repeat7: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r7"
-    repeat8: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r8"
-    repeat9: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r9"
-    repeat10: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r10"
-    repeat11: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r11"
-    repeat12: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r12"
-    repeat13: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r13"
-    repeat14: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r14"
-    repeat15: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r15"
-  pose_graph_path: 
-    grassy: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/radar/0913_grassy1/graph"
+  grassy:
+    rosbag_path: 
+      teach: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/grassy_t2"
+      repeat1: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r1"
+      repeat2: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r2"
+      repeat3: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r3"
+      repeat4: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r4"
+      repeat5: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r5"
+      repeat6: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r6"
+      repeat7: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r7"
+      repeat8: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r8"
+      repeat9: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r9"
+      repeat10: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r10"
+      repeat11: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r11"
+      repeat12: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r12"
+      repeat13: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r13"
+      repeat14: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r14"
+      repeat15: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/radar/grassy_r15"
+    pose_graph_path: 
+      grassy: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/radar/0913_grassy1/graph"
+  mars:
+    rosbag_path:
+      teach: "/home/samqiao/ASRL/vtr3_data/routes/mars/0907/mars_t1"
+    pose_graph_path:
+      mars: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/radar/0907_mars1/graph"
+  parking:
+    rosbag_path:
+      teach: "/home/samqiao/ASRL/vtr3_data/routes/parking/0911/parking_t1"
+    pose_graph_path:
+      parking: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/radar/0911_parking1/graph"
+  woody:
+    rosbag_path:
+      teach: "/home/samqiao/ASRL/vtr3_data/routes/woody/0910/woody_t1"
+    pose_graph_path:
+      woody: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/radar/0910_woody1/graph"
+  nov14:
+    rosbag_path:
+      grassy_t4_k: "/home/samqiao/ASRL/vtr3_testing/rosbags/20241114/grassy/grassy_t4_k"
+      grassy_t4_k_r1f: "/home/samqiao/ASRL/vtr3_testing/rosbags/20241114/grassy/grassy_t4_k_r1f"
+
+
 
 lidar_data:
 # Database connection string
