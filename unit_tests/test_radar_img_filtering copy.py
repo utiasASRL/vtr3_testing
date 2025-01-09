@@ -99,7 +99,7 @@ if __name__ == '__main__':
     # Create a VideoWriter object
     video_writer = cv2.VideoWriter(out_video_path, codec, frame_rate, (frame_width, frame_height))
 
-    CAFAR = False
+    CAFAR = True
 
 
     for polar_img in fft_data:
