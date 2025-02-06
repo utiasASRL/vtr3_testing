@@ -42,6 +42,102 @@ radar_data:
     rosbag_path:
       grassy_t4_k: "/home/samqiao/ASRL/vtr3_testing/rosbags/20241114/grassy/grassy_t4_k"
       grassy_t4_k_r1f: "/home/samqiao/ASRL/vtr3_testing/rosbags/20241114/grassy/grassy_t4_k_r1f"
+  RSS_grassy:
+    rosbag_path:
+      grassy_t1: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t1"
+      grassy_t2: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t2"
+      grassy_t3: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t3"
+      grassy_t4: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t4"
+      grassy_t5: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t5"
+      grassy_t6: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t6"
+      grassy_t7: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t7"
+      grassy_t8: "/home/samqiao/ASRL/vtr3_data/rss_routes/250110/grassy_t8"
+    pose_graph_path:
+      grassy_t1: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t1/graph"
+      grassy_t2: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t2/graph"
+      grassy_t3: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t3/graph"
+      grassy_t4: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t4/graph"
+      grassy_t5: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t5/graph"
+      grassy_t6: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t6/graph"
+      grassy_t7: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t7/graph"
+      grassy_t8: "/home/samqiao/ASRL/vtr3/temp/rss/grassy_t8/graph"
+  RSS_mars:
+      rosbag_path: 
+        mars_t1: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/mars_t1"
+        mars_t2: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/mars_t2"
+        mars_t3: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/mars_t3"
+        mars_t4: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/mars_t4"
+      pose_graph_path:
+        mars_t1: "/home/samqiao/ASRL/vtr3/temp/rss/mars_t1/graph"
+        mars_t2: "/home/samqiao/ASRL/vtr3/temp/rss/mars_t2/graph"
+        mars_t2_offline: "/home/samqiao/ASRL/vtr3/temp/rss/mars_t2_offline/graph"
+        mars_t3: "/home/samqiao/ASRL/vtr3/temp/rss/mars_t3/graph"
+        mars_t4: "/home/samqiao/ASRL/vtr3/temp/rss/mars_t4/graph"
+        temp: "/home/samqiao/ASRL/vtr3/temp/test_radar20/graph"
+      offline_pose_graph_path:
+        mars_t1: "/home/samqiao/ASRL/vtr3/temp/rss_offline/mars/mars_t1/graph"
+        mars_t2: "/home/samqiao/ASRL/vtr3/temp/rss_offline/mars/mars_t2/graph"
+        mars_t3: "/home/samqiao/ASRL/vtr3/temp/rss_offline/mars/mars_t3/graph"
+        mars_t4: "/home/samqiao/ASRL/vtr3/temp/rss_offline/mars/mars_t4/graph"
+  RSS_parking:
+      rosbag_path:
+        parking_t1: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/parking_t1"
+        parking_t2: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/parking_t2"
+        parking_t3: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/parking_t3"
+        parking_t4: "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/parking_t4"
+      pose_graph_path:
+        parking_t1: "/home/samqiao/ASRL/vtr3/temp/rss/parking_t1/graph"
+        parking_t2: "/home/samqiao/ASRL/vtr3/temp/rss/parking_t2/graph"
+        parking_t3: "/home/samqiao/ASRL/vtr3/temp/rss/parking_t3/graph"
+        parking_t4: "/home/samqiao/ASRL/vtr3/temp/rss/parking_t4/graph"
+      offline_pose_graph_path:
+        parking_t1: "/home/samqiao/ASRL/vtr3/temp/rss_offline/parking/parking_t1/graph"
+        parking_t2: "/home/samqiao/ASRL/vtr3/temp/rss_offline/parking/parking_t2_6/graph"
+        parking_t3: "/home/samqiao/ASRL/vtr3/temp/rss_offline/parking/parking_t3/graph"
+        parking_t4: "/home/samqiao/ASRL/vtr3/temp/rss_offline/parking/parking_t4_2/graph"
+  RSS_woody:
+      rosbag_path:
+        woody_t1: "/home/samqiao/ASRL/vtr3_data/rss_routes/woody_t1"
+        woody_t2: "/home/samqiao/ASRL/vtr3_data/rss_routes/woody_t2"
+        woody_t3: "/home/samqiao/ASRL/vtr3_data/rss_routes/woody_t3"
+        woody_t4: "/home/samqiao/ASRL/vtr3_data/rss_routes/woody_t4"
+      pose_graph_path:
+        woody_t1: "/home/samqiao/ASRL/vtr3/temp/rss/woody_t1/graph"
+        woody_t2: "/home/samqiao/ASRL/vtr3/temp/rss/woody_t2/graph"
+        woody_t3: "/home/samqiao/ASRL/vtr3/temp/rss/woody_t3/graph"
+        woody_t4: "/home/samqiao/ASRL/vtr3/temp/rss/woody_t4/graph"
+      offline_pose_graph_path:
+        woody_t1: "/home/samqiao/ASRL/vtr3/temp/rss_offline/woody/woody_t1_2/graph"
+        woody_t2: "/home/samqiao/ASRL/vtr3/temp/rss_offline/woody/woody_t2_2/graph"
+        woody_t3: "/home/samqiao/ASRL/vtr3/temp/rss_offline/woody/woody_t3/graph"
+        woody_t4: "/home/samqiao/ASRL/vtr3/temp/rss_offline/woody/woody_t4/graph"
+  new_rss_parking:
+        rosbag_path:
+          parking_t3: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/parking/parking3"
+          parking_t5: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/parking/parking5"
+          parking_t6: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/parking/parking6"
+        pose_graph_path:
+          parking_t3: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_parking_3/graph"
+          parking_t5: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_parking_5/graph"
+  new_rss_grassy:
+        rosbag_path:
+          grassy_t2: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy2"
+          grassy_t3: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy3"
+          grassy_t4: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy4"
+          grassy_t5: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy5"
+          grassy_t6: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy6"
+        pose_graph_path:
+          grassy_t2: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_grassy_2/graph"
+          grassy_t3: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_grassy_3/graph"
+          grassy_t4: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_grassy_4/graph"
+          grassy_t5: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_grassy_5/graph"
+          grassy_t6: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_grassy_6/graph"
+  jan28:
+        rosbag_path:
+          parking_t1: "/home/samqiao/ASRL/vtr3_data/250128/parking_1"
+        pose_graph_path:
+          parking_t1: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan28_parking_1/graph"
+
 
 
 

@@ -77,15 +77,18 @@ if __name__ == '__main__':
 
     # Access database configuration
     db = config['radar_data']
-    db_loop = db.get('woody')
+    db_loop = db.get('new_rss_parking')
     db_rosbag_path = db_loop.get('rosbag_path')
 
-    teach_rosbag_path = db_rosbag_path.get('teach')
+    # teach_rosbag_path = db_rosbag_path.get('parking_t1')
     # repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
 
     # for pose graph
-    pose_graph_path = db_loop.get('pose_graph_path').get('woody')
+    trial = 't6'
+    
+    pose_graph_path = db_loop.get('pose_graph_path').get('parking_t6')
     print("pose graph path:",pose_graph_path)
+
 
     db_bool = config['bool']
     SAVE = db_bool.get('SAVE')
@@ -94,7 +97,7 @@ if __name__ == '__main__':
 
     result_folder = config.get('output')
 
-    save_folder = os.path.join(result_folder, "ICRA_woody_teach")
+    save_folder = os.path.join(result_folder, "temp_"+trial)
 
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
@@ -119,7 +122,7 @@ if __name__ == '__main__':
     y = []
     t = []
 
-    traj = np.empty((0, 4))
+    traj = np.empty((0, 5))
 
     for v, e in PriviledgedIterator(v_start):
         # seems like this is from world to vertex
@@ -130,6 +133,7 @@ if __name__ == '__main__':
         # print("The rotation matrix is: ", C_v_w)
         x_k = v.T_v_w.r_ba_ina()[0]
         y_k = v.T_v_w.r_ba_ina()[1]
+        z_k = v.T_v_w.r_ba_ina()[2]
         t_k = v.stamp / 1e9 
         roll,pitch,yaw = rotation_matrix_to_euler_angles(C_v_w)
 
@@ -139,24 +143,24 @@ if __name__ == '__main__':
         y.append(y_k[0])
         t.append(t_k)
 
-        to_append = np.array([t_k,x_k[0], y_k[0], yaw])
+        to_append = np.array([t_k,x_k[0], y_k[0], z_k[0],yaw])
 
         # print(to_append)
         traj = np.vstack((traj, to_append))
     
     print("for loop done the shape of traj is ",traj.shape)
 
-    # now we want to process the gt
-    x_gt,y_gt,t_gt = get_xyt_gps(teach_rosbag_path)
-    traj_gt = np.dstack((t_gt,x_gt,y_gt))[0]
+    # # now we want to process the gt
+    # x_gt,y_gt,t_gt = get_xyt_gps(teach_rosbag_path)
+    # traj_gt = np.dstack((t_gt,x_gt,y_gt))[0]
 
-    print("The shape of the ground truth is: ", traj_gt.shape)
+    # print("The shape of the ground truth is: ", traj_gt.shape)
     
     if PLOT:
         plt.figure(0)
         # print("The length of x is ", len(x))
-        # plt.plot(x, y, label="Teach", linewidth=5)
-        plt.plot(x_gt, y_gt, label="Ground Truth", linewidth=5)
+        plt.plot(x, y, label="Teach", linewidth=5)
+        # plt.plot(x_gt, y_gt, label="Ground Truth", linewidth=5)
         plt.axis('equal')
 
         plt.show()
@@ -168,7 +172,10 @@ if __name__ == '__main__':
             print(f"Folder '{traj_folder}' created.")
 
         np.savetxt(os.path.join(traj_folder, "teach_traj_estimated.txt"), traj, delimiter=",")
-        np.savetxt(os.path.join(traj_folder, "teach_traj_gt.txt"), traj_gt, delimiter=",")
+        # np.savetxt(os.path.join(traj_folder, "teach_traj_gt.txt"), traj_gt, delimiter=",")
         print("Teach trajectory saved.")
+
+        # we are gonna plot trajectory in 3d if saved
+        
 
     print("Done.")

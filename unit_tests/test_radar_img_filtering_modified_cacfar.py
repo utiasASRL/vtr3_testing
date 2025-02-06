@@ -137,9 +137,11 @@ if __name__ == '__main__':
         # print("cart_pts shape:",cart_pts.shape)
         else:
             print("I am using modified CACFAR and the polar image shape is:",polar_img.shape)
-            CACFAR_targets = modifiedCACFAR(polar_img)
+            CACFAR_targets = modifiedCACFAR_GPT(polar_img,0.040308,azimuth_times,azimuths)
 
             print("CACFAR_targets shape:",CACFAR_targets.shape)
+            print("CACFAR_targets:",CACFAR_targets)
+
             cart_pts = polar_to_cartesian_points(azimuths, CACFAR_targets,radar_resolution, downsample_rate=1)
 
             bev_pixels = convert_to_bev(cart_pts, 0.2384, 512)
@@ -156,94 +158,98 @@ if __name__ == '__main__':
 
         cart_img_combined = combine_cart_targets_on_cart_img(cart_img,bev_pixels,cart_targets)
 
-        ######################################## with filtering ########################################################
-        std = np.std(polar_img, axis=1)
-        mean = np.mean(polar_img, axis=1)
-        filtered_polar_img = (polar_img - mean[:, np.newaxis] - 2*std[:, np.newaxis]) * 2
-        filtered_polar_img = np.clip(filtered_polar_img, 0, np.inf)
 
-        # cv2.imshow("filtered_polar_img",filtered_polar_img)
-        # cv2.imshow("polar_img",polar_img)
+        cv2.imshow("cart_img_combined",cart_img_combined)
+        cv2.waitKey(0)
 
-        if not CAFAR:
+        # ######################################## with filtering ########################################################
+        # std = np.std(polar_img, axis=1)
+        # mean = np.mean(polar_img, axis=1)
+        # filtered_polar_img = (polar_img - mean[:, np.newaxis] - 2*std[:, np.newaxis]) * 2
+        # filtered_polar_img = np.clip(filtered_polar_img, 0, np.inf)
 
-            k_strong_targets_filtered = KStrong(filtered_polar_img)
+        # # cv2.imshow("filtered_polar_img",filtered_polar_img)
+        # # cv2.imshow("polar_img",polar_img)
 
-            polar_targets_filtered = targets_to_polar_image(k_strong_targets_filtered,filtered_polar_img.shape)
+        # if not CAFAR:
 
-            if np.array_equal(k_strong_targets_filtered,k_strong_targets):
-                print("index:",index)
-                print("Warning! The filtered features are the same as the original features")
-                warning_cnt+=1
+        #     k_strong_targets_filtered = KStrong(filtered_polar_img)
 
-            # cv2.imshow("polar_targets_filtered",polar_targets_filtered)
+        #     polar_targets_filtered = targets_to_polar_image(k_strong_targets_filtered,filtered_polar_img.shape)
 
-            cart_pts_filtered = polar_to_cartesian_points(azimuths, k_strong_targets_filtered,radar_resolution, downsample_rate=1)
+        #     if np.array_equal(k_strong_targets_filtered,k_strong_targets):
+        #         print("index:",index)
+        #         print("Warning! The filtered features are the same as the original features")
+        #         warning_cnt+=1
 
-            bev_pixels_filtered = convert_to_bev(cart_pts_filtered, 0.2384, 512)
+        #     # cv2.imshow("polar_targets_filtered",polar_targets_filtered)
 
-            print("bev_pixels_filtered shape:",bev_pixels_filtered.shape)
+        #     cart_pts_filtered = polar_to_cartesian_points(azimuths, k_strong_targets_filtered,radar_resolution, downsample_rate=1)
 
-            cart_targets_filtered = radar_polar_to_cartesian(polar_targets_filtered, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True) # shape 512 by 512
+        #     bev_pixels_filtered = convert_to_bev(cart_pts_filtered, 0.2384, 512)
+
+        #     print("bev_pixels_filtered shape:",bev_pixels_filtered.shape)
+
+        #     cart_targets_filtered = radar_polar_to_cartesian(polar_targets_filtered, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True) # shape 512 by 512
         
-            cart_img_filtered = radar_polar_to_cartesian(filtered_polar_img, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True)
-        else:
-            CACFAR_targets_filtered = modifiedCACFAR(filtered_polar_img)
+        #     cart_img_filtered = radar_polar_to_cartesian(filtered_polar_img, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True)
+        # else:
+        #     CACFAR_targets_filtered = modifiedCACFAR(filtered_polar_img)
 
-            polar_targets_filtered = targets_to_polar_image(CACFAR_targets_filtered,filtered_polar_img.shape)
+        #     polar_targets_filtered = targets_to_polar_image(CACFAR_targets_filtered,filtered_polar_img.shape)
 
-            if np.array_equal(CACFAR_targets_filtered,CACFAR_targets):
-                print("index:",index)
-                print("Warning! The filtered features are the same as the original features")
-                warning_cnt+=1
+        #     if np.array_equal(CACFAR_targets_filtered,CACFAR_targets):
+        #         print("index:",index)
+        #         print("Warning! The filtered features are the same as the original features")
+        #         warning_cnt+=1
             
-            # cv2.imshow("polar_targets_filtered",polar_targets_filtered)
+        #     # cv2.imshow("polar_targets_filtered",polar_targets_filtered)
 
-            cart_pts_filtered = polar_to_cartesian_points(azimuths, CACFAR_targets_filtered,radar_resolution, downsample_rate=1)
+        #     cart_pts_filtered = polar_to_cartesian_points(azimuths, CACFAR_targets_filtered,radar_resolution, downsample_rate=1)
 
-            bev_pixels_filtered = convert_to_bev(cart_pts_filtered, 0.2384, 512)
+        #     bev_pixels_filtered = convert_to_bev(cart_pts_filtered, 0.2384, 512)
 
-            print("bev_pixels_filtered shape:",bev_pixels_filtered.shape)
+        #     print("bev_pixels_filtered shape:",bev_pixels_filtered.shape)
 
-            cart_targets_filtered = radar_polar_to_cartesian(polar_targets_filtered, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True) # shape 512 by 512
+        #     cart_targets_filtered = radar_polar_to_cartesian(polar_targets_filtered, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True) # shape 512 by 512
 
-            cart_img_filtered = radar_polar_to_cartesian(filtered_polar_img, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True)
+        #     cart_img_filtered = radar_polar_to_cartesian(filtered_polar_img, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=512,interpolate_crossover=False, fix_wobble=True)
     
         
 
-            # print("The filtered image exceed 255", np.where(cart_img_filtered > 255))
-        # cv2.imshow("cart_img_filtered",cart_img_filtered)
-        # cv2.imshow("cart_img",cart_img)
-        # cv2.waitKey(0)
+        #     # print("The filtered image exceed 255", np.where(cart_img_filtered > 255))
+        # # cv2.imshow("cart_img_filtered",cart_img_filtered)
+        # # cv2.imshow("cart_img",cart_img)
+        # # cv2.waitKey(0)
 
-        # print("cart_img_filtered shape:",cart_img_filtered.shape)
-        # print("cart_img_filtered type:",cart_img_filtered.dtype)
+        # # print("cart_img_filtered shape:",cart_img_filtered.shape)
+        # # print("cart_img_filtered type:",cart_img_filtered.dtype)
 
-        cart_img_filtered = cart_img_filtered.astype(np.float32)
+        # cart_img_filtered = cart_img_filtered.astype(np.float32)
         
-        cart_img_combined_filtered = combine_cart_targets_on_cart_img(cart_img_filtered,bev_pixels_filtered,cart_targets_filtered)
+        # cart_img_combined_filtered = combine_cart_targets_on_cart_img(cart_img_filtered,bev_pixels_filtered,cart_targets_filtered)
 
-        frame_folder = os.path.join(out_path_folder,"frames")
+        # frame_folder = os.path.join(out_path_folder,"frames")
 
-        if not os.path.exists(frame_folder):
-            os.makedirs(frame_folder)
-            print(f"Folder '{frame_folder}' created.")
+        # if not os.path.exists(frame_folder):
+        #     os.makedirs(frame_folder)
+        #     print(f"Folder '{frame_folder}' created.")
 
-        frame_name = f"{scan_stamp}.png"
+        # frame_name = f"{scan_stamp}.png"
 
-        fig, axs = plt.subplots(1, 2, tight_layout=True)
-        # I want to print fig size
+        # fig, axs = plt.subplots(1, 2, tight_layout=True)
+        # # I want to print fig size
 
-        axs[0].imshow(cart_img_combined)
-        axs[0].set_title("Without Filtering")
-        axs[1].imshow(cart_img_combined_filtered)
-        axs[1].set_title("With Filtering")
+        # axs[0].imshow(cart_img_combined)
+        # axs[0].set_title("Without Filtering")
+        # axs[1].imshow(cart_img_combined_filtered)
+        # axs[1].set_title("With Filtering")
 
-        plt.savefig(os.path.join(frame_folder,frame_name))
+        # plt.savefig(os.path.join(frame_folder,frame_name))
 
-        frame = cv2.imread(os.path.join(frame_folder,frame_name))
+        # frame = cv2.imread(os.path.join(frame_folder,frame_name))
 
-        video_writer.write(frame)
+        # video_writer.write(frame)
 
         index+=1
 
@@ -255,7 +261,7 @@ if __name__ == '__main__':
     print("out of ",len(fft_data))
     print("Done!")
 
-    video_writer.release()
+    # video_writer.release()
 
 
 
