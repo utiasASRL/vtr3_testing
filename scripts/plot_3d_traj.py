@@ -63,6 +63,6 @@ def plot_3d_traj(file_path):
 
     # Add a color bar to show the progression over time
     plt.colorbar(scatter, label='Time Step', pad=0.1)
-
+    # plt.gca().set_aspect('equal', adjustable='box')
     plt.title('3D Trajectory Visualization')
     plt.show()

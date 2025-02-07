@@ -111,14 +111,6 @@ radar_data:
         woody_t2: "/home/samqiao/ASRL/vtr3/temp/rss_offline/woody/woody_t2_2/graph"
         woody_t3: "/home/samqiao/ASRL/vtr3/temp/rss_offline/woody/woody_t3/graph"
         woody_t4: "/home/samqiao/ASRL/vtr3/temp/rss_offline/woody/woody_t4/graph"
-  new_rss_parking:
-        rosbag_path:
-          parking_t3: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/parking/parking3"
-          parking_t5: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/parking/parking5"
-          parking_t6: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/parking/parking6"
-        pose_graph_path:
-          parking_t3: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_parking_3/graph"
-          parking_t5: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan29_parking_5/graph"
   new_rss_grassy:
         rosbag_path:
           grassy_t2: "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy2"
@@ -135,8 +127,11 @@ radar_data:
   jan28:
         rosbag_path:
           parking_t1: "/home/samqiao/ASRL/vtr3_data/250128/parking_1"
+          parking_t2: "/home/samqiao/ASRL/vtr3_data/250128/parking_2"
         pose_graph_path:
-          parking_t1: "/home/samqiao/ASRL/vtr3/temp/new_rss/jan28_parking_1/graph"
+          parking_t1_cacfar_new: "/home/samqiao/ASRL/vtr3/temp/test_radar_1/graph"
+          parking_t2_cacfar_icra: "/home/samqiao/ASRL/vtr3/temp/test_radar_2/graph"
+          parking_t3_kstrong_icra: "/home/samqiao/ASRL/vtr3/temp/test_radar_3/graph"
 
 
 

@@ -20,6 +20,8 @@ sys.path.insert(0, "scripts")
 
 from radar.utils.helper import get_xyt_gps
 
+from plot_3d_traj import plot_3d_traj # for plotting 3d trajectory upon completion
+
 parent_folder = "/home/samqiao/ASRL/vtr3_testing"
 
 def load_config(config_path='config.yaml'):
@@ -77,26 +79,25 @@ if __name__ == '__main__':
 
     # Access database configuration
     db = config['radar_data']
-    db_loop = db.get('new_rss_parking')
+    db_loop = db.get('jan28')
     db_rosbag_path = db_loop.get('rosbag_path')
 
     # teach_rosbag_path = db_rosbag_path.get('parking_t1')
     # repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
 
     # for pose graph
-    trial = 't6'
+    trial = 't1'
     
-    pose_graph_path = db_loop.get('pose_graph_path').get('parking_t6')
+    pose_graph_path = db_loop.get('pose_graph_path').get('parking_t3_kstrong_icra')
     print("pose graph path:",pose_graph_path)
 
-
+    # boolean values
     db_bool = config['bool']
     SAVE = db_bool.get('SAVE')
-    # print("SAVE:",SAVE)
     PLOT = db_bool.get('PLOT')
 
+    # save folders
     result_folder = config.get('output')
-
     save_folder = os.path.join(result_folder, "temp_"+trial)
 
     if not os.path.exists(save_folder):
@@ -145,7 +146,6 @@ if __name__ == '__main__':
 
         to_append = np.array([t_k,x_k[0], y_k[0], z_k[0],yaw])
 
-        # print(to_append)
         traj = np.vstack((traj, to_append))
     
     print("for loop done the shape of traj is ",traj.shape)
@@ -175,7 +175,8 @@ if __name__ == '__main__':
         # np.savetxt(os.path.join(traj_folder, "teach_traj_gt.txt"), traj_gt, delimiter=",")
         print("Teach trajectory saved.")
 
-        # we are gonna plot trajectory in 3d if saved
+        # plot 3d trajectory
+        plot_3d_traj(os.path.join(traj_folder, "teach_traj_estimated.txt"))
         
 
     print("Done.")
