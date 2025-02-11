@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # Access database configuration
     db = config['radar_data']
-    db_loop = db.get('jan28')
+    db_loop = db.get('temp')
     db_rosbag_path = db_loop.get('rosbag_path')
 
     # teach_rosbag_path = db_rosbag_path.get('parking_t1')
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # for pose graph
     trial = 't1'
     
-    pose_graph_path = db_loop.get('pose_graph_path').get('parking_t3_kstrong_icra')
+    pose_graph_path = db_loop.get('pose_graph_path').get('temp_new_parking_t1')
     print("pose graph path:",pose_graph_path)
 
     # boolean values

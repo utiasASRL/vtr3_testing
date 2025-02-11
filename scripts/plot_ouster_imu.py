@@ -47,7 +47,13 @@ def load_config(config_path='config.yaml'):
 
 rosbag_path = "/home/samqiao/ASRL/vtr3_data/routes/parking/0911/parking_t1" #ICRA data
 
-# rosbag_path = "/home/samqiao/ASRL/vtr3_data/250128/parking_1" #new parking data
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/250128/parking_1" #new parking data
+
+# rosbag_path = "/home/samqiao/ASRL/vtr3_data/250128/parking_2" #new parking data
+
+# # lets try a grassy loop and see what is going on
+# rosbag_path = "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy2" # new grassy data
+
 
 cnt = 0
 rclpy.init()
@@ -92,10 +98,10 @@ while reader.has_next():
 
     if topic == imu_topic:
         print(f"Reading message {raw_cnt} from topic {topic}")
-        # Deserialize Oem7RawMsg
+        # Deserialize imu
         msg = deserialize_message(data, Imu)
 
-        # Access fields in Oem7RawMsg
+        # Access fields in IMU
         ouster_ros_time = (msg.header.stamp.sec +
                         msg.header.stamp.nanosec / 1e9)
         # print(f"[Ouster IMU] | Time: {ouster_ros_time}")
@@ -137,6 +143,14 @@ print(f"Total Ouster IMU messages read: {raw_cnt}")
 
 # Shutdown rclpy
 rclpy.shutdown()
+
+
+
+rostime = np.array(rostime)
+rostime = np.squeeze(rostime - rostime[0])
+
+# wz first second
+print("wz first second mean", np.mean(wz_data[0:500]))
 
 # lets plot the 6-axis velocity data
 # Create subplots

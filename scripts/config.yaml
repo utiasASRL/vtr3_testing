@@ -132,6 +132,9 @@ radar_data:
           parking_t1_cacfar_new: "/home/samqiao/ASRL/vtr3/temp/test_radar_1/graph"
           parking_t2_cacfar_icra: "/home/samqiao/ASRL/vtr3/temp/test_radar_2/graph"
           parking_t3_kstrong_icra: "/home/samqiao/ASRL/vtr3/temp/test_radar_3/graph"
+  temp:
+        pose_graph_path:
+          temp_new_parking_t1: "/home/samqiao/ASRL/vtr3/temp/test_radar_8_scale/graph"
 
 
 
