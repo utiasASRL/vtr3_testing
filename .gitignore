@@ -61,3 +61,7 @@ rosbags/*
 *.db3
 
 .vscode/*
+
+*.pyc
+
+localization_data/*

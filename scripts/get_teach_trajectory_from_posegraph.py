@@ -89,6 +89,10 @@ if __name__ == '__main__':
     trial = 't1'
     
     pose_graph_path = db_loop.get('pose_graph_path').get('temp_new_parking_t1')
+    
+
+    # temporary fixed path
+    pose_graph_path = "/home/samqiao/ASRL/vtr3/temp/rss/parking_t5_without/graph"
     print("pose graph path:",pose_graph_path)
 
     # boolean values

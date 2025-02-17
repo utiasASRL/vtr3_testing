@@ -51,8 +51,24 @@ rosbag_path = "/home/samqiao/ASRL/vtr3_data/250128/parking_1" #new parking data
 
 # rosbag_path = "/home/samqiao/ASRL/vtr3_data/250128/parking_2" #new parking data
 
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/mars_t2" #mars_t1
+
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/rss_routes/woody_t4" #woody_t2
+
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy5" #grassy_t2
+
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/250128/parking_2" #0128 parking
+
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/new_rss_routes/parking_bad_data_not_usable/parking5" #parking5
+
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/routes/parking/0911/parking_t1" #ICRA parking_t1
+
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/routes/mars/0907/mars_t1" #mars_t1
+
 # # lets try a grassy loop and see what is going on
 # rosbag_path = "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy2" # new grassy data
+
+print("rosbag path", rosbag_path)
 
 
 cnt = 0
@@ -150,7 +166,7 @@ rostime = np.array(rostime)
 rostime = np.squeeze(rostime - rostime[0])
 
 # wz first second
-print("wz first second mean", np.mean(wz_data[0:500]))
+print("wz first second mean", np.mean(wz_data[0:100]))
 
 # lets plot the 6-axis velocity data
 # Create subplots
