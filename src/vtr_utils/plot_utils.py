@@ -60,7 +60,7 @@ def extract_map_from_vertex(graph: Graph, v: Vertex, world_frame=True):
     raw_pc_msg = teach_v.get_data("pointmap")
     map_pc = read_points(raw_pc_msg.point_cloud)
     map_pts = extract_points_from_vertex(teach_v, msg="pointmap")
-    print(map_pts)
+
     if world_frame:
         map_pts = convert_points_to_frame(map_pts, teach_v.T_w_v)
     else:
