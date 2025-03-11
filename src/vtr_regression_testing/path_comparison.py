@@ -9,7 +9,7 @@ if  typing.TYPE_CHECKING:
 from vtr_pose_graph import INVALID_ID
 
 
-def path_to_matrix(graph: Graph, path: GraphIterator):
+def path_to_matrix(graph: Graph, path: GraphIterator,transform = None):
     """The vertices of the graph are assumed to be defined in the world frame."""
     
     #First 3 are the position of the start of the line, second three are the unit vector along the path segment
@@ -19,6 +19,10 @@ def path_to_matrix(graph: Graph, path: GraphIterator):
             continue
         x0 = graph.get_vertex(e.from_id).T_v_w.r_ba_ina()
         x1 = graph.get_vertex(e.to_id).T_v_w.r_ba_ina()
+        if transform is not None:
+            x0 = (transform @ graph.get_vertex(e.from_id).T_v_w).r_ba_ina()
+            x1 = (transform @ graph.get_vertex(e.to_id).T_v_w).r_ba_ina()
+        
         l = np.linalg.norm(x1 - x0)
         n = (x1 - x0) / l
         row = np.zeros((1, 7))

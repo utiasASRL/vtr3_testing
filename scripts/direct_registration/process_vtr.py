@@ -36,6 +36,18 @@ codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 
 parent_folder = "/home/samqiao/ASRL/vtr3_testing"
 
+T_novatel_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.550],
+  [0.000, 1.000 , 0.000, 0.000],
+  [0.000 ,0.000, 1.000 , -1.057],
+  [0.000 , 0.000 ,0.000, 1.000]]))
+
+# xy plots of baselink and transformed points
+
+
+# # test let T be identity
+# T_robot_novatel = np.eye(4)
+
+
 def load_config(config_path='config.yaml'):
     """
     Load configuration from a YAML file.
@@ -68,6 +80,7 @@ print("pose graph path:",pose_graph_path)
 
 db_bool = config['bool']
 SAVE = db_bool.get('SAVE')
+SAVE = False
 print("SAVE:",SAVE)
 PLOT = db_bool.get('PLOT')
 
@@ -121,31 +134,6 @@ if SAVE:
             # cv2.imshow("polar_img",cart_imgs[radar_timestamps.index(timestamp)])
             np.savetxt(os.path.join(scan_folder,f"{timestamp}.txt"), combined, delimiter=",", fmt='%s')
 
-    # np.savez_compressed(outpath,radar_imgs = radar_imgs, radar_times = radar_times)
-# else:
-#     # print("I am in the else clause",SAVE)
-#     data = np.load(outpath,allow_pickle=True)
-#     radar_imgs = data['radar_imgs']
-#     radar_times = data['radar_times']
-
-#     print("radar_imgs shape:", radar_imgs.shape)
-#     print("radar_times shape:", radar_times.shape)
-
-#     print("first radar time:",radar_times[0])
-#     print("last radar time:",radar_times[-1])
-#     radar_duration = radar_times[-1] - radar_times[0]
-#     print("radar duration:",radar_duration)
-
-
-# first_radar_time = radar_times[0]
-# first_radar_img = radar_imgs[0]
-
-# plt.imshow(first_radar_img,cmap='gray', vmin=0, vmax=255)
-# print(first_radar_img.shape)
-# plt.title("First Radar Image")
-# plt.axis('off')
-
-# plt.show()
  
 
 print("-------- begin pose graph processing --------")
@@ -159,11 +147,29 @@ print(f"Graph {test_graph} has {test_graph.number_of_vertices} vertices and {tes
 
 g_utils.set_world_frame(test_graph, test_graph.root)
 
+# I can certainly create a path matrix for the teach branch
+
+v_start = test_graph.root
+
+path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start), transform=T_novatel_robot)
+
+
+print("path matrix shape:",path_matrix.shape)
+
+x_teach = []
+y_teach = []
+z_teach = []
+t_teach = []
+
+for v, e in PriviledgedIterator(v_start):
+    x_teach.append(v.T_v_w.r_ba_ina()[0])
+    y_teach.append(v.T_v_w.r_ba_ina()[1])
+    z_teach.append(v.T_v_w.r_ba_ina()[2])
+    t_teach.append(v.stamp / 1e9)
+
 
 # I will use the repeat path for now
 v_start = test_graph.get_vertex((repeat, 0))
-
-path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
 
 # # for i in range(test_graph.major_id + 1):
 # #     v_start = test_graph.get_vertex((i, 0))
@@ -176,8 +182,22 @@ path_matrix = vtr_path.path_to_matrix(test_graph, PriviledgedIterator(v_start))
 
 previous_time = None
 
-for vertex, e in TemporalIterator(v_start):
-    print("repeat vertex id:",vertex.id)
+
+x_repeat = []
+y_repeat = []
+z_repeat = []
+t_repeat = []
+
+x_repeat_in_gps = []
+y_repeat_in_gps = []
+z_repeat_in_gps = []
+
+dist = []
+path_len = 0
+previous_error = 0
+
+for vertex, e in TemporalIterator(v_start): # I am going through all the repeat vertices
+    # print("repeat vertex id:",vertex.id)
     # this vertex is the repeat vertex
 
     repeat_vertex = vertex
@@ -203,7 +223,58 @@ for vertex, e in TemporalIterator(v_start):
 
     # here is what I want, vertex timestamp + scan to map transform in SE(3) 
 
+    transformation = T_v_s.matrix()
+    # print("transformation to the map:",transformation)
 
+
+    x_repeat.append(vertex.T_v_w.r_ba_ina()[0])
+    y_repeat.append(vertex.T_v_w.r_ba_ina()[1])
+    z_repeat.append(vertex.T_v_w.r_ba_ina()[2])
+    t_repeat.append(repeat_vertex_time)
+
+    # r_ba_ina = vertex.T_v_w.r_ba_ina() # in robot frame
+    # print("r_ba_ina:",r_ba_ina)
+    # print("r_ba_ina shape:",r_ba_ina.shape)
+    # r_ba_ina_aug = np.vstack((r_ba_ina, np.ones(r_ba_ina.shape[1])))
+    # print("r_ba_ina_aug shape:",r_ba_ina_aug.shape)
+    # print("r_ba_ina_aug:",r_ba_ina_aug)
+
+    r_gps = (T_novatel_robot @ vertex.T_v_w).r_ba_ina()
+    x_repeat_gps = r_gps[0]
+    y_repeat_gps = r_gps[1]
+    z_repeat_gps = r_gps[2]
+
+    x_repeat_in_gps.append(x_repeat_gps)
+    y_repeat_in_gps.append(y_repeat_gps)
+    z_repeat_in_gps.append(z_repeat_gps)
+    print("r_gps:",r_gps)
+
+
+    error = signed_distance_to_path(r_gps, path_matrix)
+    product = error*previous_error
+    if product<0 and abs(error)>0.05 and abs(previous_error)>0.05:
+        error = -1*error
+
+    dist.append(error)
+    previous_error = error
+    path_len += np.linalg.norm(e.T.r_ba_ina())
+
+    # break
+
+    plt.figure(0)
+    plt.plot(x_repeat, y_repeat, 'r')
+    plt.plot(x_repeat_in_gps, y_repeat_in_gps, 'b')
+    plt.legend(["Repeat in robot frame", "Repeat in GPS frame"])
+    plt.axis('equal')
+
+
+    # plt.plot(x_teach, y_teach, 'g')
+    
+
+
+    # break
+
+    SAVE = False
 
     if SAVE:
         pc_timestamp = repeat_vertex.stamp/1e9 # repeat vertex timestamp
@@ -233,9 +304,7 @@ for vertex, e in TemporalIterator(v_start):
         print("radar idx: ", radar_idx)
         print("radar img shape: ", radar_img.shape)
 
-        cart_resolution = 0.2384
 
-        # teach point cloud
         for point in teach_new_points.T:
             # print("point:",point)
             x_pt = int(point[0]/cart_resolution) + 256
@@ -295,7 +364,42 @@ for vertex, e in TemporalIterator(v_start):
 
         previous_time = pc_timestamp
 
-        # break
+        
+
+print(f"Path {repeat} was {path_len:.3f}m long")
+
+
+if PLOT:
+    fontsize = 20
+    plt.figure(1)
+    rmse = np.sqrt(np.trapz(np.array(dist)**2, t_repeat) / (t_repeat[-1] - t_repeat[0]))
+
+    # rmse = np.sqrt(np.mean(np.array(dist)**2))
+    max = np.max(np.abs(dist))
+
+    # print("dist:",dist)
+    # reset t_repeat to 0
+    t_repeat = [t - t_repeat[0] for t in t_repeat]
+    print("t_repeat last:",t_repeat[-1])
+    plt.plot(t_repeat, dist, label=f"Estimated RMSE: {rmse:.3f}m for Repeat {repeat} Max Error: {max:.3f}m")
+    # # load the ppk data
+    # ppk_data = np.load(f"{out_path_folder}repeat{repeat}_path_tracking_error.npz")
+    # t_repeat_ppk = ppk_data['t_repeat_ppk']
+    # distances_teach_repeat_ppk = ppk_data['distances_teach_repeat_ppk']
+    # plt.plot(t_repeat_ppk, distances_teach_repeat_ppk, label=f"PPK RMSE: {np.sqrt(np.mean(distances_teach_repeat_ppk**2)):.3f}m for Repeat {repeat} Max Error: {np.max(np.abs(distances_teach_repeat_ppk)):.3f}m")
+    
+
+
+    plt.legend(fontsize=fontsize)
+    plt.ylabel("RTR Estimated Path Tracking Error (m)",fontsize=fontsize)
+    plt.xlabel("Time (s)",fontsize=fontsize)
+    plt.title("RTR Estimated Path Tracking Error",fontsize=fontsize)
+    plt.ylim(-0.6,0.6)
+    # plt.axis('equal')
+    plt.grid(True)
+
+    plt.show()
+
 
 
 

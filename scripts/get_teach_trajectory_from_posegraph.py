@@ -92,6 +92,7 @@ if __name__ == '__main__':
     
 
     # temporary fixed path
+    pose_graph_path = "/home/samqiao/ASRL/vtr3/temp/test8/graph/"
     print("pose graph path:",pose_graph_path)
 
     # boolean values
