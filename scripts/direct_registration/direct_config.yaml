@@ -1,6 +1,9 @@
 # config.yaml
 # Database configuration
 radar_resolution: 0.040308
+cart_resolution: 0.2384
+min_r: 2.0
+max_r: 70.0
 radar_data:
 # Database connection string
   grassy:
