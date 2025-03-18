@@ -38,6 +38,8 @@ def plot_3d_traj(file_path):
         y.append(float(parts[2]))
         z.append(float(parts[3]))
 
+    deltaz = np.max(z) - np.min(z)
+    print(f"Max elevation: {np.max(z)}, Min Z: {np.min(z)}, Delta Z: {deltaz}")
     # Calculate total path length
     path_length = 0.0
     for i in range(1, len(x)):
@@ -55,6 +57,30 @@ def plot_3d_traj(file_path):
     # Scatter plot with color representing time progression
     scatter = ax.scatter(x, y, z, c=np.arange(len(x)), cmap='viridis', s=10, label='Trajectory Points')
     ax.plot(x, y, z, color='gray', alpha=0.4, linewidth=0.8, label='Path')
+
+    # Set Equal Aspect Ratio
+    def set_axes_equal(ax):
+        """Set equal aspect ratio for 3D plots."""
+        x_limits = ax.get_xlim()
+        y_limits = ax.get_ylim()
+        z_limits = ax.get_zlim()
+
+        x_range = x_limits[1] - x_limits[0]
+        y_range = y_limits[1] - y_limits[0]
+        z_range = z_limits[1] - z_limits[0]
+        max_range = max(x_range, y_range, z_range) / 2.0
+
+        mid_x = np.mean(x_limits)
+        mid_y = np.mean(y_limits)
+        mid_z = np.mean(z_limits)
+
+        ax.set_xlim(mid_x - max_range, mid_x + max_range)
+        ax.set_ylim(mid_y - max_range, mid_y + max_range)
+        ax.set_zlim(mid_z - max_range, mid_z + max_range)
+
+    # Apply equal axis scaling
+    set_axes_equal(ax)
+
 
     ax.set_xlabel('X Coordinate')
     ax.set_ylabel('Y Coordinate')

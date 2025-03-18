@@ -71,12 +71,14 @@ db_rosbag_path = db.get('rosbag_path')
 teach_rosbag_path = db_rosbag_path.get('teach')
 
 global repeat
-repeat = 1
+repeat = 0
 repeat_rosbag_path = db_rosbag_path.get(f'repeat{repeat}') # dont think this is needed
 
 # for pose graph
 pose_graph_path = db.get('pose_graph_path').get('grassy_t2_r3')
 print("pose graph path:",pose_graph_path)
+
+pose_graph_path = "/home/samqiao/ASRL/vtr3/temp/test/parking/graph"
 
 db_bool = config['bool']
 SAVE = db_bool.get('SAVE')
@@ -247,7 +249,7 @@ for vertex, e in TemporalIterator(v_start): # I am going through all the repeat 
     x_repeat_in_gps.append(x_repeat_gps)
     y_repeat_in_gps.append(y_repeat_gps)
     z_repeat_in_gps.append(z_repeat_gps)
-    print("r_gps:",r_gps)
+    # print("r_gps:",r_gps)
 
 
     error = signed_distance_to_path(r_gps, path_matrix)
@@ -266,6 +268,7 @@ for vertex, e in TemporalIterator(v_start): # I am going through all the repeat 
     plt.plot(x_repeat_in_gps, y_repeat_in_gps, 'b')
     plt.legend(["Repeat in robot frame", "Repeat in GPS frame"])
     plt.axis('equal')
+    plt.grid(True)
 
 
     # plt.plot(x_teach, y_teach, 'g')
