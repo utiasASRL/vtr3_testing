@@ -92,7 +92,7 @@ if __name__ == '__main__':
     
 
     # temporary fixed path
-    pose_graph_path = "/home/samqiao/ASRL/vtr3/temp/test8/graph/"
+    pose_graph_path = "/home/samqiao/ASRL/vtr3/temp/test/parking/graph"
     print("pose graph path:",pose_graph_path)
 
     # boolean values
@@ -166,6 +166,7 @@ if __name__ == '__main__':
         plt.plot(x, y, label="Teach", linewidth=5)
         # plt.plot(x_gt, y_gt, label="Ground Truth", linewidth=5)
         plt.axis('equal')
+        plt.grid()
 
         plt.show()
 

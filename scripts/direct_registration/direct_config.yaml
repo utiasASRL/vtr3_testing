@@ -14,6 +14,12 @@ radar_data:
       grassy_t2_r3: "/home/samqiao/ASRL/vtr3_testing/localization_data/posegraphes/grassy_t2_r3/graph"
 
 
+bool:
+  SAVE: False
+  PLOT: True
+
+output: "/home/samqiao/ASRL/vtr3_testing/localization_data"
+
 
 # lidar_data:
 # # Database connection string
@@ -36,9 +42,3 @@ radar_data:
 #     repeat15: "/home/samqiao/ASRL/vtr3_testing/rosbags/ICRA/grassy/0913/lidar/grassy_r15"
 #   pose_graph_path: 
 #     grassy: "/home/samqiao/ASRL/vtr3_testing/posegraph/ICRA/lidar/0913_grassy1/graph"
-
-bool:
-  SAVE: False
-  PLOT: True
-
-output: "/home/samqiao/ASRL/vtr3_testing/localization_data"
