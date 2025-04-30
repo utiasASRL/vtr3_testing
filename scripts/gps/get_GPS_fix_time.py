@@ -8,14 +8,16 @@ from vtr_utils.bag_file_parsing import Rosbag2GraphFactory
 import vtr_regression_testing.path_comparison as vtr_path
 import argparse
 
+import sys
+# Insert path at index 0 so it's searched first
+sys.path.insert(0, "scripts")
+
 from radar.utils.helper import *
 
 # from rosbags.typesys import get_types_from_msg, register_types, Stores, get_typestore
 # from rosbags.serde import serialize_cdr
 
 import yaml
-
-import sys
 
 import rclpy
 from rclpy.serialization import deserialize_message
@@ -28,8 +30,7 @@ from sensor_msgs.msg import NavSatFix # for GPS
 # print current working directory
 print("Current working dir", os.getcwd())
 
-# Insert path at index 0 so it's searched first
-sys.path.insert(0, "scripts")
+
 
 from radar.utils.helper import get_xyt_gps
 
@@ -86,37 +87,40 @@ def rotation_matrix_to_euler_angles(R):
 
 if __name__ == '__main__':
     
-    config = load_config(os.path.join(parent_folder,'scripts/config.yaml'))
+    # config = load_config(os.path.join(parent_folder,'scripts/config.yaml'))
 
-    # Access database configuration
-    db = config['radar_data']
-    db_loop = db.get('new_rss_parking')
-    db_rosbag_path = db_loop.get('rosbag_path')
+    # # Access database configuration
+    # db = config['radar_data']
+    # db_loop = db.get('jan28')
+    # db_rosbag_path = db_loop.get('rosbag_path')
 
     # print("db_rosbag_path",db_rosbag_path)
 
     # for pose graph
-    trial = 't6'
+    # trial = 't6'
 
-    teach_rosbag_path = db_rosbag_path.get('parking_'+trial)
+
+    # teach_rosbag_path = db_rosbag_path.get('parking_'+trial)
+
+    teach_rosbag_path = "/home/samqiao/ASRL/vtr3_data/rss_routes/woody_t1"
     # repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
 
     
     # pose_graph_path = db_loop.get('pose_graph_path').get('grassy_t1')
     # print("pose graph path:",pose_graph_path)
 
-    db_bool = config['bool']
-    SAVE = db_bool.get('SAVE')
-    # print("SAVE:",SAVE)
-    PLOT = db_bool.get('PLOT')
+    # db_bool = config['bool']
+    # SAVE = db_bool.get('SAVE')
+    # # print("SAVE:",SAVE)
+    # PLOT = db_bool.get('PLOT')
 
-    result_folder = config.get('output')
+    # result_folder = config.get('output')
 
-    save_folder = os.path.join(result_folder, "jan_29_rss_parking_"+trial)
+    # save_folder = os.path.join(result_folder, "jan_29_rss_parking_"+trial)
 
-    if not os.path.exists(save_folder):
-        os.makedirs(save_folder)
-        print(f"Folder '{save_folder}' created.")
+    # if not os.path.exists(save_folder):
+    #     os.makedirs(save_folder)
+    #     print(f"Folder '{save_folder}' created.")
 
     # typestore = get_typestore(Stores.ROS2_HUMBLE)
     # oem7Msg = typestore.types['novatel_oem7_msgs/msg/Oem7RawMsg']
@@ -185,9 +189,9 @@ if __name__ == '__main__':
     print(f"Total RAW messages read: {raw_cnt}")
     print(f"Total FIX messages read: {fix_cnt}")
 
-
+    ASRL_folder = "/home/samqiao/ASRL"
     # I want to write fix data line by line to a csv file
-    with open(os.path.join(save_folder,f'jan_grassy_{trial}_gps_fix.csv'), 'w') as f:
+    with open(os.path.join(ASRL_folder,f'woody_t1_gps_fix.csv'), 'w') as f:
         f.write("Timestamp(ns),Latitude,Longitude\n")
         for fix in fix_data:
             f.write(f"{fix['timestamp']},{fix['latitude']},{fix['longitude']}\n")

@@ -47,9 +47,10 @@ class GPStateEstimator:
                     self.motion_model = MotionModel_lut['const_body_vel_gyro'](device=self.device)
             else:
                 self.motion_model = MotionModel_lut[opts['estimation']['motion_model']](device=self.device)
+            
             self.state_init = self.motion_model.getInitialState()
-            if self.use_direct and not self.estimate_ang_vel and not self.use_gyro:
-                raise ValueError("Direct cost function enabled but no angular velocity estimation or gyro: problem with choice of motion model")
+            # if self.use_direct and not self.estimate_ang_vel and not self.use_gyro:
+            #     raise ValueError("Direct cost function enabled but no angular velocity estimation or gyro: problem with choice of motion model")
             self.pose_estimation = self.use_gyro or self.estimate_ang_vel
 
             self.vy_bias = torch.tensor(opts['estimation']['vy_bias_prior']).to(self.device)
@@ -155,6 +156,10 @@ class GPStateEstimator:
 
 
             self.kImgPadding = torch.tensor(self.kImgPadding).to(self.device)
+
+    def setIntialState(self, state):
+        with torch.no_grad():
+            self.state_init = state
 
 
     def seKernel_(self, X1, X2, l_az, l_range):
@@ -333,6 +338,8 @@ class GPStateEstimator:
             velocities[~mask,0,1] = velocities[~mask,0,1] + velocities[~mask,0,0]*self.vy_bias/3.0
             d_vel_d_state[~mask,1,:] = d_vel_d_state[~mask,1,:] + self.vy_bias/3.0 * d_vel_d_state[~mask,0,:]
             shifts = (velocities @ self.vel_to_bin_vec.reshape((-1,2,1))).squeeze()
+            # we can change the shifts to be zero
+
             d_shift_d_state = self.vel_to_bin_vec.reshape((-1,1,2)) @ d_vel_d_state
             if not self.chirp_up:
                 shifts = -shifts
@@ -365,7 +372,26 @@ class GPStateEstimator:
                 d_cart_sparse_d_state[:,0,:] = d_cart_sparse_d_state[:,0,:] / (-self.local_map_res)
                 d_cart_sparse_d_state[:,1,:] = d_cart_sparse_d_state[:,1,:] / self.local_map_res
 
+                
+                temp_polar_intensity_sparse = torch.zeros(self.local_map_blurred.shape, device=self.device)
+                temp_polar_intensity_sparse[cart_idx_sparse.int()[:,0],cart_idx_sparse.int()[:,1]] = self.polar_intensity_sparse
+               
+                # fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
 
+                # # # First plot
+                # axs[0].set_title("Blurred Local Map")
+                # im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
+                # fig.colorbar(im1, ax=axs[0])
+
+                # # Second plot
+                # axs[1].set_title("Sparse Polar Intensity")
+                # im2 = axs[1].imshow(temp_polar_intensity_sparse.cpu().numpy())
+                # fig.colorbar(im2, ax=axs[1])
+
+                # # Adjust spacing and show
+                # plt.tight_layout()
+                # plt.show()
+                
                 jacobian_direct_sparse = ((d_interp_direct_d_xy_sparse @ d_cart_sparse_d_state) * (self.polar_intensity_sparse.unsqueeze(-1).unsqueeze(-1))).squeeze()
 
 
@@ -385,8 +411,114 @@ class GPStateEstimator:
             elif direct:
                 return residual_direct, jacobian_direct
 
+    # leo's pairwise registration WIP
+    # fix_frame, moving_frame (polar_image, azimuths, timestamps)
+    def pairwiseRegistration(self, fix_frame, moving_frame, chirp_up=True, potential_flip=False):
+        with torch.no_grad():
+            self.chirp_up = chirp_up
+            self.timestamps = torch.tensor(fix_frame.timestamps.flatten()).to(self.device).squeeze()
+            # Prepare the data in torch
+            self.azimuths = torch.tensor(fix_frame.azimuths.flatten()).to(self.device).float()
+            self.nb_azimuths = torch.tensor(len(fix_frame.azimuths.flatten())).to(self.device) # number of azimuths 400
+            self.motion_model.setTime(self.timestamps, self.timestamps[0])
+            
+            # Initialise the direction vectors
+            # only use for doppler
+            dirs = torch.empty((self.nb_azimuths, 2), device=self.device) # 400 by 2
+            dirs[:, 0] = torch.cos(self.azimuths)
+            dirs[:, 1] = torch.sin(self.azimuths)
+            self.vel_to_bin_vec = self.vel_to_bin*dirs
+            # doppler possible
 
+            self.polar_intensity = torch.tensor(moving_frame.polar).to(self.device)
+            # print("polar_intensity shape", self.polar_intensity.shape)
 
+            # normalization and smoothing
+            polar_std = torch.std(self.polar_intensity, dim=1)
+            polar_mean = torch.mean(self.polar_intensity, dim=1)
+            self.polar_intensity -= (polar_mean.unsqueeze(1) + 2*polar_std.unsqueeze(1))
+            self.polar_intensity[self.polar_intensity < 0] = 0
+            self.polar_intensity = torchvision.transforms.functional.gaussian_blur(self.polar_intensity.unsqueeze(0), (9,1), 3).squeeze()
+            self.polar_intensity /= torch.max(self.polar_intensity, dim=1, keepdim=True)[0]
+            self.polar_intensity[torch.isnan(self.polar_intensity)] = 0
+            
+            # sam no undertstand
+            # run in debug mode and inspect matrix shape and structures 
+            # looks like it is extracting sparse points from the polar image
+            ### Preparation for the localMap update
+            #print("TODO: See at not storing the full matrix")
+            # 1712 * 
+            range_vec = torch.arange(self.max_range_idx).to(self.device).float() * self.radar_res + (self.radar_res*0.5)
+            # print("range_vec shape", range_vec.shape) # 4961
+            self.polar_coord_raw_gp_infered = torch.zeros((self.nb_azimuths, self.max_range_idx, 2)).to(self.device)
+            self.polar_coord_raw_gp_infered[:, :, 0] = self.azimuths.unsqueeze(1).repeat(1, self.max_range_idx)
+            self.polar_coord_raw_gp_infered[:, :, 1] = range_vec.unsqueeze(0).repeat(self.nb_azimuths, 1)
+
+            temp_intensity = self.polar_intensity[:, :self.max_range_idx_direct]
+            mask_direct = temp_intensity != 0
+            mask_direct[:, :self.min_range_idx_direct] = False
+            # print("mask_direct shape", mask_direct.shape)
+            self.polar_intensity_sparse = temp_intensity[mask_direct] #self.local_map_blurred
+
+            # import matplotlib.pyplot as plt
+            # plt.figure()
+            # plt.title("Polar Intensity- pairwise")
+            # plt.imshow(temp_intensity.cpu().numpy())
+            # plt.colorbar()
+            # plt.show()
+            
+            self.direct_r_sparse = self.range_vec.unsqueeze(0).repeat(self.nb_azimuths, 1)[mask_direct]
+            # print("direct_r_sparse shape", self.direct_r_sparse.shape)
+            self.direct_az_ids_sparse = torch.arange(self.nb_azimuths, device=self.device).unsqueeze(-1).repeat(1,self.max_range_idx_direct)[mask_direct]
+            self.direct_r_ids_sparse = torch.arange(self.max_range_idx_direct, device=self.device).unsqueeze(0).repeat(self.nb_azimuths, 1)[mask_direct]
+            self.mask_direct_even = torch.ones_like(self.polar_intensity_sparse, device=self.device, dtype=torch.bool)
+            self.mask_direct_odd = torch.zeros_like(self.mask_direct_even, device=self.device, dtype=torch.bool)
+            self.direct_nb_non_zero = torch.tensor(self.polar_intensity_sparse.shape[0], device=self.device)
+            self.direct_r_ids_even = self.direct_r_ids_sparse[self.mask_direct_even]
+            self.direct_r_ids_odd = self.direct_r_ids_sparse[self.mask_direct_odd]
+            self.direct_r_even = self.direct_r_sparse[self.mask_direct_even]
+            self.direct_r_odd = self.direct_r_sparse[self.mask_direct_odd]
+            self.direct_az_ids_even = self.direct_az_ids_sparse[self.mask_direct_even]
+            self.direct_az_ids_odd = self.direct_az_ids_sparse[self.mask_direct_odd]
+            # sam no undertstand 
+            
+            fix_polar_intensity = torch.tensor(fix_frame.polar).to(self.device)
+            polar_std = torch.std(fix_polar_intensity, dim=1)
+            polar_mean = torch.mean(fix_polar_intensity, dim=1)
+
+            # normalization and smoothing
+            fix_polar_intensity -= (polar_mean.unsqueeze(1) + 2*polar_std.unsqueeze(1))
+            fix_polar_intensity[fix_polar_intensity < 0] = 0
+            fix_polar_intensity = torchvision.transforms.functional.gaussian_blur(fix_polar_intensity.unsqueeze(0), (9,1), 3).squeeze()
+            fix_polar_intensity /= torch.max(fix_polar_intensity, dim=1, keepdim=True)[0]
+            fix_polar_intensity[torch.isnan(fix_polar_intensity)] = 0
+
+            # sam no undertstand before: correct the map 
+            temp_polar_to_interp = self.local_map_polar.clone()
+            # print("temp_polar_to_interp shape", temp_polar_to_interp.shape) # 4001 by 4001 by 2
+            temp_polar_to_interp[:,:,0] -= (self.azimuths[0])
+            temp_polar_to_interp[temp_polar_to_interp[:,:,0]<0] = temp_polar_to_interp[temp_polar_to_interp[:,:,0]<0] + torch.tensor((2*torch.pi, 0)).to(self.device)
+            temp_polar_to_interp[:,:,0] *= ((self.nb_azimuths) / (2*torch.pi))
+            temp_polar_to_interp[:,:,1] -= (self.radar_res/2.0)
+            temp_polar_to_interp[:,:,1] /= self.radar_res
+            fix_polar_intensity = torch.concatenate((fix_polar_intensity, fix_polar_intensity[0,:].unsqueeze(0)), dim=0)
+            local_map_update = self.bilinearInterpolation_(fix_polar_intensity, temp_polar_to_interp, with_jac=False)
+            # sam no undertstand after 
+            
+            # plt.title("Local Map Update- pairwise")
+            # plt.imshow(local_map_update.cpu().numpy())
+            # plt.show()
+            
+            self.local_map[self.local_map_mask] = local_map_update[self.local_map_mask]
+            # print("local map mask shape", self.local_map_mask.shape)
+
+            self.local_map_blurred = torchvision.transforms.functional.gaussian_blur(self.local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
+            normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
+            self.local_map_blurred *= normalizer
+            self.step_counter = 1
+            result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
+            self.state_init = result.clone()
+            return result.detach().cpu().numpy()
 
 
     # The shift is in pixels (thus should be alternating signs)
@@ -588,7 +720,9 @@ class GPStateEstimator:
                 if remove_angular and not self.use_gyro:
                     step = torch.cat((step, torch.zeros(1).to(self.device)), dim=0)
                 
+                # print("step shape", step.shape)
                 state += step
+
 
                 step_norm = torch.linalg.norm(step)
                 cost_change = cost - prev_cost
@@ -597,8 +731,8 @@ class GPStateEstimator:
                     first_cost = cost
                 
                 # Print iter cost step_norm cost_change with 3 decimals and scientific notation
-                if verbose:
-                    print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
+                # if verbose:
+                #     print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
 
                 if step_norm < step_tol:
                     break

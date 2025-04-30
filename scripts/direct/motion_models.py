@@ -10,6 +10,7 @@ class MotionModels(str, Enum):
     const_acc_const_w  = "const_acc_const_w",
     const_vel = "const_vel",
     no_slip  = "no_slip"
+    const_rotation_const_translation = "const_rotation_const_translation"
 
 
 class MotionModel:
@@ -30,6 +31,76 @@ class MotionModel:
 
     def getInitialState(self):
         return torch.zeros(self.state_size, device=self.device)
+    
+    def setInitialState(self, state):
+        self.initial_state = state
+
+# Sam: need to implement a function that takes the state and the azimuths and returns the velocity, position and rotation
+class ConstRotationConstTranslation(MotionModel):
+    def __init__(self, device='cpu'):
+        super().__init__(3, device)
+    
+    # Make sure that state and azimuths are torch
+    def getVelPosRot(self, state, with_jac = False):
+    # the input is different now x,y,theta 
+        with torch.no_grad():
+            # print("State shape", state.shape)
+            # The state is an array of size 2. Duplicate it for each azimuth
+
+            ones = torch.ones_like(self.time)
+            zeros = torch.zeros_like(self.time)
+
+            rot = state[2]*ones.unsqueeze(1)
+            pos = torch.stack((state[0]*ones, state[1]*ones), dim=1).unsqueeze(2)
+            
+            
+            x_y = state[:2].unsqueeze(0).unsqueeze(2).clone()
+
+            # # Transform the velocities to body centric
+            x_y_body = x_y.clone()*ones
+
+            vel_body = torch.zeros((400,2)).to(self.device)
+
+            
+
+
+            identity_tensor = torch.zeros(400, 2, 3)
+
+            # Set the diagonal elements (0,0) and (1,1) to 1 for all 400 entries
+            identity_tensor[:, 0, 0] = 1.0  # First diagonal element
+            identity_tensor[:, 1, 1] = 1.0  # Second diagonal element
+            
+            d_rot_d_state = torch.ones((self.num_steps, 1, 1)).to(self.device)
+            d_pos_d_state = identity_tensor.clone().to(self.device)
+
+            d_vel_body_d_state = torch.zeros((self.num_steps, 2, 3), device=self.device)
+
+
+
+            identity_tensor_1_by_1 = torch.ones(400, 1, 1)
+            # identity_tensor_1_by_1[:, 0, 0] = 1.0  # First diagonal element
+
+
+            # print("d_vel_body_d_state shape", d_vel_body_d_state.shape)
+            # print("d_pos_d_state shape", d_pos_d_state.shape)
+            # print("d_rot_d_state shape", d_rot_d_state.shape)
+            # print("vel_body shape", vel_body.shape)
+            # print("pos shape", pos.shape)
+            # print("rot shape", rot.shape)
+            if not with_jac:
+                return vel_body, pos, rot
+
+            return vel_body, d_vel_body_d_state, pos, d_pos_d_state, rot, d_rot_d_state
+
+    def getPosRotSingle(self, state, time):
+        with torch.no_grad():
+            # local_time = self.getLocalTime(time)
+            rot = state[2]
+            pos = torch.stack((state[0], state[1]))
+            return pos, rot
+# Sam
+
+
 
 class ConstVelConstW(MotionModel):
     def __init__(self, device='cpu'):
@@ -39,6 +110,7 @@ class ConstVelConstW(MotionModel):
     #@torch.compile
     def getVelPosRot(self, state, with_jac = False):
         with torch.no_grad():
+            print("State shape", state.shape)
             # The state is an array of size 2. Duplicate it for each azimuth
             rot = state[2]*self.time.unsqueeze(1)
             pos = torch.stack((state[0]*self.time, state[1]*self.time), dim=1).unsqueeze(2)
@@ -72,6 +144,15 @@ class ConstVelConstW(MotionModel):
             d_vel_body_d_state[:, 1, 1] = c_rot.squeeze()
             d_vel_body_d_state[:, 0, 2] = vy_c_rot.squeeze()*self.time -vx_s_rot.squeeze()*self.time
             d_vel_body_d_state[:, 1, 2] = -vx_c_rot.squeeze()*self.time -vy_s_rot.squeeze()*self.time
+
+            print("d_vel_body_d_state shape", d_vel_body_d_state.shape)
+            print("d_pos_d_state shape", d_pos_d_state.shape)
+            print("d_rot_d_state shape", d_rot_d_state.shape)
+            print("vel_body shape", vel_body.shape)
+            print("pos shape", pos.shape)
+            print("rot shape", rot.shape)
+
+            # print("rot", rot)
 
             return vel_body, d_vel_body_d_state, pos, d_pos_d_state, rot, d_rot_d_state
 
@@ -509,5 +590,6 @@ MotionModel_lut = {
     MotionModels.const_body_acc_gyro: ConstBodyAccGyro,
     MotionModels.const_acc_const_w: ConstAccConstW,
     MotionModels.const_vel: ConstVel,
-    MotionModels.no_slip: NoSlip
+    MotionModels.no_slip: NoSlip,
+    MotionModels.const_rotation_const_translation: ConstRotationConstTranslation
 }

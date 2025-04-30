@@ -9,13 +9,16 @@ from matplotlib import pyplot as plt
 
 import utm
 import numpy as np
-from utils.helper import *
+
+import sys
+# Insert path at index 0 so it's searched first
+sys.path.insert(0, "scripts")
+
+from radar.utils.helper import *
 
 import yaml
 import os
 import re 
-
-import sys
 
 
 parent_folder = "/home/samqiao/ASRL/vtr3_testing"
@@ -38,13 +41,14 @@ config = load_config(os.path.join(parent_folder,'scripts/config.yaml'))
 
 # Access database configuration
 db = config['radar_data']
-db_rosbag_path = db.get('grassy_rosbag_path')
+db_loop = db.get('grassy')
+db_rosbag_path = db_loop.get('rosbag_path')
 
 teach_rosbag_path = db_rosbag_path.get('teach')
 # repeat_rosbag_path = db_rosbag_path.get('repeat1') # dont think this is needed
 
 # for pose graph
-pose_graph_path = db.get('pose_graph_path').get('grassy')
+pose_graph_path = db_loop.get('pose_graph_path').get('grassy')
 print("pose graph path:",pose_graph_path)
 
 db_bool = config['bool']
@@ -85,10 +89,9 @@ for subfolder in sorted_result_folder:
             print("t_repeat shape:", t_repeat.shape)
             print("ptr_repeat shape:", ptr_repeat.shape)
 
-            # break
     repeat+=1
-    # if repeat == 6:
-    #     break
+    if repeat == 3:
+        break
 
 
 fontsize = 12
@@ -122,10 +125,10 @@ if PLOT:
 
 # the below uses the region metric
 # now we can analyze the data 
-print("t_repeat shape:",t_repeat.shape)
-print("ptr_repeat shape:",ptr_repeat.shape)
+# print("t_repeat shape:",t_repeat.shape)
+# print("ptr_repeat shape:",ptr_repeat.shape)
 
-regions_where_ptr_larger_than_20 = np.where(ptr_repeat>0.2)
+regions_where_ptr_larger_than_20 = np.where(ptr_repeat>0.17)
 # print("regions_where_ptr_larger_than_20:",regions_where_ptr_larger_than_20)
 
 def find_continuous_regions(indices):

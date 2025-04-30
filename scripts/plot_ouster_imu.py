@@ -66,7 +66,7 @@ def load_config(config_path='config.yaml'):
 # rosbag_path = "/home/samqiao/ASRL/vtr3_data/routes/mars/0907/mars_t1" #mars_t1
 
 
-rosbag_path = "/home/samqiao/ASRL/vtr3_data/250128/parking_1" #new parking data
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy2" #new parking data
 
 # # lets try a grassy loop and see what is going on
 # rosbag_path = "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy2" # new grassy data
@@ -169,9 +169,9 @@ rostime = np.array(rostime)
 rostime = np.squeeze(rostime - rostime[0])
 
 # wx first second
-print("wx first second mean", np.mean(wx_data[0:500]))
-# wy first second
-print("wy first second mean", np.mean(wy_data[0:500]))
+# print("wx first second mean", np.mean(wx_data[0:500]))
+# # wy first second
+# print("wy first second mean", np.mean(wy_data[0:500]))
 # wz first second
 print("wz first second mean", np.mean(wz_data[0:500]))
 

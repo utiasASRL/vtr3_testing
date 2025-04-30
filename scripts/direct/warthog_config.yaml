@@ -1,6 +1,6 @@
 data:
   type: 'warthog' # 'boreas' or 'warthog' 
-  multi_sequence: true  # If true, the data path contains multiple sequences like data_path/{boereas-xxxx-xx-xx-xx-xx; boreas-yyyy-yy-yy-yy-yy; ...}
+  multi_sequence: false  # If true, the data path contains multiple sequences like data_path/{boereas-xxxx-xx-xx-xx-xx; boreas-yyyy-yy-yy-yy-yy; ...}
   data_path: '/home/ced/Documents/data/warthog/new'
   #multi_sequence: false  # If false, the path should point to a single sequence like
   #data_path: '/home/ced/Documents/data/warthog/grassy_t2_0'
@@ -9,7 +9,7 @@ data:
 estimation:
   doppler_cost: false
   direct_cost: true
-  motion_model: 'const_vel_const_w' #'const_body_vel_gyro' # const_vel_const_w, const_acc_const_w
+  motion_model: 'const_rotation_const_translation' #'const_body_vel_gyro' # const_vel_const_w, const_acc_const_w
   gyro_bias_estimation: false
   max_acceleration: 2.0 # m/s^2 This is used to detect failure modes due to too many outliers number 6.0 comes for the max performance of a car that is 0-100 in approx 3s (high performance car)
   optimisation_first_step: 0.02
@@ -44,6 +44,6 @@ direct:
   local_map_update_alpha: 0.1 # The local map is updated as (1-alpha)*prev_map + alpha*current_scan
 
 log:
-  verbose: true
+  verbose: False
   display: true
   save_images: true

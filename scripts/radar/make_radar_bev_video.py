@@ -13,6 +13,8 @@ import cv_bridge
 
 import matplotlib.pyplot as plt
 
+import imageio
+
 # I will need to register the custom navtech message type
 # define messages
 SCAN_MSG = """
@@ -180,7 +182,7 @@ codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 video_writer = cv2.VideoWriter(output_video_path, codec, frame_rate, frame_size)
 
 # to fill rosbag path 
-radar_rosbag_path = "../rosbags/20241112/gt1_teach2" # fill this in
+radar_rosbag_path = "/home/samqiao/ASRL/vtr3_testing/localization_data/rosbags/grassy3" # fill this in
 radar_times, radar_imgs = get_radar_scan_images_and_timestamps(radar_rosbag_path)
 
 radar_times = np.array(radar_times)
