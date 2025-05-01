@@ -33,7 +33,11 @@ Also you need to install some dependencies: CV_Bridge; pylgmath and such
 
 ### Step 1
 Once specify the correct posegraph path
-Run python3 process_posegraph.py
+Run 
+```bash
+source $VTRSRC/main/install/setup.bash
+python3 process_posegraph.py
+```
 
 This will generate a folder called grassy_t2_r3 with the following structure
 ```bash
@@ -46,7 +50,11 @@ This will generate a folder called grassy_t2_r3 with the following structure
 ```
 
 ### Step 2
-You can run python3 direct_toy.py directly and it will loop through all the data and generate the results in the direct folder
+You can run 
+```bash 
+python3 direct_toy.py 
+```
+directly and it will loop through all the data and generate the results in the direct folder
 Essentially, it is storing all the estimated Teach and Repeat Edge into direct/result.npz
 
 ### Step 3
