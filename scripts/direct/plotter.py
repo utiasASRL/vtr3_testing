@@ -1,0 +1,403 @@
+from matplotlib import pyplot as plt
+from matplotlib import ticker
+from matplotlib.ticker import MaxNLocator
+import numpy as np
+import os
+
+import pandas as pd
+from pylgmath import Transformation
+
+import sys
+parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+
+import yaml
+
+# Insert path at index 0 so it's searched first
+sys.path.insert(0, parent_folder)
+
+from deps.path_tracking_error.fcns import *
+
+
+print("Current working dir", os.getcwd())
+
+T_novatel_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.550],
+  [0.000, 1.000 , 0.000, 0.000],
+  [0.000 ,0.000, 1.000 , -1.057],
+  [0.000 , 0.000 ,0.000, 1.000]]))
+
+T_radar_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.025],
+                                                 [0.000, -1.000 , 0.000, -0.002],
+                                                 [0.000 ,0.000, -1.000 , 1.032],
+                                                 [0.000 , 0.000 ,0.000, 1.000]]))
+
+
+
+def load_config(config_path='config.yaml'):
+    """
+    Load configuration from a YAML file.
+
+    :param config_path: Path to the YAML configuration file.
+    :return: A dictionary representing the configuration.
+    """
+    with open(config_path, 'r', encoding='utf-8') as file:
+        config = yaml.safe_load(file)
+    return config
+
+
+# need to write a plotter class to plot the data
+class Plotter:
+    """
+    Plotter class to plot the
+    """
+    def __init__(self, path_to_data):
+
+        # load the data
+        TEACH_FOLDER = os.path.join(path_to_data,"teach")
+        REPEAT_FOLDER = os.path.join(path_to_data, f"repeat")
+        RESULT_FOLDER = os.path.join(path_to_data, f"direct")
+
+        if not os.path.exists(TEACH_FOLDER):
+            raise FileNotFoundError(f"Teach folder {TEACH_FOLDER} does not exist.")
+        if not os.path.exists(REPEAT_FOLDER):
+            raise FileNotFoundError(f"Repeat folder {REPEAT_FOLDER} does not exist.")
+        if not os.path.exists(RESULT_FOLDER):
+            raise FileNotFoundError(f"Result folder {RESULT_FOLDER} does not exist.")
+
+        teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+        # in the teach
+        # 1. (932,400,1712) images
+        self.teach_polar_imgs = teach_df['teach_polar_imgs']
+        # 2. (932,400, 1) azimuth angles
+        self.teach_azimuth_angles = teach_df['teach_azimuth_angles']
+        # 3. (932,400, 1) azimuth timestamps
+        self.teach_azimuth_timestamps = teach_df['teach_azimuth_timestamps']
+        # 4. (932,1) vertex timestamps
+        self.teach_vertex_timestamps = teach_df['teach_vertex_timestamps']
+        # 5. Pose at each vertex: (932,4,4)
+        self.teach_vertex_transforms = teach_df['teach_vertex_transforms']
+        # 6. teach vertext time
+        self.teach_times = teach_df['teach_times']
+
+
+        # load the repeat data
+        repeat_df = np.load(os.path.join(REPEAT_FOLDER, f"repeat.npz"),allow_pickle=True)
+        # in the repeat
+        self.repeat_times = repeat_df['repeat_times']
+        self.repeat_polar_imgs = repeat_df['repeat_polar_imgs']
+        self.repeat_azimuth_angles = repeat_df['repeat_azimuth_angles']
+        self.repeat_azimuth_timestamps = repeat_df['repeat_azimuth_timestamps']
+        self.repeat_vertex_timestamps = repeat_df['repeat_vertex_timestamps']
+        self.repeat_edge_transforms = repeat_df['repeat_edge_transforms']
+        self.vtr_estimated_ptr = repeat_df['dist']
+
+
+        # load the result data
+        result_df = np.load(os.path.join(RESULT_FOLDER, f"result.npz"),allow_pickle=True)
+        self.vtr_norm = result_df['vtr_norm']
+        self.gps_norm = result_df['gps_norm']
+        self.dir_norm = result_df['dir_norm']
+        self.direct_se2_pose = result_df['direct_se2_pose']
+        self.vtr_se2_pose = result_df['vtr_se2_pose']
+        self.gps_teach_pose = result_df['gps_teach_pose']
+        self.gps_repeat_pose = result_df['gps_repeat_pose']
+
+        # gps ptr
+        self.gps_ptr = self.get_gps_path_tracking_error()
+        print("gps_ptr shape:", self.gps_ptr.shape)
+
+        # direct ptr
+        self.dir_ptr = self.get_direct_path_tracking_error()
+        print("dir_ptr shape:", self.dir_ptr.shape)
+
+    def plot(self):
+
+        print("vtr_se2_pose shape:", self.vtr_se2_pose.shape)
+        print("direct_se2_pose shape:", self.direct_se2_pose.shape)
+
+        plt.figure(1) # need to make it 3 by 1
+        plt.subplot(3, 1, 1)
+        plt.plot(self.repeat_times, self.vtr_se2_pose[:,0], label='VTR x')
+        plt.plot(self.repeat_times, self.direct_se2_pose[:,0],label = 'Direct x')
+        plt.title('VTR Direct se2 pose in x,y, theta')
+        plt.ylabel('x (m)')
+        plt.grid()
+        plt.subplot(3, 1, 2)
+        plt.plot(self.repeat_times, self.vtr_se2_pose[:,1], label='VTR y')
+        plt.plot(self.repeat_times, self.direct_se2_pose[:,1],label = 'Direct y')
+        plt.ylabel('y (m)')
+        plt.grid()
+        plt.subplot(3, 1, 3)
+        plt.plot(self.repeat_times, self.vtr_se2_pose[:,2], label='VTR')
+        plt.plot(self.repeat_times, self.direct_se2_pose[:,2],label = 'Direct')
+        plt.ylabel('theta (rad)')
+        plt.grid()
+        plt.xlabel('Repeat Times')
+        plt.legend()
+
+        plt.show()
+
+
+    def plot_path_tracking_error(self):
+        print("--------In function plot_path_tracking_error--------")
+        # need to know a few shapes
+        print("teach_times shape:", self.teach_times.shape)
+        print("repeat_times shape:", self.repeat_times.shape)
+        print("gps_teach_pose shape:", self.gps_teach_pose.shape)
+        print("gps_repeat_pose shape:", self.gps_repeat_pose.shape)
+        print("vtr_se2_pose shape:", self.vtr_se2_pose.shape)
+        print("vtr_estimated_ptr shape:", self.vtr_estimated_ptr.shape)
+
+        plt.figure()
+        plt.title('PPK, VTR and Direct Estimated Path Tracking Error')
+        # vtr estimate
+        plt.plot(self.repeat_times,self.vtr_estimated_ptr, label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr)):.3f}m')
+        # ppk
+        plt.plot(self.gps_repeat_pose[:,0], self.gps_ptr, label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr)):.3f}m")
+        # direct
+        plt.plot(self.repeat_times, self.dir_ptr, label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr)):.3f}m')
+        plt.xlabel('Repeat Times')
+        plt.ylabel('Path Tracking Error (m)')
+        plt.grid()
+        plt.legend()
+        plt.show()
+
+    def plot_localziation_error(self):
+        print("--------In function plot_localization_error--------")
+
+        print("vtr ptr shape:", self.vtr_estimated_ptr.shape)
+        print("dir ptr shape:", self.dir_ptr.shape)
+        print("gps ptr shape:", self.gps_ptr.shape)
+
+        # I want to plot it in a 2 by 1
+        plt.figure(1)
+        plt.subplot(2, 1, 1)
+        plt.title('VTR and Direct Estimated Localization Error')
+
+        loc_error_vtr = []
+        loc_error_dir = []
+
+        for idx in range(0,self.vtr_estimated_ptr.shape[0]):
+            repeat_vertex_time = self.repeat_times[idx]
+
+            gps_idx = np.argmin(np.abs(self.gps_repeat_pose[:,0] - repeat_vertex_time))
+
+            vtr_error = self.vtr_estimated_ptr[idx] - self.gps_ptr[gps_idx]
+            loc_error_vtr.append(vtr_error)
+
+        for idx in range(0,self.dir_ptr.shape[0]):
+            repeat_vertex_time = self.repeat_times[idx]
+
+            gps_idx = np.argmin(np.abs(self.gps_repeat_pose[:,0] - repeat_vertex_time))
+
+            dir_error = self.dir_ptr[idx] - self.gps_ptr[gps_idx]
+            loc_error_dir.append(dir_error)
+        
+        loc_error_vtr = np.array(loc_error_vtr).reshape(-1,1)
+        loc_error_dir = np.array(loc_error_dir).reshape(-1,1)
+
+        plt.plot(self.repeat_times, loc_error_vtr, label=f'VTR RMSE: {np.sqrt(np.mean(loc_error_vtr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_vtr)):.3f}m')
+        plt.plot(self.repeat_times, loc_error_dir, label=f'Direct RMSE: {np.sqrt(np.mean(loc_error_dir**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dir)):.3f}m',color='green')
+        plt.grid()
+        plt.legend()
+        plt.xlabel('Repeat Times')
+        plt.ylabel('Localization Error (m)')
+        
+
+        plt.subplot(2, 1, 2)
+        # just plot the path tracking error
+
+        plt.title('VTR and Direct Estimated Path Tracking Error')
+        plt.plot(self.repeat_times, self.vtr_estimated_ptr, label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr)):.3f}m')
+        plt.plot(self.gps_repeat_pose[:,0], self.gps_ptr, label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr)):.3f}m")
+        plt.plot(self.repeat_times, self.dir_ptr, label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr)):.3f}m',color='green')
+
+        plt.grid()
+        plt.legend()
+        plt.xlabel('Repeat Times')
+        plt.ylabel('Path Tracking Error (m)')
+        plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+
+        plt.show()
+
+
+
+    def get_direct_path_tracking_error(self):
+        print("--------In function get_direct_path_tracking_error--------")
+        # need to get direct_path_tracking_error
+        # step 1: make a path matrix
+        # step 2: accumulate the signed distance
+        dir_ptr = []
+        previous_error = 0
+        
+        r_teach_world = []
+        r_repeat_world = []
+        r_repeat_world_vtr = []
+        for idx in range(0,self.vtr_se2_pose.shape[0]):
+            # the time stamps
+            teach_vertex_time = self.teach_times[idx]
+            repeat_vertex_time = self.repeat_times[idx]
+
+            T_teach_world = self.teach_vertex_transforms[idx][0][teach_vertex_time[0]]
+            T_gps_world_teach = T_novatel_robot @ T_teach_world
+            r_gps_w_in_w_teach = T_gps_world_teach.r_ba_ina() # where the gps is in the world
+            r_teach_world_in_world = T_teach_world.r_ba_ina()
+            r_teach_world.append(r_gps_w_in_w_teach.T)
+
+            # direct result we can actually do everything in SE(3)
+            r_repeat_teach_in_teach_se2 = self.direct_se2_pose[idx]
+            # should be 6 by 1
+            r_repeat_teach_in_teach_se3 = np.array([[r_repeat_teach_in_teach_se2[0], r_repeat_teach_in_teach_se2[1], 0, 0, 0, r_repeat_teach_in_teach_se2[2]]]).T.reshape(-1,1)
+            print("r_teach_repeat_in_repeat_se3 shape:", r_repeat_teach_in_teach_se3.shape)
+            T_teach_repeat = Transformation(xi_ab = r_repeat_teach_in_teach_se3)
+            T_r_w = T_teach_repeat.inverse() @ T_teach_world
+            T_gps_w_in_w_repeat = T_novatel_robot @ T_r_w
+            r_r_w_in_world = T_r_w.r_ba_ina().T
+
+            r_gps_w_in_w_repeat = T_gps_w_in_w_repeat.r_ba_ina() # where the gps is in the world
+            # print("sam: r_gps_w_in_w_repeat shape:", r_gps_w_in_w_repeat.shape)
+
+            # print("r_r_w_in_world shape:", r_r_w_in_world.shape)
+            # print("r_r_w_in_world:", r_r_w_in_world.T[0:2])
+
+            # print("double check:", r_gps_w_in_w_repeat[0:2].shape)
+            r_repeat_world.append(r_gps_w_in_w_repeat[0:2].T)
+
+            # need to investigate vtr_repeat (TODO) seems to be on the other side of the teach compared to direct 
+            T_teach_repeat_edge = self.repeat_edge_transforms[idx][0][repeat_vertex_time[0]]
+
+            T_repeat_w = T_teach_repeat_edge.inverse() @ T_teach_world
+            T_gps_w_in_w_repeat_vtr = T_novatel_robot @ T_repeat_w
+            r_gps_w_in_w_repeat_vtr = T_gps_w_in_w_repeat_vtr.r_ba_ina()
+            r_repeat_world_vtr.append(r_gps_w_in_w_repeat_vtr.T)
+
+        # make them into numpy arrays
+        self.teach_world = np.array(r_teach_world).reshape(-1,3)
+        self.repeat_world_direct = np.array(r_repeat_world).reshape(-1,2)
+        self.repeat_world_vtr = np.array(r_repeat_world_vtr).reshape(-1,3)
+
+        plt.figure()
+        plt.title('Teach and Direct Repeat World')
+        plt.plot(self.teach_world[:,0], self.teach_world[:,1], label='RTR Teach World in GPS', linewidth = 0.8)
+        plt.plot(self.repeat_world_direct[:,0], self.repeat_world_direct[:,1], label='Direct Repeat World in GPS', linewidth = 0.8)
+        plt.plot(self.repeat_world_vtr[:,0], self.repeat_world_vtr[:,1], label='VTR Repeat World in GPS', linewidth = 0.8)
+        plt.xlabel('X Coordinate')
+        plt.ylabel('Y Coordinate')
+        plt.grid()
+        plt.legend()
+        plt.axis('equal')
+        plt.show()
+
+        # now we are ready to set up the path matrix
+        self.teach_world[:,2] = 0 # we are in a plane otherwise need to change line 232 to the height of the gps
+        path_matrix = path_to_matrix(self.teach_world) 
+
+        # self.repeat world shape (:,2)
+
+        for idx in range(0,self.repeat_world_direct.shape[0]):
+            repeat_x_y_z = np.array([self.repeat_world_direct[idx][0], self.repeat_world_direct[idx][1], 0]).T # this is how tall the gps is
+
+            # print("repeat_x_y_z shape:", repeat_x_y_z.shape)
+            # get the signed distance to the path
+            error = signed_distance_to_path(repeat_x_y_z,path_matrix)
+
+            product = error*previous_error
+            if product<0 and abs(error)>0.05 and abs(previous_error)>0.05:
+                error = -1*error
+            dir_ptr.append(error)
+            previous_error = error
+        
+        dir_ptr = np.array(dir_ptr).reshape(-1,1) # n by 1
+        return dir_ptr*-1
+
+
+    def get_gps_path_tracking_error(self):
+        print("--------In function get_gps_path_tracking_error--------")
+        # need to get gps_path_tracking_error
+        # step 1: make a path matrix
+        # step 2: accumulate the signed distance
+        
+        gps_teach_pose_without_time = self.gps_teach_pose[:,1:4] # m by 3
+        gps_repeat_pose_without_time  = self.gps_repeat_pose[:,1:4] # n by 3
+
+        print("gps_teach_pose_without_time shape:", gps_teach_pose_without_time.shape)
+        print("gps_repeat_pose_without_time shape:", gps_repeat_pose_without_time.shape)
+
+        path_matrix = path_to_matrix(gps_teach_pose_without_time)
+        
+        gps_ptr = []
+        previous_error = 0
+        for idx in range(0,self.gps_repeat_pose.shape[0]):
+            # get the signed distance to the path
+            error = signed_distance_to_path(gps_repeat_pose_without_time[idx],path_matrix)
+
+            product = error*previous_error
+            if product<0 and abs(error)>0.05 and abs(previous_error)>0.05:
+                error = -1*error
+            gps_ptr.append(error)
+            previous_error = error
+
+        return np.array(gps_ptr).reshape(-1,1) # n by 1
+
+        
+    
+    def plot_norm(self): # garbage metrics
+         # save the results
+        print("vtr_norm shape:", self.vtr_norm.shape)
+        print("gps_norm shape:", self.gps_norm.shape)
+        print("dir_norm shape:", self.dir_norm.shape)
+        print("direct_se2_pose shape:", self.direct_se2_pose.shape)
+
+
+        error_vtr_norm = self.vtr_norm - self.gps_norm
+        error_dir_norm = self.dir_norm - self.gps_norm
+        error_diff_norm = self.vtr_norm - self.dir_norm
+
+
+        # lets try to plot the vtr and gps norm
+        plt.figure(1)
+        plt.title('VTR Direct and GPS Norm')
+        plt.plot(self.repeat_times, self.vtr_norm, label='VTR Norm', linewidth = 0.8)
+        plt.plot(self.repeat_times, self.gps_norm, label='GPS Norm', linewidth = 0.8)
+        plt.plot(self.repeat_times, self.dir_norm, label='Direct Norm', linewidth = 0.8)
+
+        plt.xlabel('Repeat Times')
+        plt.ylabel('Norm (m)')
+        plt.grid()
+        plt.legend()
+
+        plt.figure(2)
+        plt.title('VTR Direct and GPS Norm Error')
+        plt.plot(self.repeat_times, error_vtr_norm, label='VTR Error', linewidth = 0.8)
+        plt.plot(self.repeat_times, error_dir_norm, label='Direct Error', linewidth = 0.8)
+        plt.xlabel('Repeat Times')
+        plt.ylabel('Norm Error (m)')
+        plt.grid()
+        plt.legend()
+
+        plt.figure(3)
+        plt.title('VTR Direct Norm Difference')
+        plt.plot(self.repeat_times, error_diff_norm, label='Diff Norm Error',linewidth = 0.8)
+        plt.xlabel('Repeat Times')
+        plt.ylabel('Norm Error (m)')
+        plt.grid()
+
+        plt.show()  
+
+
+    def plot_gps_ppk(self):
+        return True
+
+
+
+
+if __name__ == "__main__":
+    path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+
+    plotter = Plotter(path_to_data)
+
+    plotter.plot()
+
+    # plotter.plot_path_tracking_error()
+
+    plotter.plot_localziation_error()
+

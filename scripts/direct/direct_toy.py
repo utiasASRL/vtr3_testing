@@ -203,64 +203,18 @@ print("y_repeat_ppk shape:", y_repeat_ppk.shape)
 # teach_ppk_length_3d = get_path_distance_from_gps_3D(x_teach_ppk,y_teach_ppk,z_teach_ppk)
 teach_ppk_length_2d = get_path_distance_from_gps(x_teach_ppk,y_teach_ppk)
 print("Teach PPK length in 2D:", teach_ppk_length_2d)
-# print("Teach PPK length in 3D:", teach_ppk_length_3d)
-
-# x_repeat_ppk,y_repeat_ppk,z_repeat_ppk = read_PPK_file(grassy_t3_ppk)
-# repeat_ppk_length_3d = get_path_distance_from_gps_3D(x_repeat_ppk,y_repeat_ppk,z_repeat_ppk)
 repeat_ppk_length_2d = get_path_distance_from_gps(x_repeat_ppk,y_repeat_ppk)
 print("Repeat PPK length in 2D:", repeat_ppk_length_2d)
 # print("Repeat PPK length in 3D:", repeat_ppk_length_3d)
 
 
-# I want to plot the ppk data for T&R in 3-D          
-# Create the plot
-# if PLOT:
-#     fig = plt.figure(figsize=(12, 8))
-#     ax = fig.add_subplot(111, projection='3d')
-
-#     # Scatter plot with color representing time progression
-#     scatter = ax.scatter(x_teach_ppk, y_teach_ppk, z_teach_ppk, c=np.arange(len(x_teach_ppk)), cmap='viridis', s=10, label='Trajectory Points')
-#     ax.plot(x_teach_ppk, y_teach_ppk, z_teach_ppk, color='gray', alpha=0.4, linewidth=0.8, label='Path')
-    
-#     ax.scatter(x_repeat_ppk, y_repeat_ppk, z_repeat_ppk, c=np.arange(len(x_repeat_ppk)), cmap='plasma', s=10, label='Repeat Trajectory Points')
-#     ax.plot(x_repeat_ppk, y_repeat_ppk, z_repeat_ppk, color='red', alpha=0.4, linewidth=0.8, label='Repeat Path')
-
-#     plt.title('Teach PPK Path')
-#     ax.set_xlabel('X Coordinate')
-#     ax.set_ylabel('Y Coordinate')
-#     ax.set_zlabel('Z Coordinate')
-
-    # Set Equal Aspect Ratio
-    # def set_axes_equal(ax):
-    #     """Set equal aspect ratio for 3D plots."""
-    #     x_limits = ax.get_xlim()
-    #     y_limits = ax.get_ylim()
-    #     z_limits = ax.get_zlim()
-
-    #     x_range = x_limits[1] - x_limits[0]
-    #     y_range = y_limits[1] - y_limits[0]
-    #     z_range = z_limits[1] - z_limits[0]
-    #     max_range = max(x_range, y_range, z_range) / 2.0
-
-    #     mid_x = np.mean(x_limits)
-    #     mid_y = np.mean(y_limits)
-    #     mid_z = np.mean(z_limits)
-
-    #     ax.set_xlim(mid_x - max_range, mid_x + max_range)
-    #     ax.set_ylim(mid_y - max_range, mid_y + max_range)
-    #     ax.set_zlim(mid_z - max_range, mid_z + max_range)
-    # # Apply equal axis scaling
-    # set_axes_equal(ax)
-    # plt.show()
-
-
 # now it is possible to stack them t_repeat_gps, x_repeat_ppk, y_repeat_ppk
-r2_pose_repeat_ppk_dirty = np.hstack((t_repeat_ppk.reshape(-1,1), x_repeat_ppk.reshape(-1,1), y_repeat_ppk.reshape(-1,1)))
+r2_pose_repeat_ppk_dirty = np.hstack((t_repeat_ppk.reshape(-1,1), x_repeat_ppk.reshape(-1,1), y_repeat_ppk.reshape(-1,1), np.zeros_like(x_repeat_ppk.reshape(-1,1))))
 print("r2_pose_ppk_dirty shape:",r2_pose_repeat_ppk_dirty.shape) 
 
 # do the same for teach
 # now it is possible to stack them t_teach_gps, x_teach_ppk, y_teach_ppk
-r2_pose_teach_ppk_dirty = np.hstack((t_teach_ppk.reshape(-1,1), x_teach_ppk.reshape(-1,1), y_teach_ppk.reshape(-1,1)))
+r2_pose_teach_ppk_dirty = np.hstack((t_teach_ppk.reshape(-1,1), x_teach_ppk.reshape(-1,1), y_teach_ppk.reshape(-1,1),np.zeros_like(x_teach_ppk.reshape(-1,1))))
 print("r2_pose_teach_ppk_dirty shape:",r2_pose_teach_ppk_dirty.shape)
 
 # so the plot should be x-axis is the repeat time (can start from 0) and y-axis is the SE(2) norm
@@ -327,9 +281,6 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     # print("T_teach_repeat_edge_options:", T_teach_repeat_edge_options)
 
 
-
-
-
 dir_norm = []
 vtr_se2_pose = []
 direct_se2_pose = []
@@ -347,14 +298,6 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     repeat_scan_azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx]
     repeat_scan_timestamps = repeat_azimuth_timestamps[repeat_vertex_idx]
     
-    # print("teach scan polar shape:",teach_cv_scan_polar.shape)
-    # print("teach scan azimuth shape:",teach_scan_azimuth_angles.shape)
-    # print("teach scan timestamps shape:",teach_scan_timestamps.shape)
-    
-    
-    # print("repeat scan azimuth shape:",repeat_scan_azimuth_angles.shape)
-
-
     class RadarFrame:
         def __init__(self, polar, azimuths, timestamps):
             self.polar = polar[:, :].astype(np.float32) / 255.0
@@ -390,71 +333,46 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("direct estimated state:",state)
 
 
+
+result_folder = os.path.join(out_path_folder, "direct")
+if not os.path.exists(result_folder):
+    os.makedirs(result_folder)
+    print(f"Folder '{result_folder}' created.")
+
+
+# save the results
 vtr_norm = np.array(vtr_norm)
 gps_norm = np.array(gps_norm)
 dir_norm = np.array(dir_norm)
-
-error_vtr_norm = vtr_norm - gps_norm
-error_dir_norm = dir_norm - gps_norm
-error_diff_norm = vtr_norm - dir_norm
-
-
-# lets try to plot the vtr and gps norm
-plt.figure(1)
-plt.title('VTR Direct and GPS Norm')
-plt.plot(repeat_times, vtr_norm, label='VTR Norm', linewidth = 0.8)
-plt.plot(repeat_times, gps_norm, label='GPS Norm', linewidth = 0.8)
-plt.plot(repeat_times, dir_norm, label='Direct Norm', linewidth = 0.8)
-
-plt.xlabel('Repeat Times')
-plt.ylabel('Norm (m)')
-plt.grid()
-plt.legend()
-
-plt.figure(2)
-plt.title('VTR Direct and GPS Norm Error')
-plt.plot(repeat_times, error_vtr_norm, label='VTR Error', linewidth = 0.8)
-plt.plot(repeat_times, error_dir_norm, label='Direct Error', linewidth = 0.8)
-plt.xlabel('Repeat Times')
-plt.ylabel('Norm Error (m)')
-plt.grid()
-plt.legend()
-
-
-vtr_se2_pose = np.array(vtr_se2_pose)
 direct_se2_pose = np.array(direct_se2_pose)
+vtr_se2_pose = np.array(vtr_se2_pose)
 
-print("vtr_se2_pose shape:", vtr_se2_pose.shape)
+# also want to save the gps here t,x,y
+gps_teach_pose = r2_pose_teach_ppk_dirty
+gps_repeat_pose = r2_pose_repeat_ppk_dirty
+
+# need to get gps_path_tracking_error
+# step 1: make a path matrix
+# step 2: accumulate the signed distance
+
+
+print("vtr_norm shape:", vtr_norm.shape)
+print("gps_norm shape:", gps_norm.shape)
+print("dir_norm shape:", dir_norm.shape)
+print("gps_teach_pose shape:", gps_teach_pose.shape)
+print("gps_repeat_pose shape:", gps_repeat_pose.shape)
 print("direct_se2_pose shape:", direct_se2_pose.shape)
+print("vtr_se2_pose shape:", vtr_se2_pose.shape)
 
-plt.figure(3) # need to make it 3 by 1
-plt.subplot(3, 1, 1)
-plt.plot(repeat_times, vtr_se2_pose[:,0], label='VTR x')
-plt.plot(repeat_times, direct_se2_pose[:,0],label = 'Direct x')
-plt.title('VTR Direct se2 pose in x,y, theta')
-plt.ylabel('x (m)')
-plt.grid()
-plt.subplot(3, 1, 2)
-plt.plot(repeat_times, vtr_se2_pose[:,1], label='VTR y')
-plt.plot(repeat_times, direct_se2_pose[:,1],label = 'Direct y')
-plt.ylabel('y (m)')
-plt.grid()
-plt.subplot(3, 1, 3)
-plt.plot(repeat_times, vtr_se2_pose[:,2], label='VTR')
-plt.plot(repeat_times, direct_se2_pose[:,2],label = 'Direct')
-plt.ylabel('theta (rad)')
-plt.grid()
-plt.xlabel('Repeat Times')
-plt.legend()
 
-plt.figure(4)
-plt.title('VTR Direct Norm Difference')
-plt.plot(repeat_times, error_diff_norm, label='Diff Norm Error',linewidth = 0.8)
-plt.xlabel('Repeat Times')
-plt.ylabel('Norm Error (m)')
-plt.grid()
-
-plt.show()  
+np.savez(os.path.join(result_folder, "result.npz"),
+         vtr_norm=vtr_norm,
+         gps_norm=gps_norm,
+         dir_norm=dir_norm,
+         direct_se2_pose=direct_se2_pose,
+         vtr_se2_pose=vtr_se2_pose, 
+         gps_teach_pose=gps_teach_pose,
+         gps_repeat_pose=gps_repeat_pose)
     
 
 
