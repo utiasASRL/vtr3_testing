@@ -34,13 +34,16 @@ Also you need to install some dependencies: CV_Bridge; pylgmath and such
 ### Step 1
 Once specify the correct posegraph path
 Run python3 process_posegraph.py
+
 This will generate a folder called grassy_t2_r3 with the following structure
+```bash
 ----grassy_t2_r3
     ----direct (stores the result)
     ----teach (stores the extracted teach data)
         ----teach.npz
     ----repeat (stores the extracted repeat data)
         ----repeat.npz
+```
 
 ### Step 2
 You can run python3 direct_toy.py directly and it will loop through all the data and generate the results in the direct folder
