@@ -25,6 +25,11 @@ python3 samples/plot_repeat_path.py -g /path/to/graph
 ```
 
 ## Steps to run the Direct Toy problem 
+Please clone all the submodules
+```bash
+git submodule update --init --recursive
+```
+
 The main script is located at: scripts/direct/direct_toy.py
 But before you can run this, you need to process the posegraph data first whose path is specified in the direct_config.yaml
 
@@ -58,6 +63,10 @@ directly and it will loop through all the data and generate the results in the d
 Essentially, it is storing all the estimated Teach and Repeat Edge into direct/result.npz
 
 ### Step 3
-You can run the plotter.py to plot the localization and path-tracking error 
+You can run the 
+```bash 
+python3 plotter.py 
+```
+to plot the localization and path-tracking error 
 
 ## Direct_toy.py is the main file with all the algorithm
