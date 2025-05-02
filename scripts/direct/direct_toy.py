@@ -76,7 +76,7 @@ DEBUG = db_bool.get('DEBUG')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -146,79 +146,40 @@ if DEBUG:
     print("repeat_edge_transforms shape:", repeat_edge_transforms.shape)
     print("vtr_estimated_ptr shape:", vtr_estimated_ptr.shape)
 
-# the ppk data wrt the gps path tracking error
-ppk_data = np.load(f"{out_path_folder}repeat_path_tracking_error.npz")
+# # the ppk data wrt the gps path tracking error
+# ppk_data = np.load(f"{out_path_folder}repeat_path_tracking_error.npz")
 
-# I load the ppk data path tracking error
-t_repeat_ppk = ppk_data['t_repeat_ppk']
-distances_teach_repeat_ppk = ppk_data['distances_teach_repeat_ppk']
+# # I load the ppk data path tracking error
+# t_repeat_ppk = ppk_data['t_repeat_ppk']
+# distances_teach_repeat_ppk = ppk_data['distances_teach_repeat_ppk']
 
-if PLOT:
-    plt.figure()
+# if PLOT:
+#     plt.figure()
    
-    plt.title('VTR Estimated Path Tracking Error')
-    # reset t_repeat times to start from 0
-    t_repeat = repeat_times - repeat_times[0]
-    plt.plot(t_repeat,vtr_estimated_ptr, label=f'VTR RMSE: {np.sqrt(np.mean(vtr_estimated_ptr**2)):.3f}m for Repeat  Max Error: {np.max(np.abs(vtr_estimated_ptr)):.3f}m')
+#     plt.title('VTR Estimated Path Tracking Error')
+#     # reset t_repeat times to start from 0
+#     t_repeat = repeat_times - repeat_times[0]
+#     plt.plot(t_repeat,vtr_estimated_ptr, label=f'VTR RMSE: {np.sqrt(np.mean(vtr_estimated_ptr**2)):.3f}m for Repeat  Max Error: {np.max(np.abs(vtr_estimated_ptr)):.3f}m')
     
-    # print("t_repeat_ppk shape:", t_repeat_ppk.shape)
-    # print("distances_teach_repeat_ppk shape:", distances_teach_repeat_ppk.shape)
-    plt.plot(t_repeat_ppk, distances_teach_repeat_ppk, label=f"PPK RMSE: {np.sqrt(np.mean(distances_teach_repeat_ppk**2)):.3f}m for Repeat  Max Error: {np.max(np.abs(distances_teach_repeat_ppk)):.3f}m")
+#     # print("t_repeat_ppk shape:", t_repeat_ppk.shape)
+#     # print("distances_teach_repeat_ppk shape:", distances_teach_repeat_ppk.shape)
+#     plt.plot(t_repeat_ppk, distances_teach_repeat_ppk, label=f"PPK RMSE: {np.sqrt(np.mean(distances_teach_repeat_ppk**2)):.3f}m for Repeat  Max Error: {np.max(np.abs(distances_teach_repeat_ppk)):.3f}m")
     
-    plt.xlabel('Repeat Times')
-    plt.ylabel('Path Tracking Error (m)')
-    plt.grid()
-    plt.legend()
-    plt.show()
+#     plt.xlabel('Repeat Times')
+#     plt.ylabel('Path Tracking Error (m)')
+#     plt.grid()
+#     plt.legend()
+#     plt.show()
 
 
 # now we will get a baseline quick norm 
 # also I need to verify the xyz in a plane
-ppk = config['ppk']
-teach_ppk_folder = ppk['teach']
-repeat_ppk_folder = ppk['repeat']
+teach_ppk_df = np.load(os.path.join(TEACH_FOLDER, "teach_ppk.npz"),allow_pickle=True)
+r2_pose_teach_ppk_dirty = teach_ppk_df['r2_pose_teach_ppk']
 
-# teach is grassy t2
-# repeat is grassy t3
-grassy_t2_ppk = os.path.join(teach_ppk_folder, "grassy_t2.txt")
-grassy_t2_ppk_ros = os.path.join(teach_ppk_folder, "grassy_t2_ros.txt")
-grassy_t3_ppk = os.path.join(repeat_ppk_folder, "grassy_t3.txt")
-grassy_t3_ppk_ros = os.path.join(repeat_ppk_folder, "grassy_t3_ros.txt")
+repeat_ppk_df = np.load(os.path.join(REPEAT_FOLDER, "repeat_ppk.npz"),allow_pickle=True)
+r2_pose_repeat_ppk_dirty = repeat_ppk_df['r2_pose_repeat_ppk']
 
-t_teach_ppk = read_gps_ros_txt(grassy_t2_ppk_ros)
-t_repeat_ppk = read_gps_ros_txt(grassy_t3_ppk_ros)
-
-x_teach_ppk, y_teach_ppk = read_PPK_file_sam(grassy_t2_ppk)
-x_repeat_ppk, y_repeat_ppk = read_PPK_file_sam(grassy_t3_ppk)
-
-print("t_teach_ppk shape:", t_teach_ppk.shape)
-print("x_teach_ppk shape:", x_teach_ppk.shape)
-print("y_teach_ppk shape:", y_teach_ppk.shape)
-
-print("t_repeat_ppk shape:", t_repeat_ppk.shape)
-print("x_repeat_ppk shape:", x_repeat_ppk.shape)
-print("y_repeat_ppk shape:", y_repeat_ppk.shape)
-
-# x_teach_ppk,y_teach_ppk,z_teach_ppk = read_PPK_file(grassy_t2_ppk)
-# teach_ppk_length_3d = get_path_distance_from_gps_3D(x_teach_ppk,y_teach_ppk,z_teach_ppk)
-teach_ppk_length_2d = get_path_distance_from_gps(x_teach_ppk,y_teach_ppk)
-print("Teach PPK length in 2D:", teach_ppk_length_2d)
-repeat_ppk_length_2d = get_path_distance_from_gps(x_repeat_ppk,y_repeat_ppk)
-print("Repeat PPK length in 2D:", repeat_ppk_length_2d)
-# print("Repeat PPK length in 3D:", repeat_ppk_length_3d)
-
-
-# now it is possible to stack them t_repeat_gps, x_repeat_ppk, y_repeat_ppk
-r2_pose_repeat_ppk_dirty = np.hstack((t_repeat_ppk.reshape(-1,1), x_repeat_ppk.reshape(-1,1), y_repeat_ppk.reshape(-1,1), np.zeros_like(x_repeat_ppk.reshape(-1,1))))
-print("r2_pose_ppk_dirty shape:",r2_pose_repeat_ppk_dirty.shape) 
-
-# do the same for teach
-# now it is possible to stack them t_teach_gps, x_teach_ppk, y_teach_ppk
-r2_pose_teach_ppk_dirty = np.hstack((t_teach_ppk.reshape(-1,1), x_teach_ppk.reshape(-1,1), y_teach_ppk.reshape(-1,1),np.zeros_like(x_teach_ppk.reshape(-1,1))))
-print("r2_pose_teach_ppk_dirty shape:",r2_pose_teach_ppk_dirty.shape)
-
-# so the plot should be x-axis is the repeat time (can start from 0) and y-axis is the SE(2) norm
-# for both GPS and VTR
 
 # the things that I need
 # 1. repeat_edge_transforms = repeat_df['repeat_edge_transforms']

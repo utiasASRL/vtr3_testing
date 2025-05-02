@@ -15,7 +15,6 @@ import sys
 sys.path.insert(0, "scripts")
 
 from radar.utils.helper import *
-
 # point cloud vis
 from sensor_msgs_py.point_cloud2 import read_points
 # import open3d as o3d
@@ -61,6 +60,54 @@ def rotation_matrix_to_euler_angles(R):
 def wrap_to_pi(angle_rad):
     return (angle_rad + np.pi) % (2 * np.pi) - np.pi
 
+# this hopes to correct the sign flips issue in the signed path error calculation
+def correct_sign_flips(errors, threshold_high=0.1, threshold_low=0.05, window_size=5):
+    # Smooth the errors using a moving average
+    smoothed_errors = np.convolve(errors, np.ones(window_size)/window_size, mode='same')
+    
+    corrected = []
+    state = None  # 'positive' or 'negative'
+    
+    for i in range(len(smoothed_errors)):
+        error = errors[i]
+        smoothed = smoothed_errors[i]
+        
+        if state is None:
+            # Initialize state based on the first significant smoothed error
+            if abs(smoothed) > threshold_low:
+                state = 'positive' if smoothed > 0 else 'negative'
+                corrected.append(error if np.sign(smoothed) == np.sign(error) else -error)
+            else:
+                corrected.append(error)
+        else:
+            # Determine the current sign based on smoothed error
+            current_sign = 'positive' if smoothed > 0 else 'negative'
+            
+            if state == 'positive':
+                if current_sign == 'negative' and abs(smoothed) > threshold_high:
+                    # Legitimate state change to negative
+                    state = 'negative'
+                    corrected.append(-error if error > 0 else error)
+                elif current_sign == 'negative' and abs(smoothed) > threshold_low:
+                    # In hysteresis zone, maintain positive
+                    corrected.append(abs(error))
+                else:
+                    # Maintain positive state
+                    corrected.append(error if error > 0 else -error)
+            else:  # state == 'negative'
+                if current_sign == 'positive' and abs(smoothed) > threshold_high:
+                    # Legitimate state change to positive
+                    state = 'positive'
+                    corrected.append(-error if error < 0 else error)
+                elif current_sign == 'positive' and abs(smoothed) > threshold_low:
+                    # In hysteresis zone, maintain negative
+                    corrected.append(-abs(error))
+                else:
+                    # Maintain negative state
+                    corrected.append(error if error < 0 else -error)
+    
+    return corrected
+
 # initlize the video writer
 # Parameters for the video writer
 frame_rate = 60.0  # Frames per second
@@ -90,17 +137,17 @@ def load_config(config_path='config.yaml'):
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config.yaml'))
 
 # Access database configuration
-db = config['radar_data']['grassy']
+db = config['radar_data']['parking']
 db_rosbag_path = db.get('rosbag_path')
 
-teach_rosbag_path = db_rosbag_path.get('teach')
+# teach_rosbag_path = db_rosbag_path.get('teach')
 
 global repeat
 repeat = 1
-repeat_rosbag_path = db_rosbag_path.get(f'repeat{repeat}') # dont think this is needed
+# repeat_rosbag_path = db_rosbag_path.get(f'repeat{repeat}') # dont think this is needed
 
 # for pose graph
-pose_graph_path = db.get('pose_graph_path').get('grassy_t2_r3')
+pose_graph_path = db.get('pose_graph_path').get('parking_t3_r4')
 print("pose graph path:",pose_graph_path)
 
 db_bool = config['bool']
@@ -115,7 +162,7 @@ print("DEBUG:",DEBUG)
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/") # change path here
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -123,37 +170,37 @@ else:
     print(f"Folder '{out_path_folder}' already exists.")    
 
 
-if SAVE:
-    paths = [teach_rosbag_path, repeat_rosbag_path]
-    teach = True
-    for path in paths:
-        print("processing path:",path)
-        fft_data,radar_timestamps,azimuth_angles, azimuth_timestamps_total,cart_imgs = get_radar_scan_images_and_timestamps(path)
-        if teach:
-            scan_folder = os.path.join(out_path_folder, "teach_radar_scans")
-            teach = False
-            print("Teach duration", radar_timestamps[-1] - radar_timestamps[0])
-        else:
-            scan_folder = os.path.join(out_path_folder, f"repeat{repeat}_radar_scans")
-            print(f"Repeat{repeat} duration", radar_timestamps[-1] - radar_timestamps[0])
+# if SAVE:
+#     paths = [teach_rosbag_path, repeat_rosbag_path]
+#     teach = True
+#     for path in paths:
+#         print("processing path:",path)
+#         fft_data,radar_timestamps,azimuth_angles, azimuth_timestamps_total,cart_imgs = get_radar_scan_images_and_timestamps(path)
+#         if teach:
+#             scan_folder = os.path.join(out_path_folder, "teach_radar_scans")
+#             teach = False
+#             print("Teach duration", radar_timestamps[-1] - radar_timestamps[0])
+#         else:
+#             scan_folder = os.path.join(out_path_folder, f"repeat{repeat}_radar_scans")
+#             print(f"Repeat{repeat} duration", radar_timestamps[-1] - radar_timestamps[0])
 
-        for timestamp in radar_timestamps:
-            print("processing scan index:",radar_timestamps.index(timestamp))
-            # print("radar scan timestamp:",timestamp)
-            polar_img = fft_data[radar_timestamps.index(timestamp)]
+#         for timestamp in radar_timestamps:
+#             print("processing scan index:",radar_timestamps.index(timestamp))
+#             # print("radar scan timestamp:",timestamp)
+#             polar_img = fft_data[radar_timestamps.index(timestamp)]
 
-            encoder_values = np.array(azimuth_angles[radar_timestamps.index(timestamp)])
+#             encoder_values = np.array(azimuth_angles[radar_timestamps.index(timestamp)])
 
-            azimuth_timestamps = np.array(azimuth_timestamps_total[radar_timestamps.index(timestamp)])
+#             azimuth_timestamps = np.array(azimuth_timestamps_total[radar_timestamps.index(timestamp)])
 
-            combined = np.vstack((azimuth_timestamps,encoder_values)).T
+#             combined = np.vstack((azimuth_timestamps,encoder_values)).T
 
-            if not os.path.exists(scan_folder):
-                os.makedirs(scan_folder)
-                print(f"Folder '{scan_folder}' created.")
+#             if not os.path.exists(scan_folder):
+#                 os.makedirs(scan_folder)
+#                 print(f"Folder '{scan_folder}' created.")
 
-            cv2.imwrite(os.path.join(scan_folder,f"{timestamp}.png"), polar_img)
-            np.savetxt(os.path.join(scan_folder,f"{timestamp}.txt"), combined, delimiter=",", fmt='%s')
+#             cv2.imwrite(os.path.join(scan_folder,f"{timestamp}.png"), polar_img)
+#             np.savetxt(os.path.join(scan_folder,f"{timestamp}.txt"), combined, delimiter=",", fmt='%s')
 
    
 print("-------- begin pose graph processing --------")
@@ -363,14 +410,15 @@ for vertex, e in TemporalIterator(v_start): # I am going through all the repeat 
 
     error = signed_distance_to_path(r_gps, path_matrix)
     product = error*previous_error
-    if product<0 and abs(error)>0.05 and abs(previous_error)>0.05:
+    if product<0 and abs(error)>0.05 and abs(previous_error)>0.05: # TODO this value can be tuned
         error = -1*error
 
     dist.append(error)
     previous_error = error
     path_len += np.linalg.norm(e.T.r_ba_ina())
 
-
+# # GPT solution
+# dist = correct_sign_flips(dist)
     # break
     
 

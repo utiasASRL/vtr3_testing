@@ -199,8 +199,8 @@ class Plotter:
         loc_error_vtr = np.array(loc_error_vtr).reshape(-1,1)
         loc_error_dir = np.array(loc_error_dir).reshape(-1,1)
 
-        plt.plot(self.repeat_times[start_plot_idx:], loc_error_vtr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(loc_error_vtr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_vtr)):.3f}m')
-        plt.plot(self.repeat_times[start_plot_idx:], loc_error_dir[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(loc_error_dir**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dir)):.3f}m',color='green')
+        plt.plot(self.repeat_times[start_plot_idx:], loc_error_vtr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(loc_error_vtr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_vtr[start_plot_idx:])):.3f}m')
+        plt.plot(self.repeat_times[start_plot_idx:], loc_error_dir[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(loc_error_dir[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dir[start_plot_idx:])):.3f}m',color='green')
         plt.grid()
         plt.legend()
         plt.xlabel('Repeat Times')
@@ -211,9 +211,9 @@ class Plotter:
         # just plot the path tracking error
 
         plt.title('VTR and Direct Estimated Path Tracking Error')
-        plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr)):.3f}m')
-        plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr)):.3f}m")
-        plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr)):.3f}m',color='green')
+        plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m')
+        plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m")
+        plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green')
 
         plt.grid()
         plt.legend()
@@ -248,7 +248,7 @@ class Plotter:
 
             # direct result we can actually do everything in SE(3)
             r_repeat_teach_in_teach_se2 = self.direct_se2_pose[idx]
-            print("sam: this is direct estimate in se2: ",r_repeat_teach_in_teach_se2)
+            # print("sam: this is direct estimate in se2: ",r_repeat_teach_in_teach_se2)
 
             # ok lets define the rotation and translation vector and then use the transformation matrix class
             def se2_to_se3(se2_vec):
@@ -293,7 +293,7 @@ class Plotter:
             # r_r_w_in_world = T_r_w.r_ba_ina().T
 
             r_gps_w_in_w_repeat = T_gps_w_in_w_repeat.r_ba_ina() # where the gps is in the world
-            print("sam: direct r_gps_w_in_w_repeat: \n", r_gps_w_in_w_repeat)
+            # print("sam: direct r_gps_w_in_w_repeat: \n", r_gps_w_in_w_repeat)
 
             # print("r_r_w_in_world shape:", r_r_w_in_world.shape)
             # print("r_r_w_in_world:", r_r_w_in_world.T[0:2])
@@ -312,7 +312,7 @@ class Plotter:
            
 
             r_repeat_world_vtr.append(r_gps_w_in_w_repeat_vtr.T)
-            print("sam: vtr r_gps_w_in_w_repeat: \n", r_gps_w_in_w_repeat_vtr)
+            # print("sam: vtr r_gps_w_in_w_repeat: \n", r_gps_w_in_w_repeat_vtr)
 
         # make them into numpy arrays
         self.teach_world = np.array(r_teach_world).reshape(-1,3)
@@ -377,10 +377,12 @@ class Plotter:
             error = signed_distance_to_path(gps_repeat_pose_without_time[idx],path_matrix)
 
             product = error*previous_error
-            if product<0 and abs(error)>0.05 and abs(previous_error)>0.05:
+            if product<0 and abs(error)>0.05 and abs(previous_error)>0.05: # this value can be tuned
                 error = -1*error
             gps_ptr.append(error)
             previous_error = error
+
+        # gps_ptr = correct_sign_flips(gps_ptr) #GPT
 
         return np.array(gps_ptr).reshape(-1,1) # n by 1
 
@@ -430,14 +432,16 @@ class Plotter:
         plt.show()  
 
 
-    def plot_gps_ppk(self):
+    def plot_gps_ppk(self, teach_path, repeat_path):
+        print("--------In function plot_gps_ppk--------")
+        # need to plot the gps and ppk
         return True
 
 
 
 
 if __name__ == "__main__":
-    path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+    path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4"
 
     plotter = Plotter(path_to_data)
 

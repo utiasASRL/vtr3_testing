@@ -4,13 +4,13 @@ import math
 import pandas as pd
 
 
-rtk = True
+rtk = False
 
 kNbTrials = 100
 
 def main():
-    ppk_root = "/home/samqiao/ASRL/vtr3_testing/localization_data/ppk"
-    output_root = '/home/samqiao/ASRL/vtr3_testing/localization_data/ppk'
+    ppk_root = "/home/samqiao/ASRL/vtr3_testing/localization_data/ppk/"
+    output_root = '/home/samqiao/ASRL/vtr3_testing/localization_data/ppk/'
     # Get the list of folders in the output_root directory
     sequences = [ f for f in os.listdir(ppk_root) if os.path.isdir(os.path.join(ppk_root, f)) ]
 

@@ -101,7 +101,7 @@ repeat = 1
 repeat_rosbag_path = db_rosbag_path.get(f'repeat{repeat}') # dont think this is needed
 
 # for pose graph
-pose_graph_path = db.get('pose_graph_path').get('grassy_t2_r3')
+pose_graph_path = db.get('pose_graph_path').get('parking_t3_r4')
 print("pose graph path:",pose_graph_path)
 
 db_bool = config['bool']
@@ -113,7 +113,7 @@ PLOT = db_bool.get('PLOT')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r{repeat}/")
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -121,37 +121,37 @@ else:
     print(f"Folder '{out_path_folder}' already exists.")    
 
 
-if SAVE:
-    paths = [teach_rosbag_path, repeat_rosbag_path]
-    teach = True
-    for path in paths:
-        print("processing path:",path)
-        fft_data,radar_timestamps,azimuth_angles, azimuth_timestamps_total,cart_imgs = get_radar_scan_images_and_timestamps(path)
-        if teach:
-            scan_folder = os.path.join(out_path_folder, "teach_radar_scans")
-            teach = False
-            print("Teach duration", radar_timestamps[-1] - radar_timestamps[0])
-        else:
-            scan_folder = os.path.join(out_path_folder, f"repeat{repeat}_radar_scans")
-            print(f"Repeat{repeat} duration", radar_timestamps[-1] - radar_timestamps[0])
+# if SAVE:
+#     paths = [teach_rosbag_path, repeat_rosbag_path]
+#     teach = True
+#     for path in paths:
+#         print("processing path:",path)
+#         fft_data,radar_timestamps,azimuth_angles, azimuth_timestamps_total,cart_imgs = get_radar_scan_images_and_timestamps(path)
+#         if teach:
+#             scan_folder = os.path.join(out_path_folder, "teach_radar_scans")
+#             teach = False
+#             print("Teach duration", radar_timestamps[-1] - radar_timestamps[0])
+#         else:
+#             scan_folder = os.path.join(out_path_folder, f"repeat{repeat}_radar_scans")
+#             print(f"Repeat{repeat} duration", radar_timestamps[-1] - radar_timestamps[0])
 
-        for timestamp in radar_timestamps:
-            print("processing scan index:",radar_timestamps.index(timestamp))
-            # print("radar scan timestamp:",timestamp)
-            polar_img = fft_data[radar_timestamps.index(timestamp)]
+#         for timestamp in radar_timestamps:
+#             print("processing scan index:",radar_timestamps.index(timestamp))
+#             # print("radar scan timestamp:",timestamp)
+#             polar_img = fft_data[radar_timestamps.index(timestamp)]
 
-            encoder_values = np.array(azimuth_angles[radar_timestamps.index(timestamp)])
+#             encoder_values = np.array(azimuth_angles[radar_timestamps.index(timestamp)])
 
-            azimuth_timestamps = np.array(azimuth_timestamps_total[radar_timestamps.index(timestamp)])
+#             azimuth_timestamps = np.array(azimuth_timestamps_total[radar_timestamps.index(timestamp)])
 
-            combined = np.vstack((azimuth_timestamps,encoder_values)).T
+#             combined = np.vstack((azimuth_timestamps,encoder_values)).T
 
-            if not os.path.exists(scan_folder):
-                os.makedirs(scan_folder)
-                print(f"Folder '{scan_folder}' created.")
+#             if not os.path.exists(scan_folder):
+#                 os.makedirs(scan_folder)
+#                 print(f"Folder '{scan_folder}' created.")
 
-            cv2.imwrite(os.path.join(scan_folder,f"{timestamp}.png"), polar_img)
-            np.savetxt(os.path.join(scan_folder,f"{timestamp}.txt"), combined, delimiter=",", fmt='%s')
+#             cv2.imwrite(os.path.join(scan_folder,f"{timestamp}.png"), polar_img)
+#             np.savetxt(os.path.join(scan_folder,f"{timestamp}.txt"), combined, delimiter=",", fmt='%s')
 
  
 def get_vtr_ptr_baseline(pose_graph_path,repeat):
