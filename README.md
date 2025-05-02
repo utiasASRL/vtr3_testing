@@ -44,14 +44,22 @@ source $VTRSRC/main/install/setup.bash
 python3 process_posegraph.py
 ```
 
+You will also need to generate the ppk gps npz a lot easier. 
+They are stored as (n,4) in the order of time, x, y, z where z is a zero array
+```bash
+python3 process_ppk_ros.py
+```
+
 This will generate a folder called grassy_t2_r3 with the following structure
 ```bash
 ----grassy_t2_r3
     ----direct (stores the result)
     ----teach (stores the extracted teach data)
         ----teach.npz
+        ----teach_ppk.npz
     ----repeat (stores the extracted repeat data)
         ----repeat.npz
+        ----repeat_ppk.npz
 ```
 
 ### Step 2
