@@ -6,6 +6,8 @@ import os
 
 import pandas as pd
 from pylgmath import Transformation
+import pylgmath
+
 
 import sys
 parent_folder = "/home/samqiao/ASRL/vtr3_testing"
@@ -176,6 +178,8 @@ class Plotter:
         loc_error_vtr = []
         loc_error_dir = []
 
+        start_plot_idx = 1 # you can change when the plot starts
+
         for idx in range(0,self.vtr_estimated_ptr.shape[0]):
             repeat_vertex_time = self.repeat_times[idx]
 
@@ -195,8 +199,8 @@ class Plotter:
         loc_error_vtr = np.array(loc_error_vtr).reshape(-1,1)
         loc_error_dir = np.array(loc_error_dir).reshape(-1,1)
 
-        plt.plot(self.repeat_times, loc_error_vtr, label=f'VTR RMSE: {np.sqrt(np.mean(loc_error_vtr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_vtr)):.3f}m')
-        plt.plot(self.repeat_times, loc_error_dir, label=f'Direct RMSE: {np.sqrt(np.mean(loc_error_dir**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dir)):.3f}m',color='green')
+        plt.plot(self.repeat_times[start_plot_idx:], loc_error_vtr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(loc_error_vtr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_vtr)):.3f}m')
+        plt.plot(self.repeat_times[start_plot_idx:], loc_error_dir[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(loc_error_dir**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dir)):.3f}m',color='green')
         plt.grid()
         plt.legend()
         plt.xlabel('Repeat Times')
@@ -207,9 +211,9 @@ class Plotter:
         # just plot the path tracking error
 
         plt.title('VTR and Direct Estimated Path Tracking Error')
-        plt.plot(self.repeat_times, self.vtr_estimated_ptr, label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr)):.3f}m')
-        plt.plot(self.gps_repeat_pose[:,0], self.gps_ptr, label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr)):.3f}m")
-        plt.plot(self.repeat_times, self.dir_ptr, label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr)):.3f}m',color='green')
+        plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr)):.3f}m')
+        plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr)):.3f}m")
+        plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr)):.3f}m',color='green')
 
         plt.grid()
         plt.legend()
@@ -218,7 +222,6 @@ class Plotter:
         plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
 
         plt.show()
-
 
 
     def get_direct_path_tracking_error(self):
@@ -240,21 +243,57 @@ class Plotter:
             T_teach_world = self.teach_vertex_transforms[idx][0][teach_vertex_time[0]]
             T_gps_world_teach = T_novatel_robot @ T_teach_world
             r_gps_w_in_w_teach = T_gps_world_teach.r_ba_ina() # where the gps is in the world
-            r_teach_world_in_world = T_teach_world.r_ba_ina()
+            # r_teach_world_in_world = T_teach_world.r_ba_ina()
             r_teach_world.append(r_gps_w_in_w_teach.T)
 
             # direct result we can actually do everything in SE(3)
             r_repeat_teach_in_teach_se2 = self.direct_se2_pose[idx]
-            # should be 6 by 1
-            r_repeat_teach_in_teach_se3 = np.array([[r_repeat_teach_in_teach_se2[0], r_repeat_teach_in_teach_se2[1], 0, 0, 0, r_repeat_teach_in_teach_se2[2]]]).T.reshape(-1,1)
-            print("r_teach_repeat_in_repeat_se3 shape:", r_repeat_teach_in_teach_se3.shape)
-            T_teach_repeat = Transformation(xi_ab = r_repeat_teach_in_teach_se3)
-            T_r_w = T_teach_repeat.inverse() @ T_teach_world
-            T_gps_w_in_w_repeat = T_novatel_robot @ T_r_w
-            r_r_w_in_world = T_r_w.r_ba_ina().T
+            print("sam: this is direct estimate in se2: ",r_repeat_teach_in_teach_se2)
+
+            # ok lets define the rotation and translation vector and then use the transformation matrix class
+            def se2_to_se3(se2_vec):
+                """
+                Convert SE(2) pose to SE(3) transformation matrix
+                
+                Args:
+                    se2_vec: Array-like of shape (3,) containing [x, y, theta] 
+                            (theta in radians)
+                
+                Returns:
+                    4x4 SE(3) transformation matrix as NumPy array
+                """
+                # Ensure input is flattened and extract components
+                x, y, theta = np.asarray(se2_vec).flatten()
+                
+                # Create rotation matrix (Z-axis rotation)
+                c, s = np.cos(theta), np.sin(theta)
+                R = np.array([
+                    [c, -s,  0],
+                    [s,  c,  0],
+                    [0,  0,  1]
+                ])
+                
+                # Create translation vector
+                translation = np.array([x, y, 0])
+                
+                # Construct SE(3) matrix
+                se3_matrix = np.eye(4)
+                se3_matrix[:3, :3] = R          # Set rotation
+                se3_matrix[:3, 3] = translation # Set translation
+                
+                return se3_matrix
+            
+            T_teach_repeat_direct = Transformation(T_ba = se2_to_se3(r_repeat_teach_in_teach_se2))
+            # print("sam: this is direct estimate in se(3): \n",T_teach_repeat_direct.matrix())
+
+
+            T_r_w = T_teach_repeat_direct.inverse() @ T_radar_robot @ T_teach_world # here there might a frame issue TODO
+
+            T_gps_w_in_w_repeat = T_novatel_robot @ T_radar_robot.inverse() @ T_r_w # here there might be a frame issue TODO I think this is correct
+            # r_r_w_in_world = T_r_w.r_ba_ina().T
 
             r_gps_w_in_w_repeat = T_gps_w_in_w_repeat.r_ba_ina() # where the gps is in the world
-            # print("sam: r_gps_w_in_w_repeat shape:", r_gps_w_in_w_repeat.shape)
+            print("sam: direct r_gps_w_in_w_repeat: \n", r_gps_w_in_w_repeat)
 
             # print("r_r_w_in_world shape:", r_r_w_in_world.shape)
             # print("r_r_w_in_world:", r_r_w_in_world.T[0:2])
@@ -265,10 +304,15 @@ class Plotter:
             # need to investigate vtr_repeat (TODO) seems to be on the other side of the teach compared to direct 
             T_teach_repeat_edge = self.repeat_edge_transforms[idx][0][repeat_vertex_time[0]]
 
+            # print("sam: this is vtr estimate se(3): \n",T_teach_repeat_edge.matrix())
+
             T_repeat_w = T_teach_repeat_edge.inverse() @ T_teach_world
             T_gps_w_in_w_repeat_vtr = T_novatel_robot @ T_repeat_w
             r_gps_w_in_w_repeat_vtr = T_gps_w_in_w_repeat_vtr.r_ba_ina()
+           
+
             r_repeat_world_vtr.append(r_gps_w_in_w_repeat_vtr.T)
+            print("sam: vtr r_gps_w_in_w_repeat: \n", r_gps_w_in_w_repeat_vtr)
 
         # make them into numpy arrays
         self.teach_world = np.array(r_teach_world).reshape(-1,3)
@@ -277,9 +321,9 @@ class Plotter:
 
         plt.figure()
         plt.title('Teach and Direct Repeat World')
-        plt.plot(self.teach_world[:,0], self.teach_world[:,1], label='RTR Teach World in GPS', linewidth = 0.8)
-        plt.plot(self.repeat_world_direct[:,0], self.repeat_world_direct[:,1], label='Direct Repeat World in GPS', linewidth = 0.8)
-        plt.plot(self.repeat_world_vtr[:,0], self.repeat_world_vtr[:,1], label='VTR Repeat World in GPS', linewidth = 0.8)
+        plt.plot(self.teach_world[:,0], self.teach_world[:,1], label='RTR Teach World in GPS', linewidth = 1)
+        plt.scatter(self.repeat_world_direct[:,0], self.repeat_world_direct[:,1], label='Direct Repeat World in GPS', s=10,marker='o',color="green")
+        plt.scatter(self.repeat_world_vtr[:,0], self.repeat_world_vtr[:,1], label='VTR Repeat World in GPS', s=10,marker='x')
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')
         plt.grid()
@@ -294,6 +338,7 @@ class Plotter:
         # self.repeat world shape (:,2)
 
         for idx in range(0,self.repeat_world_direct.shape[0]):
+            # print("-----idx:", idx)
             repeat_x_y_z = np.array([self.repeat_world_direct[idx][0], self.repeat_world_direct[idx][1], 0]).T # this is how tall the gps is
 
             # print("repeat_x_y_z shape:", repeat_x_y_z.shape)
@@ -303,11 +348,12 @@ class Plotter:
             product = error*previous_error
             if product<0 and abs(error)>0.05 and abs(previous_error)>0.05:
                 error = -1*error
+            # print("error:", error)
             dir_ptr.append(error)
             previous_error = error
         
         dir_ptr = np.array(dir_ptr).reshape(-1,1) # n by 1
-        return dir_ptr*-1
+        return dir_ptr
 
 
     def get_gps_path_tracking_error(self):
