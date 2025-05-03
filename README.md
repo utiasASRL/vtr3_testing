@@ -56,7 +56,7 @@ You need to have the ppk folder path specified correctly and ppk folder should b
                 ----grassy_t2.txt
                 ----grassy_t2_ros.txt
                 ----grassy_t2_gps_fix.csv
-                ----grassy_0_BESTPOS.ASCII
+                ----grassy2_0_BESTPOS.ASCII
 ```
 
 Then
