@@ -45,7 +45,21 @@ python3 process_posegraph.py
 ```
 
 You will also need to generate the ppk gps npz a lot easier. 
+
 They are stored as (n,4) in the order of time, x, y, z where z is a zero array
+You need to have the ppk folder path specified correctly and ppk folder should be structured as,
+
+```bash
+    ----localization_data
+        ----ppk
+            ----grassy_t2
+                ----grassy_t2.txt
+                ----grassy_t2_ros.txt
+                ----grassy_t2_gps_fix.csv
+                ----grassy_0_BESTPOS.ASCII
+```
+
+Then
 ```bash
 python3 process_ppk_ros.py
 ```
