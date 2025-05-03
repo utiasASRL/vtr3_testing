@@ -146,31 +146,6 @@ if DEBUG:
     print("repeat_edge_transforms shape:", repeat_edge_transforms.shape)
     print("vtr_estimated_ptr shape:", vtr_estimated_ptr.shape)
 
-# # the ppk data wrt the gps path tracking error
-# ppk_data = np.load(f"{out_path_folder}repeat_path_tracking_error.npz")
-
-# # I load the ppk data path tracking error
-# t_repeat_ppk = ppk_data['t_repeat_ppk']
-# distances_teach_repeat_ppk = ppk_data['distances_teach_repeat_ppk']
-
-# if PLOT:
-#     plt.figure()
-   
-#     plt.title('VTR Estimated Path Tracking Error')
-#     # reset t_repeat times to start from 0
-#     t_repeat = repeat_times - repeat_times[0]
-#     plt.plot(t_repeat,vtr_estimated_ptr, label=f'VTR RMSE: {np.sqrt(np.mean(vtr_estimated_ptr**2)):.3f}m for Repeat  Max Error: {np.max(np.abs(vtr_estimated_ptr)):.3f}m')
-    
-#     # print("t_repeat_ppk shape:", t_repeat_ppk.shape)
-#     # print("distances_teach_repeat_ppk shape:", distances_teach_repeat_ppk.shape)
-#     plt.plot(t_repeat_ppk, distances_teach_repeat_ppk, label=f"PPK RMSE: {np.sqrt(np.mean(distances_teach_repeat_ppk**2)):.3f}m for Repeat  Max Error: {np.max(np.abs(distances_teach_repeat_ppk)):.3f}m")
-    
-#     plt.xlabel('Repeat Times')
-#     plt.ylabel('Path Tracking Error (m)')
-#     plt.grid()
-#     plt.legend()
-#     plt.show()
-
 
 # now we will get a baseline quick norm 
 # also I need to verify the xyz in a plane

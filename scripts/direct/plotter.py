@@ -170,6 +170,11 @@ class Plotter:
         print("dir ptr shape:", self.dir_ptr.shape)
         print("gps ptr shape:", self.gps_ptr.shape)
 
+        # yeah make it abs
+        self.vtr_estimated_ptr = np.abs(self.vtr_estimated_ptr)
+        self.dir_ptr = np.abs(self.dir_ptr)
+        self.gps_ptr = np.abs(self.gps_ptr)
+
         # I want to plot it in a 2 by 1
         plt.figure(1)
         plt.subplot(2, 1, 1)
@@ -211,9 +216,9 @@ class Plotter:
         # just plot the path tracking error
 
         plt.title('VTR and Direct Estimated Path Tracking Error')
-        plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m')
-        plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m")
-        plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green')
+        plt.scatter(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m',s=1)
+        plt.scatter(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m", s=1)
+        plt.scatter(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green',s=1)
 
         plt.grid()
         plt.legend()
@@ -382,54 +387,8 @@ class Plotter:
             gps_ptr.append(error)
             previous_error = error
 
-        # gps_ptr = correct_sign_flips(gps_ptr) #GPT
-
         return np.array(gps_ptr).reshape(-1,1) # n by 1
 
-        
-    
-    def plot_norm(self): # garbage metrics
-         # save the results
-        print("vtr_norm shape:", self.vtr_norm.shape)
-        print("gps_norm shape:", self.gps_norm.shape)
-        print("dir_norm shape:", self.dir_norm.shape)
-        print("direct_se2_pose shape:", self.direct_se2_pose.shape)
-
-
-        error_vtr_norm = self.vtr_norm - self.gps_norm
-        error_dir_norm = self.dir_norm - self.gps_norm
-        error_diff_norm = self.vtr_norm - self.dir_norm
-
-
-        # lets try to plot the vtr and gps norm
-        plt.figure(1)
-        plt.title('VTR Direct and GPS Norm')
-        plt.plot(self.repeat_times, self.vtr_norm, label='VTR Norm', linewidth = 0.8)
-        plt.plot(self.repeat_times, self.gps_norm, label='GPS Norm', linewidth = 0.8)
-        plt.plot(self.repeat_times, self.dir_norm, label='Direct Norm', linewidth = 0.8)
-
-        plt.xlabel('Repeat Times')
-        plt.ylabel('Norm (m)')
-        plt.grid()
-        plt.legend()
-
-        plt.figure(2)
-        plt.title('VTR Direct and GPS Norm Error')
-        plt.plot(self.repeat_times, error_vtr_norm, label='VTR Error', linewidth = 0.8)
-        plt.plot(self.repeat_times, error_dir_norm, label='Direct Error', linewidth = 0.8)
-        plt.xlabel('Repeat Times')
-        plt.ylabel('Norm Error (m)')
-        plt.grid()
-        plt.legend()
-
-        plt.figure(3)
-        plt.title('VTR Direct Norm Difference')
-        plt.plot(self.repeat_times, error_diff_norm, label='Diff Norm Error',linewidth = 0.8)
-        plt.xlabel('Repeat Times')
-        plt.ylabel('Norm Error (m)')
-        plt.grid()
-
-        plt.show()  
 
 
     def plot_gps_ppk(self, teach_path, repeat_path):

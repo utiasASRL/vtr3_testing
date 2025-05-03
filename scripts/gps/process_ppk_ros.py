@@ -156,8 +156,8 @@ print("repeat_ppk_length_3d:",repeat_ppk_length_3d)
 
 
 plt.figure(0)
-plt.plot(x_teach_ppk, y_teach_ppk,  label='PPK GPS Teach')
-plt.plot(x_repeat_ppk, y_repeat_ppk,  label='PPK GPS Repeat')
+plt.scatter(x_teach_ppk, y_teach_ppk,  label='PPK GPS Teach', s=1)
+plt.scatter(x_repeat_ppk, y_repeat_ppk,  label='PPK GPS Repeat', s=1)
 plt.xlabel('X Coordinate')
 plt.ylabel('Y Coordinate')
 plt.axis('equal')
