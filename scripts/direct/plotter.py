@@ -10,7 +10,7 @@ import pylgmath
 
 
 import sys
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/leonardo/vtr3_testing"
 
 import yaml
 
@@ -441,7 +441,7 @@ class Plotter:
 
 
 if __name__ == "__main__":
-    path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4"
+    path_to_data = "/home/leonardo/vtr3_testing/scripts/direct/grassy_t2_r3"
 
     plotter = Plotter(path_to_data)
 
