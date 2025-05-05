@@ -150,9 +150,15 @@ if DEBUG:
 # now we will get a baseline quick norm 
 # also I need to verify the xyz in a plane
 teach_ppk_df = np.load(os.path.join(TEACH_FOLDER, "teach_ppk.npz"),allow_pickle=True)
+if not os.path.exists(os.path.join(TEACH_FOLDER, "teach_ppk.npz")):
+    print("teach_ppk.npz not found")
+    exit(1)
 r2_pose_teach_ppk_dirty = teach_ppk_df['r2_pose_teach_ppk']
 
 repeat_ppk_df = np.load(os.path.join(REPEAT_FOLDER, "repeat_ppk.npz"),allow_pickle=True)
+if not os.path.exists(os.path.join(REPEAT_FOLDER, "repeat_ppk.npz")):
+    print("repeat_ppk.npz not found")
+    exit(1)
 r2_pose_repeat_ppk_dirty = repeat_ppk_df['r2_pose_repeat_ppk']
 
 
