@@ -69,11 +69,4 @@ def one_image_to_one_image(teach_frame,repeat_frame, config_warthog, radar_resol
     return state
 
 
-def get_ptr(repeat_times, teach_poses, repeat_poses): # SE(2) pose return an array of path-tracking error of the same shape
-    '''shape: repeat_times (n,1) teach_poses (m,3) repeat_poses (n,3)'''
-    # need to construct a path matrix from the teach poses
-
-    
-
-    return True
     
