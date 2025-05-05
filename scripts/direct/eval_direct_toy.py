@@ -123,7 +123,7 @@ def align_trajectories(odom, gt):
     return gt_aligned, R, t
 
 
-print(result_folder)
+# print(result_folder)
 
 sequence = "parking_t3_r4"
 
@@ -182,7 +182,7 @@ vtr_se2_pose = result_df['vtr_se2_pose']
 gps_teach_pose = result_df['gps_teach_pose']
 gps_repeat_pose = result_df['gps_repeat_pose']
 
-# print("gps_teach_pose", gps_teach_pose.shape)
+print("gps_teach_pose", gps_teach_pose.shape)
 
 plotter = Plotter()
 plotter.plot_traj(gps_teach_pose[:,1:],gps_repeat_pose[:,1:])
@@ -283,7 +283,7 @@ print("repeat_world_vtr shape:", repeat_world_vtr.shape)
 # plotter.plot_traj(teach_world,repeat_world_direct)
 # plotter.show_plots()
 
-window_size = 20
+window_size = 50
 
 errorx_direct = []
 errory_direct = []
@@ -292,6 +292,13 @@ errorx_vtr = []
 errory_vtr = []
 # errortheta = [] later maybe we can use the tangent....
 
+
+def get_piecewise_path_length(gt_trajectory):
+    pose = gt_trajectory[:,1:] # this is a 3 by 1 
+
+    length = np.sum(np.sqrt(np.sum(np.diff(pose, axis=0)**2, axis=1)))
+
+    return length
 # the first window size points we use the future window size points 20 points lets say
 for repeat_idx in range(0,window_size):
     print("--------------Processing repeat_idx:", repeat_idx ,"-----------------")
@@ -311,6 +318,13 @@ for repeat_idx in range(0,window_size):
     
     corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
     corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
+
+    segment_length = get_piecewise_path_length(corr_gps_teach)
+    print("the segment teach length is: ", segment_length,"m")
+    if segment_length < 10:
+        print("segment length is too small!")
+        # raise ValueError("segment length is too small!")
+
 
     # now we do the alignment for teach
     window_estimated_teach = teach_world[repeat_idx:repeat_idx+window_size,:2]
@@ -376,6 +390,13 @@ for repeat_idx in range(window_size,repeat_times.shape[0]-window_size,1):
     corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
     corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
 
+    segment_length = get_piecewise_path_length(corr_gps_teach)
+    print("the segment teach length is: ", segment_length,"m")
+    if segment_length < 10:
+        print("segment length is too small!")
+     
+        continue
+    
     # now we do the alignment for teach (half window size)
     window_estimated_teach = teach_world[repeat_idx-half_window_size:repeat_idx+half_window_size,:2]
     window_estimated_repeat_direct = repeat_world_direct[repeat_idx-half_window_size:repeat_idx+half_window_size,:2]
@@ -442,6 +463,12 @@ for repeat_idx in range(repeat_times.shape[0]-window_size,repeat_times.shape[0])
     corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
     corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
 
+    segment_length = get_piecewise_path_length(corr_gps_teach)
+    print("the segment teach length is: ", segment_length,"m")
+    if segment_length < 10:
+        print("segment length is too small!")
+        # raise ValueError("segment length is too small!")
+
     # print("corr_gps_teach shape:", corr_gps_teach.shape)
 
     # now we do the alignment for teach
@@ -462,7 +489,7 @@ for repeat_idx in range(repeat_times.shape[0]-window_size,repeat_times.shape[0])
     repeat_estimated = window_estimated_repeat_direct[window_size-1]
 
     print("repeat_ppk_at_idx:", repeat_ppk_at_idx)
-    print("repeat_estimated:", repeat_estimated)
+    print("repeat_estimated direct:", repeat_estimated)
     print("repeat_estimated vtr:", repeat_world_vtr[repeat_idx,:2])
 
     error = repeat_estimated - repeat_ppk_at_idx
@@ -515,8 +542,8 @@ plt.grid()
 # plt.xlabel('Repeat Times')
 plt.legend()
 plt.subplot(3, 1, 3)
-plt.plot(repeat_times[starting_plot_idx:], error_norm_vtr[starting_plot_idx:], label='VTR error norm (Euclidean)')
-plt.plot(repeat_times[starting_plot_idx:], error_norm_direct[starting_plot_idx:], label='Direct error norm (Euclidean)')
+plt.plot(repeat_times[starting_plot_idx:], error_norm_vtr[starting_plot_idx:], label='VTR error norm (Euclidean), RMSE: {:.4f} m'.format(np.sqrt(np.mean(error_norm_vtr[starting_plot_idx:]**2))))
+plt.plot(repeat_times[starting_plot_idx:], error_norm_direct[starting_plot_idx:], label='Direct error norm (Euclidean), RMSE: {:.4f} m'.format(np.sqrt(np.mean(error_norm_direct[starting_plot_idx:]**2))))
 plt.ylabel('error norm (m)')
 plt.grid()
 plt.legend()

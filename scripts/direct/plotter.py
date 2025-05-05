@@ -417,7 +417,7 @@ class Plotter:
         plt.figure()
         # plt.title('Teach and Repeat World')
         plt.plot(teach_array[:,0], teach_array[:,1], label='RTR Teach World in GPS', linewidth = 1)
-        plt.scatter(repeat_array[:,0], repeat_array[:,1], label='RTR Repeat World in GPS', s=5,marker='o',color="green")
+        plt.scatter(repeat_array[:,0], repeat_array[:,1], label='RTR Repeat World in GPS', s=3,marker='o',color="green")
         plt.xlabel('X Coordinate')
         plt.ylabel('Y Coordinate')
         plt.grid()
