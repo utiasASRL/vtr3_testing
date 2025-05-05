@@ -60,53 +60,6 @@ def rotation_matrix_to_euler_angles(R):
 def wrap_to_pi(angle_rad):
     return (angle_rad + np.pi) % (2 * np.pi) - np.pi
 
-# this hopes to correct the sign flips issue in the signed path error calculation
-def correct_sign_flips(errors, threshold_high=0.1, threshold_low=0.05, window_size=5):
-    # Smooth the errors using a moving average
-    smoothed_errors = np.convolve(errors, np.ones(window_size)/window_size, mode='same')
-    
-    corrected = []
-    state = None  # 'positive' or 'negative'
-    
-    for i in range(len(smoothed_errors)):
-        error = errors[i]
-        smoothed = smoothed_errors[i]
-        
-        if state is None:
-            # Initialize state based on the first significant smoothed error
-            if abs(smoothed) > threshold_low:
-                state = 'positive' if smoothed > 0 else 'negative'
-                corrected.append(error if np.sign(smoothed) == np.sign(error) else -error)
-            else:
-                corrected.append(error)
-        else:
-            # Determine the current sign based on smoothed error
-            current_sign = 'positive' if smoothed > 0 else 'negative'
-            
-            if state == 'positive':
-                if current_sign == 'negative' and abs(smoothed) > threshold_high:
-                    # Legitimate state change to negative
-                    state = 'negative'
-                    corrected.append(-error if error > 0 else error)
-                elif current_sign == 'negative' and abs(smoothed) > threshold_low:
-                    # In hysteresis zone, maintain positive
-                    corrected.append(abs(error))
-                else:
-                    # Maintain positive state
-                    corrected.append(error if error > 0 else -error)
-            else:  # state == 'negative'
-                if current_sign == 'positive' and abs(smoothed) > threshold_high:
-                    # Legitimate state change to positive
-                    state = 'positive'
-                    corrected.append(-error if error < 0 else error)
-                elif current_sign == 'positive' and abs(smoothed) > threshold_low:
-                    # In hysteresis zone, maintain negative
-                    corrected.append(-abs(error))
-                else:
-                    # Maintain negative state
-                    corrected.append(error if error < 0 else -error)
-    
-    return corrected
 
 # initlize the video writer
 # Parameters for the video writer

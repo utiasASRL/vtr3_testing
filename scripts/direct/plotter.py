@@ -51,8 +51,14 @@ class Plotter:
     """
     Plotter class to plot the
     """
-    def __init__(self, path_to_data):
+    def __init__(self):
+        # maybe here can be the plotting parameters in the 
 
+        return None
+
+    
+    def set_data(self,path_to_data):
+        
         # load the data
         TEACH_FOLDER = os.path.join(path_to_data,"teach")
         REPEAT_FOLDER = os.path.join(path_to_data, f"repeat")
@@ -102,6 +108,20 @@ class Plotter:
         self.vtr_se2_pose = result_df['vtr_se2_pose']
         self.gps_teach_pose = result_df['gps_teach_pose']
         self.gps_repeat_pose = result_df['gps_repeat_pose']
+
+        # teach_ppk
+        teach_ppk_df = np.load(os.path.join(TEACH_FOLDER, "teach_ppk.npz"),allow_pickle=True)
+        if not teach_ppk_df:
+            raise FileNotFoundError(f"Teach PPK folder {TEACH_FOLDER} does not exist.")
+        # in the teach
+        self.r2_pose_teach_ppk = teach_ppk_df['r2_pose_teach_ppk'] # this is actually redundant here
+
+        # repeat_ppk
+        repeat_ppk_df = np.load(os.path.join(REPEAT_FOLDER, "repeat_ppk.npz"),allow_pickle=True)
+        if not repeat_ppk_df:
+            raise FileNotFoundError(f"Repeat PPK folder {REPEAT_FOLDER} does not exist.")
+        # in the repeat
+        self.r2_pose_repeat_ppk = repeat_ppk_df['r2_pose_repeat_ppk']
 
         # gps ptr
         self.gps_ptr = self.get_gps_path_tracking_error()
@@ -170,6 +190,11 @@ class Plotter:
         print("dir ptr shape:", self.dir_ptr.shape)
         print("gps ptr shape:", self.gps_ptr.shape)
 
+        # yeah make it abs (optional)
+        # self.vtr_estimated_ptr = np.abs(self.vtr_estimated_ptr)
+        # self.dir_ptr = np.abs(self.dir_ptr)
+        # self.gps_ptr = np.abs(self.gps_ptr)
+
         # I want to plot it in a 2 by 1
         plt.figure(1)
         plt.subplot(2, 1, 1)
@@ -211,9 +236,9 @@ class Plotter:
         # just plot the path tracking error
 
         plt.title('VTR and Direct Estimated Path Tracking Error')
-        plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m')
-        plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m")
-        plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green')
+        plt.scatter(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m',s=1)
+        plt.scatter(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m", s=1)
+        plt.scatter(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green',s=1)
 
         plt.grid()
         plt.legend()
@@ -382,59 +407,28 @@ class Plotter:
             gps_ptr.append(error)
             previous_error = error
 
-        # gps_ptr = correct_sign_flips(gps_ptr) #GPT
-
         return np.array(gps_ptr).reshape(-1,1) # n by 1
 
-        
-    
-    def plot_norm(self): # garbage metrics
-         # save the results
-        print("vtr_norm shape:", self.vtr_norm.shape)
-        print("gps_norm shape:", self.gps_norm.shape)
-        print("dir_norm shape:", self.dir_norm.shape)
-        print("direct_se2_pose shape:", self.direct_se2_pose.shape)
 
 
-        error_vtr_norm = self.vtr_norm - self.gps_norm
-        error_dir_norm = self.dir_norm - self.gps_norm
-        error_diff_norm = self.vtr_norm - self.dir_norm
-
-
-        # lets try to plot the vtr and gps norm
-        plt.figure(1)
-        plt.title('VTR Direct and GPS Norm')
-        plt.plot(self.repeat_times, self.vtr_norm, label='VTR Norm', linewidth = 0.8)
-        plt.plot(self.repeat_times, self.gps_norm, label='GPS Norm', linewidth = 0.8)
-        plt.plot(self.repeat_times, self.dir_norm, label='Direct Norm', linewidth = 0.8)
-
-        plt.xlabel('Repeat Times')
-        plt.ylabel('Norm (m)')
-        plt.grid()
-        plt.legend()
-
-        plt.figure(2)
-        plt.title('VTR Direct and GPS Norm Error')
-        plt.plot(self.repeat_times, error_vtr_norm, label='VTR Error', linewidth = 0.8)
-        plt.plot(self.repeat_times, error_dir_norm, label='Direct Error', linewidth = 0.8)
-        plt.xlabel('Repeat Times')
-        plt.ylabel('Norm Error (m)')
-        plt.grid()
-        plt.legend()
-
-        plt.figure(3)
-        plt.title('VTR Direct Norm Difference')
-        plt.plot(self.repeat_times, error_diff_norm, label='Diff Norm Error',linewidth = 0.8)
-        plt.xlabel('Repeat Times')
-        plt.ylabel('Norm Error (m)')
-        plt.grid()
-
-        plt.show()  
-
-
-    def plot_gps_ppk(self, teach_path, repeat_path):
-        print("--------In function plot_gps_ppk--------")
+    def plot_traj(self, teach_array, repeat_array):
+        print("--------In function plot_traj--------")
         # need to plot the gps and ppk
+        plt.figure()
+        # plt.title('Teach and Repeat World')
+        plt.plot(teach_array[:,0], teach_array[:,1], label='RTR Teach World in GPS', linewidth = 1)
+        plt.scatter(repeat_array[:,0], repeat_array[:,1], label='RTR Repeat World in GPS', s=3,marker='o',color="green")
+        plt.xlabel('X Coordinate')
+        plt.ylabel('Y Coordinate')
+        plt.grid()
+        plt.legend()
+        plt.axis('equal')
+        # plt.show()
+
+        return True
+    
+    def show_plots(self):
+        plt.show()
         return True
 
 
@@ -443,9 +437,9 @@ class Plotter:
 if __name__ == "__main__":
     path_to_data = "/home/leonardo/vtr3_testing/scripts/direct/grassy_t2_r3"
 
-    plotter = Plotter(path_to_data)
+    plotter = Plotter()
 
-    plotter.plot()
+    # plotter.plot()
 
     # plotter.plot_path_tracking_error()
 
