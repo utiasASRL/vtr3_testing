@@ -222,10 +222,53 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("gps norm:", gps_norm[repeat_vertex_idx])
     # print("T_teach_repeat_edge_options:", T_teach_repeat_edge_options)
 
+class RadarFrame:
+    def __init__(self, polar, azimuths, timestamps):
+        self.polar = polar[:, :].astype(np.float32) / 255.0
+        self.azimuths=azimuths
+        self.timestamps=timestamps.flatten().astype(np.int64) 
 
 dir_norm = []
 vtr_se2_pose = []
 direct_se2_pose = []
+
+# load all the local maps of the teach path
+# open the directory
+direct_config.yaml = config["radar_data"]["grassy"]["local_maps_path"]
+print(teach_local_maps_path)
+teach_local_maps_files = os.listdir(teach_local_maps_path)
+
+teach_local_maps = {}
+for file in teach_local_maps_files:
+    if file.endswith(".png"):
+        file_path = os.path.join(teach_local_maps_path, file)
+        teach_local_maps[file.replace(".png","")] = file_path
+
+def load_local_map(file_path):
+    """
+    Load a local map from a file.
+
+    :param file_path: Path to the local map file.
+    :return: Loaded local map.
+    """
+    # Assuming the local map is an image, you can use OpenCV or PIL to load it
+    # For example, using OpenCV:
+    local_map = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    return local_map.astype(np.float32) / 255.0
+
+def find_closest_local_map(teach_local_maps, timestamp):
+    """
+    Find the closest local map to a given timestamp.
+
+    :param teach_local_maps: Dictionary of local maps.
+    :param timestamp: Timestamp to find the closest local map for.
+    :return: Closest local map and its key.
+    """
+    print("looking for: ", timestamp)
+    closest_key = min(teach_local_maps.keys(), key=lambda k: abs(float(k) - timestamp))
+    print("closest key:", closest_key)
+    return teach_local_maps[closest_key], closest_key
+
 print("------ dir norm ------")
 # now we can set up the direct localization stuff
 for repeat_vertex_idx in range(0,repeat_times.shape[0]):
@@ -239,12 +282,6 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     repeat_cv_scan_polar = repeat_polar_imgs[repeat_vertex_idx]
     repeat_scan_azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx]
     repeat_scan_timestamps = repeat_azimuth_timestamps[repeat_vertex_idx]
-    
-    class RadarFrame:
-        def __init__(self, polar, azimuths, timestamps):
-            self.polar = polar[:, :].astype(np.float32) / 255.0
-            self.azimuths=azimuths
-            self.timestamps=timestamps.flatten().astype(np.int64)  
 
     teach_frame = RadarFrame(teach_cv_scan_polar, teach_scan_azimuth_angles, teach_scan_timestamps.reshape(-1,1))
     repeat_frame = RadarFrame(repeat_cv_scan_polar, repeat_scan_azimuth_angles, repeat_scan_timestamps.reshape(-1,1))
@@ -265,14 +302,31 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     intial_guess = torch.from_numpy(np.squeeze(r_repeat_teach_in_teach)).to('cuda')
     # print("intial_guess shape:", intial_guess.shape)
 
+    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
+
+    teach_timestamp = teach_times[repeat_vertex_idx]
+
+    teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_timestamp)
+
+    print("teach local map file:", teach_local_map_file)
+
+    teach_local_map = load_local_map(teach_local_map_file)
+
     # gp_state_estimator.setIntialState(intial_guess) # we can comment this out
-    state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
+
+    #plot teach local map
+    # plt.imshow(teach_local_map, cmap='gray')
+    # plt.title('Teach Local Map')
+    # plt.show()
+
+    state = gp_state_estimator.toLocalMapRegistration(teach_local_map, repeat_frame)
+
     direct_se2_pose.append(state)
     norm_state = np.linalg.norm(state[0:2])
 
     dir_norm.append(norm_state)
 
-    print("direct estimated state:",state)
+    print("direct estimated state:", state)
 
 
 

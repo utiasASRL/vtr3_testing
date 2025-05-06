@@ -12,6 +12,8 @@ radar_data:
     #   repeat1: "/home/samqiao/ASRL/vtr3_testing/localization_data/rosbags/grassy3"
     pose_graph_path:
       grassy_t2_r3: "/home/leonardo/vtr3_testing/localization_data/posegraphes/grassy_t2_r3/graph"
+    local_maps_path: "/home/leonardo/vtr3_testing/localization_data/local_maps/grassy_t2"
+
   # parking:
   #   pose_graph_path:
   #     parking_t3_r4: "/home/samqiao/ASRL/vtr3_testing/localization_data/posegraphes/parking_t3_r4/graph"
