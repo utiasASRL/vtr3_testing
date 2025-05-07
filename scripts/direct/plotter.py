@@ -236,9 +236,9 @@ class Plotter:
         # just plot the path tracking error
 
         plt.title('VTR and Direct Estimated Path Tracking Error')
-        plt.scatter(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m',s=1)
-        plt.scatter(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m", s=1)
-        plt.scatter(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green',s=1)
+        plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m')
+        plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m")
+        plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green')
 
         plt.grid()
         plt.legend()
@@ -435,13 +435,15 @@ class Plotter:
 
 
 if __name__ == "__main__":
-    path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4"
+    path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
 
     plotter = Plotter()
 
+    plotter.set_data(path_to_data)
+
     # plotter.plot()
 
-    # plotter.plot_path_tracking_error()
-
     plotter.plot_localziation_error()
+
+    # plotter.show_plots()
 

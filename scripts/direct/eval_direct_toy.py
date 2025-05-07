@@ -551,7 +551,7 @@ plt.xlabel('Repeat Times')
 
 
 # plotter.set_data(sequence_path)
-# plotter.plot()
+# plotter.plot_localziation_error()
 plotter.show_plots()
     
 
