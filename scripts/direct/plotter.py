@@ -10,7 +10,7 @@ import pylgmath
 
 
 import sys
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/leonardo/vtr3_testing"
 
 import yaml
 

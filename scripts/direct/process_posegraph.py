@@ -67,7 +67,7 @@ frame_rate = 60.0  # Frames per second
 frame_size = (512, 512)  # Frame size (width, height) of the video
 codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/leonardo/vtr3_testing"
 
 T_novatel_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.550],
   [0.000, 1.000 , 0.000, 0.000],
@@ -90,7 +90,7 @@ def load_config(config_path='config.yaml'):
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config.yaml'))
 
 # Access database configuration
-db = config['radar_data']['parking']
+db = config['radar_data']['grassy']
 db_rosbag_path = db.get('rosbag_path')
 
 # teach_rosbag_path = db_rosbag_path.get('teach')
@@ -100,7 +100,7 @@ repeat = 1
 # repeat_rosbag_path = db_rosbag_path.get(f'repeat{repeat}') # dont think this is needed
 
 # for pose graph
-pose_graph_path = db.get('pose_graph_path').get('parking_t3_r4')
+pose_graph_path = db.get('pose_graph_path').get('grassy_t2_r3')
 print("pose graph path:",pose_graph_path)
 
 db_bool = config['bool']
@@ -115,7 +115,7 @@ print("DEBUG:",DEBUG)
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"parking_t3_r4/") # change path here
+out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/") # change path here
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
