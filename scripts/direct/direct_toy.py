@@ -10,14 +10,13 @@ np.set_printoptions(suppress=True)
 # import argparse
 
 import sys
-parent_folder = "/home/leonardo/vtr3_testing"
+parent_folder = "/home/samqiao/ASRL/vtr3_testing"
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
 
 from deps.path_tracking_error.fcns import *
-
-# from radar.utils.helper import *
+# from scripts.radar.utils.helper import *
 
 # # point cloud vis
 # from sensor_msgs_py.point_cloud2 import read_points
@@ -31,9 +30,7 @@ import gp_doppler as gpd
 import torch
 import torchvision
 
-# from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
-
-# from process_vtr import get_vtr_ptr_baseline
+from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 
 from utils import *
 
@@ -51,6 +48,72 @@ T_radar_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.025],
                                                  [0.000 , 0.000 ,0.000, 1.000]]))
 
 
+def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=640,
+                             interpolate_crossover=False, fix_wobble=True):
+    # TAKEN FROM PYBOREAS
+    """Convert a polar radar scan to cartesian.
+    Args:
+        azimuths (np.ndarray): Rotation for each polar radar azimuth (radians)
+        fft_data (np.ndarray): Polar radar power readings
+        radar_resolution (float): Resolution of the polar radar data (metres per pixel)
+        cart_resolution (float): Cartesian resolution (metres per pixel)
+        cart_pixel_width (int): Width and height of the returned square cartesian output (pixels)
+        interpolate_crossover (bool, optional): If true interpolates between the end and start  azimuth of the scan. In
+            practice a scan before / after should be used but this prevents nan regions in the return cartesian form.
+
+    Returns:
+        np.ndarray: Cartesian radar power readings
+    """
+    print("in radar_polar_to_cartesian")
+    # Compute the range (m) captured by pixels in cartesian scan
+    if (cart_pixel_width % 2) == 0:
+        cart_min_range = (cart_pixel_width / 2 - 0.5) * cart_resolution
+    else:
+        cart_min_range = cart_pixel_width // 2 * cart_resolution
+    
+    # Compute the value of each cartesian pixel, centered at 0
+    coords = np.linspace(-cart_min_range, cart_min_range, cart_pixel_width, dtype=np.float32)
+
+    Y, X = np.meshgrid(coords, -1 * coords)
+    sample_range = np.sqrt(Y * Y + X * X)
+    sample_angle = np.arctan2(Y, X)
+    sample_angle += (sample_angle < 0).astype(np.float32) * 2. * np.pi
+
+    # Interpolate Radar Data Coordinates
+    azimuth_step = (azimuths[-1] - azimuths[0]) / (azimuths.shape[0] - 1)
+    sample_u = (sample_range - radar_resolution / 2) / radar_resolution
+
+    # print("------")
+    # print("sample_angle.shape",sample_angle.shape)
+    # print("azimuths[0]",azimuths[0])
+    # print("azimuth step shape" ,azimuth_step.shape)
+
+    sample_v = (sample_angle - azimuths[0]) / azimuth_step
+    # This fixes the wobble in the old CIR204 data from Boreas
+    M = azimuths.shape[0]
+    azms = azimuths.squeeze()
+    if fix_wobble:
+        c3 = np.searchsorted(azms, sample_angle.squeeze())
+        c3[c3 == M] -= 1
+        c2 = c3 - 1
+        c2[c2 < 0] += 1
+        a3 = azms[c3]
+        diff = sample_angle.squeeze() - a3
+        a2 = azms[c2]
+        delta = diff * (diff < 0) * (c3 > 0) / (a3 - a2 + 1e-14)
+        sample_v = (c3 + delta).astype(np.float32)
+
+    # We clip the sample points to the minimum sensor reading range so that we
+    # do not have undefined results in the centre of the image. In practice
+    # this region is simply undefined.
+    sample_u[sample_u < 0] = 0
+
+    if interpolate_crossover:
+        fft_data = np.concatenate((fft_data[-1:], fft_data, fft_data[:1]), 0)
+        sample_v = sample_v + 1
+
+    polar_to_cart_warp = np.stack((sample_u, sample_v), -1)
+    return cv2.remap(fft_data, polar_to_cart_warp, None, cv2.INTER_LINEAR)
 
 def load_config(config_path='config.yaml'):
     """
@@ -63,7 +126,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_sam.yaml'))
 
 
 db_bool = config['bool']
@@ -234,7 +297,7 @@ direct_se2_pose = []
 
 # load all the local maps of the teach path
 # open the directory
-direct_config.yaml = config["radar_data"]["grassy"]["local_maps_path"]
+teach_local_maps_path = config["radar_data"]["grassy"]["local_maps_path"]
 print(teach_local_maps_path)
 teach_local_maps_files = os.listdir(teach_local_maps_path)
 
@@ -269,33 +332,50 @@ def find_closest_local_map(teach_local_maps, timestamp):
     print("closest key:", closest_key)
     return teach_local_maps[closest_key], closest_key
 
-print("------ dir norm ------")
+# print("------ dir norm ------")
 # now we can set up the direct localization stuff
 for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("------------------ repeat idx: ", repeat_vertex_idx,"------------------")
     repeat_vertex_time = repeat_times[repeat_vertex_idx]
 
     teach_cv_scan_polar = teach_polar_imgs[repeat_vertex_idx]
-    teach_scan_azimuth_angles = teach_azimuth_angles[repeat_vertex_idx]
+    teach_scan_azimuth_angles = teach_azimuth_angles[repeat_vertex_idx][:] # need to add : so the first element is correct
     teach_scan_timestamps = teach_azimuth_timestamps[repeat_vertex_idx]
 
+    print("teach azimuth angles shape:", teach_scan_azimuth_angles.shape)
+    # print("teach azimuth angles:", teach_scan_azimuth_angles)
+    print("the first teach azimuth angle:", teach_scan_azimuth_angles[0])
+
+    # print("teach polar scan shape:", teach_cv_scan_polar.shape)
+    # print("radar resolution:", radar_resolution)
+    # print("cart resolution:", cart_resolution)
+
+
+    # something is wrong with teach azimuth angles
+
+
+    teach_cv_scan_cartesian = radar_polar_to_cartesian(teach_cv_scan_polar,teach_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
+    
+
+    # break
     repeat_cv_scan_polar = repeat_polar_imgs[repeat_vertex_idx]
-    repeat_scan_azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx]
+    repeat_scan_azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx][:]
     repeat_scan_timestamps = repeat_azimuth_timestamps[repeat_vertex_idx]
+
+    repeat_cv_scan_cartesian = radar_polar_to_cartesian(repeat_cv_scan_polar,repeat_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
 
     teach_frame = RadarFrame(teach_cv_scan_polar, teach_scan_azimuth_angles, teach_scan_timestamps.reshape(-1,1))
     repeat_frame = RadarFrame(repeat_cv_scan_polar, repeat_scan_azimuth_angles, repeat_scan_timestamps.reshape(-1,1))
 
     # we can use teach and repeat result as a intial guess
     T_teach_repeat_edge = repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time[0]]    
-
     T_teach_repeat_edge_in_radar = T_radar_robot @ T_teach_repeat_edge @ T_radar_robot.inverse()
     r_repeat_teach_in_teach = T_teach_repeat_edge_in_radar.inverse().r_ba_ina() # inverse?
 
     # we might need to transform r_repeat_teach to the radar frame
     roll, pitch, yaw = rotation_matrix_to_euler_angles(T_teach_repeat_edge.C_ba().T) # ba means teach_repeat
     r_repeat_teach_in_teach[2] = wrap_angle(yaw)
-    print("r_repeat_teach_in_teach:", r_repeat_teach_in_teach.T[0])
+   
 
     vtr_se2_pose.append(r_repeat_teach_in_teach.T[0])
 
@@ -304,29 +384,60 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
 
     # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
 
-    teach_timestamp = teach_times[repeat_vertex_idx]
+    # teach_timestamp = teach_times[repeat_vertex_idx]
 
-    teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_timestamp)
+    teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_times[repeat_vertex_idx][0])
 
-    print("teach local map file:", teach_local_map_file)
+    # print("teach local map file:", teach_local_map_file)
 
     teach_local_map = load_local_map(teach_local_map_file)
 
     # gp_state_estimator.setIntialState(intial_guess) # we can comment this out
 
-    #plot teach local map
+    # #plot teach local map
     # plt.imshow(teach_local_map, cmap='gray')
     # plt.title('Teach Local Map')
     # plt.show()
 
+    # Create subplots
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))  # Adjust figsize as needed
+
+    # Display images
+    axes[0].imshow(teach_local_map,cmap='gray')
+    axes[0].axis('off')  # Hide axes if desired
+    axes[0].set_title('teach local map')
+
+    axes[1].imshow(teach_cv_scan_cartesian,cmap='gray')
+    axes[1].axis('off')
+    axes[1].set_title('teach cart scan (one image)')
+
+    axes[2].imshow(repeat_cv_scan_cartesian,cmap='gray')
+    axes[2].axis('off')
+    axes[2].set_title(f'repeat cart scan: {repeat_vertex_idx} (one image)')
+
+    plt.tight_layout()
+    plt.show()
+
+     # set the state to the intial guess
+    gp_state_estimator.setIntialState(intial_guess)
+
     state = gp_state_estimator.toLocalMapRegistration(teach_local_map, repeat_frame)
+
+    # before
+    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
+
+
 
     direct_se2_pose.append(state)
     norm_state = np.linalg.norm(state[0:2])
 
     dir_norm.append(norm_state)
 
+    print("r_repeat_teach_in_teach:", r_repeat_teach_in_teach.T[0])
     print("direct estimated state:", state)
+
+    if repeat_vertex_idx == 3:
+        break
 
 
 
