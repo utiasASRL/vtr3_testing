@@ -6,7 +6,7 @@ from scipy.spatial.transform import Rotation, Slerp
 from scipy import interpolate
 
 from rosbags.typesys import get_types_from_msg, register_types, Stores, get_typestore
-from rosbags.serde import serialize_cdr
+# from rosbags.serde import serialize_cdr
 
 import cv2
 import cv_bridge
@@ -93,19 +93,23 @@ def get_radar_scan_images_and_timestamps(path):
             # plt.show()
 
             # print("polar image",polar_img.shape)
-            print("encoder_values",msg.encoder_values)
+            # print("encoder_values",msg.encoder_values)
             azimuths = (msg.encoder_values/16000)*2*np.pi
-            print(azimuths)
+            # print(azimuths)
             # print("azimuths",azimuths.shape)
             resolution = 0.040308  # change to your own resolution
             cart_resolution = 0.2384
 
+            print("sam polar_img",polar_img.shape)
+            print("azimuths",azimuths.shape)
+
             # convert the radar image to cartesian
+            print("sam! azimuths",azimuths)
             radar_image = radar_polar_to_cartesian(polar_img,azimuths, resolution, cart_resolution, 512)
 
             radar_images.append(radar_image)
 
-            # break
+            break
 
 
     return radar_times, radar_images
@@ -126,6 +130,7 @@ def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resoluti
     Returns:
         np.ndarray: Cartesian radar power readings
     """
+    print("in radar_polar_to_cartesian")
     # Compute the range (m) captured by pixels in cartesian scan
     if (cart_pixel_width % 2) == 0:
         cart_min_range = (cart_pixel_width / 2 - 0.5) * cart_resolution
@@ -143,6 +148,13 @@ def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resoluti
     # Interpolate Radar Data Coordinates
     azimuth_step = (azimuths[-1] - azimuths[0]) / (azimuths.shape[0] - 1)
     sample_u = (sample_range - radar_resolution / 2) / radar_resolution
+
+    print("------")
+    print("sample_angle.shape",sample_angle.shape)
+    print("azimuths[0]",azimuths[0])
+    print("azimuth step shape" ,azimuth_step.shape)
+
+    
     sample_v = (sample_angle - azimuths[0]) / azimuth_step
     # This fixes the wobble in the old CIR204 data from Boreas
     M = azimuths.shape[0]
@@ -182,7 +194,7 @@ codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 video_writer = cv2.VideoWriter(output_video_path, codec, frame_rate, frame_size)
 
 # to fill rosbag path 
-radar_rosbag_path = "/home/samqiao/ASRL/vtr3_testing/localization_data/rosbags/grassy3" # fill this in
+radar_rosbag_path = "/home/samqiao/ASRL/vtr3_testing/localization_data/rosbags/grassy2" # fill this in
 radar_times, radar_imgs = get_radar_scan_images_and_timestamps(radar_rosbag_path)
 
 radar_times = np.array(radar_times)

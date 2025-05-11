@@ -376,21 +376,21 @@ class GPStateEstimator:
                 temp_polar_intensity_sparse = torch.zeros(self.local_map_blurred.shape, device=self.device)
                 temp_polar_intensity_sparse[cart_idx_sparse.int()[:,0],cart_idx_sparse.int()[:,1]] = self.polar_intensity_sparse
                
-                # fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
+                fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
 
-                # # # First plot
-                # axs[0].set_title("Blurred Local Map")
-                # im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
-                # fig.colorbar(im1, ax=axs[0])
+                # # First plot
+                axs[0].set_title("Blurred Local Map")
+                im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
+                fig.colorbar(im1, ax=axs[0])
 
-                # # Second plot
-                # axs[1].set_title("Sparse Polar Intensity")
-                # im2 = axs[1].imshow(temp_polar_intensity_sparse.cpu().numpy())
-                # fig.colorbar(im2, ax=axs[1])
+                # Second plot
+                axs[1].set_title("Sparse Polar Intensity")
+                im2 = axs[1].imshow(temp_polar_intensity_sparse.cpu().numpy())
+                fig.colorbar(im2, ax=axs[1])
 
-                # # Adjust spacing and show
-                # plt.tight_layout()
-                # plt.show()
+                # Adjust spacing and show
+                plt.tight_layout()
+                plt.show()
                 
                 jacobian_direct_sparse = ((d_interp_direct_d_xy_sparse @ d_cart_sparse_d_state) * (self.polar_intensity_sparse.unsqueeze(-1).unsqueeze(-1))).squeeze()
 
@@ -483,12 +483,34 @@ class GPStateEstimator:
 
             self.local_map = torch.tensor(teach_local_map).to(self.device)
 
+            # repeat_frame_cart = pb.utils.radar.radar_polar_to_cartesian(repeat_frame.azimuths.astype(np.float32), repeat_frame.polar, 0.040308, 0.2384, 640, False, True)
+            # # Create subplots
+            # fig, axes = plt.subplots(1, 3, figsize=(15, 5))  # Adjust figsize as needed
+
+            # # Display images
+            # axes[0].imshow(teach_local_map,cmap='gray')
+            # axes[0].axis('off')  # Hide axes if desired
+            # axes[0].set_title('teach local map')
+
+            # # axes[1].imshow(teach_cv_scan_cartesian,cmap='gray')
+            # # axes[1].axis('off')
+            # # axes[1].set_title('teach cart scan (one image)')
+
+            # axes[2].imshow(repeat_frame_cart,cmap='gray')
+            # axes[2].axis('off')
+            # axes[2].set_title(f'repeat cart scan: (one image)')
+
+            # plt.tight_layout()
+            # plt.show()
+
             self.local_map_blurred = torchvision.transforms.functional.gaussian_blur(self.local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
             normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
             self.local_map_blurred *= normalizer
             self.step_counter = 1
             result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
+            
             self.state_init = result.clone()
+
             return result.detach().cpu().numpy()
 
     # leo's pairwise registration WIP

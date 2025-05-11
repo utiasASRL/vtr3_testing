@@ -126,7 +126,7 @@ else:
 #     teach = True
 #     for path in paths:
 #         print("processing path:",path)
-#         fft_data,radar_timestamps,azimuth_angles, azimuth_timestamps_total,cart_imgs = get_radar_scan_images_and_timestamps(path)
+        # fft_data,radar_timestamps,azimuth_angles, azimuth_timestamps_total,cart_imgs = get_radar_scan_images_and_timestamps(path)
 #         if teach:
 #             scan_folder = os.path.join(out_path_folder, "teach_radar_scans")
 #             teach = False

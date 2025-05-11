@@ -9,7 +9,7 @@ from rosbags.typesys import get_types_from_msg, register_types, Stores, get_type
 from rosbags.serde import serialize_cdr
 
 import cv2
-import cv_bridge
+from cv_bridge import CvBridge 
 
 import matplotlib.pyplot as plt
 import sys
@@ -300,6 +300,7 @@ def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resoluti
 
     # Interpolate Radar Data Coordinates
     azimuth_step = (azimuths[-1] - azimuths[0]) / (azimuths.shape[0] - 1)
+    # print("in radar_polar_to_cartesian azimuth_step",azimuth_step)
     sample_u = (sample_range - radar_resolution / 2) / radar_resolution
     sample_v = (sample_angle - azimuths[0]) / azimuth_step
     # This fixes the wobble in the old CIR204 data from Boreas

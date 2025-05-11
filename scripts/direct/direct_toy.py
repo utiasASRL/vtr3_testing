@@ -64,7 +64,7 @@ def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resoluti
     Returns:
         np.ndarray: Cartesian radar power readings
     """
-    print("in radar_polar_to_cartesian")
+    # print("in radar_polar_to_cartesian")
     # Compute the range (m) captured by pixels in cartesian scan
     if (cart_pixel_width % 2) == 0:
         cart_min_range = (cart_pixel_width / 2 - 0.5) * cart_resolution
@@ -343,21 +343,11 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     teach_scan_timestamps = teach_azimuth_timestamps[repeat_vertex_idx]
 
     print("teach azimuth angles shape:", teach_scan_azimuth_angles.shape)
-    # print("teach azimuth angles:", teach_scan_azimuth_angles)
     print("the first teach azimuth angle:", teach_scan_azimuth_angles[0])
-
-    # print("teach polar scan shape:", teach_cv_scan_polar.shape)
-    # print("radar resolution:", radar_resolution)
-    # print("cart resolution:", cart_resolution)
-
-
-    # something is wrong with teach azimuth angles
-
 
     teach_cv_scan_cartesian = radar_polar_to_cartesian(teach_cv_scan_polar,teach_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
     
 
-    # break
     repeat_cv_scan_polar = repeat_polar_imgs[repeat_vertex_idx]
     repeat_scan_azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx][:]
     repeat_scan_timestamps = repeat_azimuth_timestamps[repeat_vertex_idx]
@@ -399,25 +389,6 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     # plt.title('Teach Local Map')
     # plt.show()
 
-    # Create subplots
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))  # Adjust figsize as needed
-
-    # Display images
-    axes[0].imshow(teach_local_map,cmap='gray')
-    axes[0].axis('off')  # Hide axes if desired
-    axes[0].set_title('teach local map')
-
-    axes[1].imshow(teach_cv_scan_cartesian,cmap='gray')
-    axes[1].axis('off')
-    axes[1].set_title('teach cart scan (one image)')
-
-    axes[2].imshow(repeat_cv_scan_cartesian,cmap='gray')
-    axes[2].axis('off')
-    axes[2].set_title(f'repeat cart scan: {repeat_vertex_idx} (one image)')
-
-    plt.tight_layout()
-    plt.show()
-
      # set the state to the intial guess
     gp_state_estimator.setIntialState(intial_guess)
 
@@ -436,8 +407,8 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("r_repeat_teach_in_teach:", r_repeat_teach_in_teach.T[0])
     print("direct estimated state:", state)
 
-    if repeat_vertex_idx == 3:
-        break
+    # if repeat_vertex_idx == 3:
+    #     break
 
 
 
