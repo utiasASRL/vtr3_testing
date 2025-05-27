@@ -4,9 +4,9 @@ from matplotlib.ticker import MaxNLocator
 import numpy as np
 import os
 
-import pandas as pd
+# import pandas as pd
 from pylgmath import Transformation
-import pylgmath
+# import pylgmath
 
 
 import sys

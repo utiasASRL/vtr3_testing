@@ -64,89 +64,89 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config.yaml'))
+# config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config.yaml'))
 
 
-db_bool = config['bool']
-SAVE = db_bool.get('SAVE')
-SAVE = False
-print("SAVE:",SAVE)
-PLOT = db_bool.get('PLOT')
-DEBUG = db_bool.get('DEBUG')
+# db_bool = config['bool']
+# SAVE = db_bool.get('SAVE')
+# SAVE = False
+# print("SAVE:",SAVE)
+# PLOT = db_bool.get('PLOT')
+# DEBUG = db_bool.get('DEBUG')
 
-result_folder = config.get('output')
+# result_folder = config.get('output')
 
-# change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
-if not os.path.exists(out_path_folder):
-    os.makedirs(out_path_folder)
-    print(f"Folder '{out_path_folder}' created.")
-else:
-    print(f"Folder '{out_path_folder}' already exists.")    
-
-
-sequence = "grassy_t2_r3"
-
-sequence_path = os.path.join(result_folder, sequence)
-if not os.path.exists(sequence_path):
-    print("ERROR: No sequence found in " + sequence_path)
-    exit(0)
-
-TEACH_FOLDER = os.path.join(sequence_path, "teach")
-REPEAT_FOLDER = os.path.join(sequence_path, "repeat")
-RESULT_FOLDER = os.path.join(sequence_path, "direct")
-
-if not os.path.exists(TEACH_FOLDER):
-    raise FileNotFoundError(f"Teach folder {TEACH_FOLDER} does not exist.")
-if not os.path.exists(REPEAT_FOLDER):
-    raise FileNotFoundError(f"Repeat folder {REPEAT_FOLDER} does not exist.")
-if not os.path.exists(RESULT_FOLDER):
-    raise FileNotFoundError(f"Result folder {RESULT_FOLDER} does not exist.")
-
-teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
-
-# in the teach
-# 1. (932,400,1712) images
-teach_polar_imgs = teach_df['teach_polar_imgs']
-# 2. (932,400, 1) azimuth angles
-teach_azimuth_angles = teach_df['teach_azimuth_angles']
-# 3. (932,400, 1) azimuth timestamps
-teach_azimuth_timestamps = teach_df['teach_azimuth_timestamps']
-# 4. (932,1) vertex timestamps
-teach_vertex_timestamps = teach_df['teach_vertex_timestamps']
-# 5. Pose at each vertex: (932,4,4)
-teach_vertex_transforms = teach_df['teach_vertex_transforms']
-# 6. teach vertext time
-teach_times = teach_df['teach_times']
+# # change here
+# out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+# if not os.path.exists(out_path_folder):
+#     os.makedirs(out_path_folder)
+#     print(f"Folder '{out_path_folder}' created.")
+# else:
+#     print(f"Folder '{out_path_folder}' already exists.")    
 
 
-# load the repeat data
-repeat_df = np.load(os.path.join(REPEAT_FOLDER, f"repeat.npz"),allow_pickle=True)
-# in the repeat
-repeat_times = repeat_df['repeat_times']
-repeat_polar_imgs = repeat_df['repeat_polar_imgs']
-repeat_azimuth_angles = repeat_df['repeat_azimuth_angles']
-repeat_azimuth_timestamps = repeat_df['repeat_azimuth_timestamps']
-repeat_vertex_timestamps = repeat_df['repeat_vertex_timestamps']
-repeat_edge_transforms = repeat_df['repeat_edge_transforms']
-vtr_estimated_ptr = repeat_df['dist']
+# sequence = "grassy_t2_r3"
+
+# sequence_path = os.path.join(result_folder, sequence)
+# if not os.path.exists(sequence_path):
+#     print("ERROR: No sequence found in " + sequence_path)
+#     exit(0)
+
+# TEACH_FOLDER = os.path.join(sequence_path, "teach")
+# REPEAT_FOLDER = os.path.join(sequence_path, "repeat")
+# RESULT_FOLDER = os.path.join(sequence_path, "direct")
+
+# if not os.path.exists(TEACH_FOLDER):
+#     raise FileNotFoundError(f"Teach folder {TEACH_FOLDER} does not exist.")
+# if not os.path.exists(REPEAT_FOLDER):
+#     raise FileNotFoundError(f"Repeat folder {REPEAT_FOLDER} does not exist.")
+# if not os.path.exists(RESULT_FOLDER):
+#     raise FileNotFoundError(f"Result folder {RESULT_FOLDER} does not exist.")
+
+# teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+
+# # in the teach
+# # 1. (932,400,1712) images
+# teach_polar_imgs = teach_df['teach_polar_imgs']
+# # 2. (932,400, 1) azimuth angles
+# teach_azimuth_angles = teach_df['teach_azimuth_angles']
+# # 3. (932,400, 1) azimuth timestamps
+# teach_azimuth_timestamps = teach_df['teach_azimuth_timestamps']
+# # 4. (932,1) vertex timestamps
+# teach_vertex_timestamps = teach_df['teach_vertex_timestamps']
+# # 5. Pose at each vertex: (932,4,4)
+# teach_vertex_transforms = teach_df['teach_vertex_transforms']
+# # 6. teach vertext time
+# teach_times = teach_df['teach_times']
 
 
-# load the result data
-result_df = np.load(os.path.join(RESULT_FOLDER, f"result.npz"),allow_pickle=True)
-vtr_norm = result_df['vtr_norm']
-gps_norm = result_df['gps_norm']
-dir_norm = result_df['dir_norm']
-direct_se2_pose = result_df['direct_se2_pose']
-vtr_se2_pose = result_df['vtr_se2_pose']
-gps_teach_pose = result_df['gps_teach_pose']
-gps_repeat_pose = result_df['gps_repeat_pose']
+# # load the repeat data
+# repeat_df = np.load(os.path.join(REPEAT_FOLDER, f"repeat.npz"),allow_pickle=True)
+# # in the repeat
+# repeat_times = repeat_df['repeat_times']
+# repeat_polar_imgs = repeat_df['repeat_polar_imgs']
+# repeat_azimuth_angles = repeat_df['repeat_azimuth_angles']
+# repeat_azimuth_timestamps = repeat_df['repeat_azimuth_timestamps']
+# repeat_vertex_timestamps = repeat_df['repeat_vertex_timestamps']
+# repeat_edge_transforms = repeat_df['repeat_edge_transforms']
+# vtr_estimated_ptr = repeat_df['dist']
 
-print("gps_teach_pose", gps_teach_pose.shape)
 
-# plotter = Plotter()
-# plotter.plot_traj(gps_teach_pose[:,1:],gps_repeat_pose[:,1:])
-# plotter.show_plots()
+# # load the result data
+# result_df = np.load(os.path.join(RESULT_FOLDER, f"result.npz"),allow_pickle=True)
+# vtr_norm = result_df['vtr_norm']
+# gps_norm = result_df['gps_norm']
+# dir_norm = result_df['dir_norm']
+# direct_se2_pose = result_df['direct_se2_pose']
+# vtr_se2_pose = result_df['vtr_se2_pose']
+# gps_teach_pose = result_df['gps_teach_pose']
+# gps_repeat_pose = result_df['gps_repeat_pose']
+
+# print("gps_teach_pose", gps_teach_pose.shape)
+
+# # plotter = Plotter()
+# # plotter.plot_traj(gps_teach_pose[:,1:],gps_repeat_pose[:,1:])
+# # plotter.show_plots()
 
 
 # actually mtplotlib inherently supports animation
@@ -160,6 +160,34 @@ class Animator:
         # self.fig.append(plt.figure())
         # self.ax = plt.axes(projection='2d'
         self.fig, self.ax = plt.subplots()  # Cleaner 2D setup
+
+    def set_woody_temp(self,pose_woody_teach):
+
+        self.pose_woody_teach = pose_woody_teach
+        self.vtr_scatter = self.ax.scatter([], [], s=5, marker='X', 
+                                         color='blue', label='RT&R Teach',zorder = 2)
+        
+        self.current_vtr = self.ax.scatter(
+            [], [],
+            s=50, 
+            linewidths=1.0,
+            color='blue',
+            marker='x',     # X marker
+            alpha=1.0,
+            zorder=2
+        )
+        
+        # Configure axis properties
+        self.ax.set_xlabel('X [m]')
+        self.ax.set_ylabel('Y [m]')
+        self.ax.set_title('Teach World')
+        self.ax.grid(True)
+        self.ax.legend(loc ='upper right')
+        
+        # Set equal aspect ratio with box adjustment
+        self.ax.set_aspect('equal', adjustable='box')  # Critical fix
+        
+
 
     def set_data(self,path_to_data):
         
@@ -362,8 +390,8 @@ class Animator:
         )
         
         # Configure axis properties
-        self.ax.set_xlabel('X Coordinate')
-        self.ax.set_ylabel('Y Coordinate')
+        self.ax.set_xlabel('X [m]')
+        self.ax.set_ylabel('Y [m]')
         self.ax.set_title('Teach and Direct Repeat World')
         self.ax.grid(True)
         self.ax.legend()
@@ -379,6 +407,7 @@ class Animator:
         return self.fig[index]
 
     def update(self, i):
+
         print("------ processing frame:", i, "------")
         self.direct_scatter.set_offsets(self.repeat_world_direct[:i+1, :2])
         self.vtr_scatter.set_offsets(self.repeat_world_vtr[:i+1, :2])
@@ -395,6 +424,22 @@ class Animator:
         
         return (self.direct_scatter, self.vtr_scatter, 
                 self.current_direct, self.current_vtr)
+    
+    def update_woody(self, i):
+        if(i%2 == 0):
+            return False
+        print("------ processing frame:", i, "------")
+        self.vtr_scatter.set_offsets(self.pose_woody_teach[:i+1, :2])
+
+        self.current_vtr.set_offsets([self.pose_woody_teach[i, :2]])
+
+           # Update view window
+        current_x = self.pose_woody_teach[i, 0]
+        current_y = self.pose_woody_teach[i, 1]
+        self.ax.set_xlim(current_x - 35, current_x + 35)
+        self.ax.set_ylim(current_y - 35, current_y + 35)
+        
+        return (self.vtr_scatter, self.current_vtr)
 
 
 
@@ -413,11 +458,13 @@ class Animator:
         plt.show()
 
 
-    def animation(self, fps=120):
-        frames = int(self.repeat_times.shape[0])
+    def animation(self, fps=60):
+        frames = int(self.pose_woody_teach.shape[0])
         print("frames:", frames)
-        self.ani = FuncAnimation(self.fig, self.update, frames = frames, blit=True,
+        self.ani = FuncAnimation(self.fig, self.update_woody, frames = 785,
         interval=1000/fps)
+
+        self.ani.save("woody_odom.gif",writer="pillow")
         # plt.show()
 
 
@@ -434,14 +481,14 @@ class Animator:
         # Create animation
         self.ani = FuncAnimation(
             self.fig,
-            self.update,
-            frames=int(self.repeat_times.shape[0]),
+            self.update_woody,
+            frames=int(self.pose_woody_teach.shape[0]),
             blit=True
         )
         
         # Save AVI
         self.ani.save(
-            os.path.join(path, 'parking_estimates.mp4'),
+            os.path.join(path, 'woody_teach.mp4'),
             writer=writer,
             dpi=100
         )

@@ -69,6 +69,7 @@ def get_radar_scan_images_and_timestamps(path):
     # intialize the arrays
     radar_times = []
     radar_images = []
+    polar_images = []
     lookup_tb = dict()
     print("Processing: Getting image_timestamp and radar image")
     with AnyReader([Path(path)]) as reader:
@@ -88,6 +89,8 @@ def get_radar_scan_images_and_timestamps(path):
             polar_img = bridge.imgmsg_to_cv2(msg.b_scan_img)
             fft_data = msg.b_scan_img.data.reshape((msg.b_scan_img.height, msg.b_scan_img.width))
 
+            # print("polar_img shape",polar_img.shape)
+
             # print("fft_data",fft_data.shape)
             # plt.imshow(polar_img,cmap='gray', vmin=0, vmax=255)
             # plt.show()
@@ -100,19 +103,20 @@ def get_radar_scan_images_and_timestamps(path):
             resolution = 0.040308  # change to your own resolution
             cart_resolution = 0.2384
 
-            print("sam polar_img",polar_img.shape)
-            print("azimuths",azimuths.shape)
+            # print("sam polar_img",polar_img.shape)
+            # print("azimuths",azimuths.shape)
 
             # convert the radar image to cartesian
-            print("sam! azimuths",azimuths)
+            # print("sam! azimuths",azimuths)
             radar_image = radar_polar_to_cartesian(polar_img,azimuths, resolution, cart_resolution, 512)
 
             radar_images.append(radar_image)
+            polar_images.append(polar_img)
 
-            break
+            # break
 
 
-    return radar_times, radar_images
+    return radar_times, radar_images, polar_images
 
 def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=640,
                              interpolate_crossover=False, fix_wobble=True):
@@ -149,10 +153,10 @@ def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resoluti
     azimuth_step = (azimuths[-1] - azimuths[0]) / (azimuths.shape[0] - 1)
     sample_u = (sample_range - radar_resolution / 2) / radar_resolution
 
-    print("------")
-    print("sample_angle.shape",sample_angle.shape)
-    print("azimuths[0]",azimuths[0])
-    print("azimuth step shape" ,azimuth_step.shape)
+    # print("------")
+    # print("sample_angle.shape",sample_angle.shape)
+    # print("azimuths[0]",azimuths[0])
+    # print("azimuth step shape" ,azimuth_step.shape)
 
     
     sample_v = (sample_angle - azimuths[0]) / azimuth_step
@@ -193,12 +197,16 @@ codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 # Create a VideoWriter object
 video_writer = cv2.VideoWriter(output_video_path, codec, frame_rate, frame_size)
 
+polar_frame_size = (401, 1793)  # Frame size (width, height) of the video
+video_writer_polar = cv2.VideoWriter('./radar_polar.avi', codec, frame_rate, polar_frame_size)
+
 # to fill rosbag path 
-radar_rosbag_path = "/home/samqiao/ASRL/vtr3_testing/localization_data/rosbags/grassy2" # fill this in
-radar_times, radar_imgs = get_radar_scan_images_and_timestamps(radar_rosbag_path)
+radar_rosbag_path = "/home/samqiao/ASRL/vtr3_data/routes/woody/0910/woody_t1" # fill this in
+radar_times, radar_imgs, polar_imgs = get_radar_scan_images_and_timestamps(radar_rosbag_path)
 
 radar_times = np.array(radar_times)
 radar_imgs = np.array(radar_imgs)
+polar_imgs = np.array(polar_imgs)
 
 print(radar_imgs.shape)
 print(radar_times.shape)
@@ -213,11 +221,29 @@ for radar_img in radar_imgs:
     # print("radar_img shape:",radar_img.shape)
     # Write the frame to the video
     radar_img = cv2.cvtColor(radar_img, cv2.COLOR_GRAY2BGR)
+    print("radar_img shape:",radar_img.shape)
     video_writer.write(radar_img)
 
     # plt.imshow(radar_img,cmap='gray', vmin=0, vmax=255)
     # plt.show()
 
 
+for polar_img in polar_imgs:
+    # print("polar_img shape:",polar_img.shape)
+    # Write the frame to the video
+    polar_img = cv2.cvtColor(polar_img, cv2.COLOR_GRAY2BGR)
+
+    # plt.imshow(polar_img, vmin=0, vmax=255)
+    print("polar_img shape:",polar_img.shape)
+    
+    video_writer_polar.write(polar_img)
+
+    # plt.imshow(polar_img,cmap='gray', vmin=0, vmax=255)
+    # plt.show()
+
 # Release the VideoWriter object   
 video_writer.release()
+
+video_writer_polar.release()
+# save the video
+print("Video saved to:", output_video_path)
