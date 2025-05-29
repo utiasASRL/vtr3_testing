@@ -1,3 +1,6 @@
 [submodule "deps/path_tracking_error"]
 	path = deps/path_tracking_error
 	url = git@github.com:PioneerSam/path_tracking_error.git
+[submodule "deps/radar_sandbox"]
+	path = deps/radar_sandbox
+	url = git@github.com:clegenti/radar_sandbox.git
