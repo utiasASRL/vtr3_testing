@@ -67,7 +67,7 @@ frame_rate = 60.0  # Frames per second
 frame_size = (512, 512)  # Frame size (width, height) of the video
 codec = cv2.VideoWriter_fourcc(*'XVID')  # Video codec (XVID, MJPG, etc.)
 
-parent_folder = "/home/leonardo/vtr3_testing"
+parent_folder = "/home/samqiao/ASRL/vtr3_testing"
 
 T_novatel_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.550],
   [0.000, 1.000 , 0.000, 0.000],
@@ -87,7 +87,7 @@ def load_config(config_path='config.yaml'):
     return config
 
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_sam.yaml'))
 
 # Access database configuration
 db = config['radar_data']['grassy']
