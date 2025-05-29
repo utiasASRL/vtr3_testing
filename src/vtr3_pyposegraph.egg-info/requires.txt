@@ -1,0 +1,7 @@
+asrl-pylgmath
+
+[dev]
+check-manifest
+
+[test]
+coverage

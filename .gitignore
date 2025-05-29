@@ -1,0 +1,67 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Debug files
+data/*
+
+# Local configuration file
+build/*
+install/*
+
+# # CMake files
+# CMakeFiles
+bash_scripts/radar/*
+
+# any log file
+*.log
+*.make
+
+test/build/
+test/install/
+
+*.npz
+*.pyc
+*.avi
+
+data/*
+result/*
+posegraph/*
+rosbags/*
+
+*.db3
+
+.vscode/*
+
+*.pyc
+
+localization_data/*
