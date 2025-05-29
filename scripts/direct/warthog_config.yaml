@@ -44,6 +44,6 @@ direct:
   local_map_update_alpha: 0.1 # The local map is updated as (1-alpha)*prev_map + alpha*current_scan
 
 log:
-  verbose: False
+  verbose: true
   display: true
   save_images: true

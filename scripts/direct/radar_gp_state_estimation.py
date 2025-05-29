@@ -1,48 +1,49 @@
 import yaml
 import gp_doppler as gpd
 import pyboreas as pb
-# import warthog_data_loader as wd
-# import mulran_data_loader as md
+import warthog_data_loader as wd
+import mulran_data_loader as md
 import time
 import numpy as np
 import pandas as pd
 import os
 import utils
 import cv2
-
+import matplotlib.pyplot as plt
+import motion_models as mm
 
 def main():
     # Load the configuration file
     with open('config.yaml') as f:
         config = yaml.safe_load(f)
 
-    # if config['data']['multi_sequence']:
-    #     if config['data']['type'] == 'boreas':
-    #         db = pb.BoreasDataset(config['data']['data_path'])
-    #         sequences = db.sequences
-    #     elif config['data']['type'] == 'warthog':
-    #         db = wd.WarthogDataset(config['data']['data_path'])
-    #         sequences = db.sequences
-    #     elif config['data']['type'] == 'mulran':
-    #         db = md.MulranDataset(config['data']['data_path'])
-    #         sequences = db.sequences
-    #     else:
-    #         raise ("Unknown data type")
-    # else:
-    #     # Get the last repo of the data_path
-    #     sequence_id = config['data']['data_path'].split('/')[-1]
-    #     # Get the base path
-    #     base_path = '/'.join(config['data']['data_path'].split('/')[:-1])
-    #     if config['data']['type'] == 'boreas':
-    #         db = pb.BoreasDataset(base_path)
-    #     elif config['data']['type'] == 'warthog':
-    #         db = wd.WarthogDataset(base_path)
-    #     elif config['data']['type'] == 'mulran':
-    #         db = md.MulranDataset(base_path)
-    #     else:
-    #         raise ("Unknown data type")
-    #     sequences = []
-    #     sequences.append(db.get_seq_from_ID(sequence_id))
+    if config['data']['multi_sequence']:
+        if config['data']['type'] == 'boreas':
+            db = pb.BoreasDataset(config['data']['data_path'])
+            sequences = db.sequences
+        elif config['data']['type'] == 'warthog':
+            db = wd.WarthogDataset(config['data']['data_path'])
+            sequences = db.sequences
+        elif config['data']['type'] == 'mulran':
+            db = md.MulranDataset(config['data']['data_path'])
+            sequences = db.sequences
+        else:
+            raise ("Unknown data type")
+    else:
+        # Get the last repo of the data_path
+        sequence_id = config['data']['data_path'].split('/')[-1]
+        # Get the base path
+        base_path = '/'.join(config['data']['data_path'].split('/')[:-1])
+        if config['data']['type'] == 'boreas':
+            db = pb.BoreasDataset(base_path)
+        elif config['data']['type'] == 'warthog':
+            db = wd.WarthogDataset(base_path)
+        elif config['data']['type'] == 'mulran':
+            db = md.MulranDataset(base_path)
+        else:
+            raise ("Unknown data type")
+        sequences = []
+        sequences.append(db.get_seq_from_ID(sequence_id))
         
 
     # Check if the output path exists
@@ -79,6 +80,15 @@ def main():
     else:
         estimate_vy_bias = False
     
+    if visualise and boreas_format:
+        fig, ax = plt.subplots(1,1,figsize=(10,10))
+        # Set axis equal
+        ax.set_aspect('equal', adjustable='datalim')
+        plt.draw()
+        plt.pause(0.001)
+
+    iter_log = {'sum': 0, 'count': 0}
+
 
     # Check the mode
     for seq in sequences:
@@ -88,11 +98,15 @@ def main():
         # Create the GP model
         temp_radar_frame = seq.get_radar(0)
         res = temp_radar_frame.resolution
-        if mulran_format:
-            res*=1.00#15
+        print("Resolution: ", res)
+        exit(-1)
         gp_state_estimator = gpd.GPStateEstimator(config, res)
         temp_radar_frame.unload_data()
 
+        gt_first_T_inv= None
+        gt_xyz = []
+        est_xyz = []
+        
 
         if use_gyro:
             gyro_bias = 0.0
@@ -189,12 +203,18 @@ def main():
         # Loop over the radar frames
         end_id = len(seq.radar_frames)
         start_id = 0
+        prev_radar_ts = seq.get_radar(start_id).timestamp
         for i in range(start_id, end_id):
             time_start = time.time()
 
             # Load the radar frame
             radar_frame = seq.get_radar(i)
             
+            if boreas_format:
+                if gt_first_T_inv is None:
+                    gt_first_T_inv = np.linalg.inv(radar_frame.pose)
+                gt_xyz.append((gt_first_T_inv @ radar_frame.pose)[:3,3])
+
             if use_gyro:
                 if gyro_bias_initialised:
                     gyro_bias_log.append(gyro_bias)
@@ -238,6 +258,8 @@ def main():
             # Optimise the scan velocity
             time_start = time.time()
             polar_img = radar_frame.polar
+            if boreas_format:
+                polar_img = polar_img[:, 8:]
             state = gp_state_estimator.odometryStep(polar_img, radar_frame.azimuths.flatten(), radar_frame.timestamps.flatten(), chirp_up, potential_chirp_flip)
 
             degraded_log.append(gp_state_estimator.degraded_log)
@@ -336,7 +358,12 @@ def main():
 
 
             # Get the position and rotation for the evaluation
+            if isinstance(gp_state_estimator.motion_model, mm.ConstBodyVelConstW) or isinstance(gp_state_estimator.motion_model, mm.ConstVelConstW):
+                print("Warning: Bias added")
+                gp_state_estimator.state_init[2] -= config['estimation']['ang_vel_bias']
             current_pos, current_rot = gp_state_estimator.getAzPosRot()
+            if isinstance(gp_state_estimator.motion_model, mm.ConstBodyVelConstW) or isinstance(gp_state_estimator.motion_model, mm.ConstVelConstW):
+                gp_state_estimator.state_init[2] += config['estimation']['ang_vel_bias']
             if current_pos is not None:
                 current_pos = current_pos.squeeze()
                 current_rot = current_rot.squeeze()
@@ -348,6 +375,8 @@ def main():
                                     [np.sin(current_rot[mid_id]), np.cos(current_rot[mid_id]), 0, current_pos[mid_id][1]],
                                     [0, 0, 1, 0],
                                     [0, 0, 0, 1]])
+
+                est_xyz.append(trans_mat[:3,3])
 
                 if boreas_format or mulran_format:
                     trans_mat = np.linalg.inv(trans_mat)
@@ -366,13 +395,30 @@ def main():
                 else:
                     df_data.to_csv(odom_output_path, mode='a', header=None, index=None, sep=' ')
 
-
+            #dump the local map
+            if config['log']['dump_local_map']:
+                if i == start_id:
+                    continue
+                local_map_path = seq_output_path + '/local_map/'
+                os.makedirs(local_map_path, exist_ok=True)
+                local_map = gp_state_estimator.getLocalMap()
+                if local_map is not None:
+                    cv2.imwrite(local_map_path + str(prev_radar_ts) + '.png', local_map)
+                prev_radar_ts = radar_frame.timestamp
+            
             if visualise or save_images:
                 img = gp_state_estimator.generateVisualisation(radar_frame, 500, radar_frame.resolution*radar_frame.polar.shape[1]/(250*np.sqrt(2)), inverted=True, text=False)
             if visualise:
                 cv2.imshow('Image', img)
                 cv2.waitKey(5)
 
+                if boreas_format:
+                    gt_xy = np.array(gt_xyz)
+                    est_xy = np.array(est_xyz)
+                    ax.plot(gt_xy[:,0], gt_xy[:,1], 'r--')
+                    ax.plot(est_xy[:,0], est_xy[:,1], 'b')
+                    plt.draw()
+                    plt.pause(0.001)
 
             # Save the image (with 6 digits)
             if save_images:
@@ -434,11 +480,14 @@ def main():
         df_degraded = pd.DataFrame(degraded_log)
         df_degraded.to_csv(degraded_log_path, header=None, index=None, sep=' ')
 
+        iter_log['sum'] += gp_state_estimator.iter_log['sum']
+        iter_log['count'] += gp_state_estimator.iter_log['nb']
 
     if visualise:
         cv2.destroyAllWindows()
     print("")
 
+    print("Average number of iterations: ", iter_log['sum']/iter_log['count'])
 
 if __name__ == '__main__':
     main()

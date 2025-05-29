@@ -376,21 +376,21 @@ class GPStateEstimator:
                 temp_polar_intensity_sparse = torch.zeros(self.local_map_blurred.shape, device=self.device)
                 temp_polar_intensity_sparse[cart_idx_sparse.int()[:,0],cart_idx_sparse.int()[:,1]] = self.polar_intensity_sparse
                
-                fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
+                # fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
 
-                # # First plot
-                axs[0].set_title("Blurred Local Map")
-                im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
-                fig.colorbar(im1, ax=axs[0])
+                # # # First plot
+                # axs[0].set_title("Blurred Local Map")
+                # im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
+                # fig.colorbar(im1, ax=axs[0])
 
-                # Second plot
-                axs[1].set_title("Sparse Polar Intensity")
-                im2 = axs[1].imshow(temp_polar_intensity_sparse.cpu().numpy())
-                fig.colorbar(im2, ax=axs[1])
+                # # Second plot
+                # axs[1].set_title("Sparse Polar Intensity")
+                # im2 = axs[1].imshow(temp_polar_intensity_sparse.cpu().numpy())
+                # fig.colorbar(im2, ax=axs[1])
 
-                # Adjust spacing and show
-                plt.tight_layout()
-                plt.show()
+                # # Adjust spacing and show
+                # plt.tight_layout()
+                # plt.show()
                 
                 jacobian_direct_sparse = ((d_interp_direct_d_xy_sparse @ d_cart_sparse_d_state) * (self.polar_intensity_sparse.unsqueeze(-1).unsqueeze(-1))).squeeze()
 
