@@ -30,5 +30,7 @@ bool:
   SAVE: False
   PLOT: False
   DEBUG: True
+  USE_LOCAL_MAP: False
+  SET_INITIAL_GUESS: False
 
 output: "/home/leonardo/vtr3_testing/scripts/direct"

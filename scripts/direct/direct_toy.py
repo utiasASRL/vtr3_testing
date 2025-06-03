@@ -131,10 +131,17 @@ config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_sa
 
 db_bool = config['bool']
 SAVE = db_bool.get('SAVE')
-SAVE = False
-print("SAVE:",SAVE)
 PLOT = db_bool.get('PLOT')
 DEBUG = db_bool.get('DEBUG')
+USE_LOCAL_MAP = db_bool.get('USE_LOCAL_MAP')
+SET_INITIAL_GUESS = db_bool.get('SET_INITIAL_GUESS')
+
+print("Bool values from config:")
+print("SAVE:", SAVE)
+print("PLOT:", PLOT)
+print("DEBUG:", DEBUG)
+print("USE_LOCAL_MAP:", USE_LOCAL_MAP)
+print("SET_INITIAL_GUESS:", SET_INITIAL_GUESS)
 
 result_folder = config.get('output')
 
@@ -243,6 +250,7 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("------------------ repeat idx: ", repeat_vertex_idx,"------------------")
     teach_vertex_time = teach_times[repeat_vertex_idx]
     repeat_vertex_time = repeat_times[repeat_vertex_idx]
+    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)peat_vertex_idx]
     print("teach vertex time:", teach_vertex_time[0])
     print("repeat vertex time:", repeat_vertex_time[0])
 
@@ -363,7 +371,9 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     r_repeat_teach_in_teach = T_teach_repeat_edge_in_radar.inverse().r_ba_ina() # inverse?
 
     # we might need to transform r_repeat_teach to the radar frame
-    roll, pitch, yaw = rotation_matrix_to_euler_angles(T_teach_repeat_edge.C_ba().T) # ba means teach_repeat
+    roll, pitch, yaw = rotation_matrix_to_euler_angles(T_teach_repeat_edge.C_ba().T) 
+
+    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)to_euler_angles(T_teach_repeat_edge.C_ba().T) # ba means teach_repeat
     r_repeat_teach_in_teach[2] = wrap_angle(yaw)
    
 
@@ -372,31 +382,19 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     intial_guess = torch.from_numpy(np.squeeze(r_repeat_teach_in_teach)).to('cuda')
     # print("intial_guess shape:", intial_guess.shape)
 
-    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
+    if SET_INITIAL_GUESS:
+        # set the state to the intial guess
+        gp_state_estimator.setIntialState(intial_guess)
 
     # teach_timestamp = teach_times[repeat_vertex_idx]
 
-    teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_times[repeat_vertex_idx][0])
+    if USE_LOCAL_MAP:
+        teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_times[repeat_vertex_idx][0])
+        teach_local_map = load_local_map(teach_local_map_file)
 
-    # print("teach local map file:", teach_local_map_file)
-
-    teach_local_map = load_local_map(teach_local_map_file)
-
-    # gp_state_estimator.setIntialState(intial_guess) # we can comment this out
-
-    # #plot teach local map
-    # plt.imshow(teach_local_map, cmap='gray')
-    # plt.title('Teach Local Map')
-    # plt.show()
-
-     # set the state to the intial guess
-    gp_state_estimator.setIntialState(intial_guess)
-
-    state = gp_state_estimator.toLocalMapRegistration(teach_local_map, repeat_frame)
-
-    # before
-    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
-
+        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, repeat_frame)
+    else:
+        state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
 
 
     direct_se2_pose.append(state)
@@ -406,9 +404,6 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
 
     print("r_repeat_teach_in_teach:", r_repeat_teach_in_teach.T[0])
     print("direct estimated state:", state)
-
-    # if repeat_vertex_idx == 3:
-    #     break
 
 
 
