@@ -255,7 +255,7 @@ gp_state_estimator_2 = gpd.GPStateEstimator(config_warthog, radar_resolution)
 
 
 image1_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179490.9871147_scan.png'
-image2_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179491.236846.png'
+image2_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179491.236846_local_map.png'
 # Load the images
 img1 = cv2.imread(image1_path)
 img2 = cv2.imread(image2_path)
@@ -271,7 +271,7 @@ img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 # # Show images
 # plt.figure(figsize=(10, 5))
 # plt.subplot(1, 2, 1)
-# plt.imshow(img1_gray, cmap='gray')
+# plt.imshow(img1_gray, cmap='gray')``
 # plt.title('Cart Image 1')
 # plt.axis('off')
 
@@ -358,7 +358,7 @@ def preprocess_frame(frame):
         return polar_intensity,frame_cart, azimuths, timestamps, nb_azimuths
 
 
-# cart_frame = preprocess_frame(teach_frame)
+polar_intensity, frame_cart, azimyths, timestamps, nb_azimuths = preprocess_frame(teach_frame)
 
 
 # # first we will do teach image to teach local map registration

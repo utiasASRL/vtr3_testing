@@ -352,6 +352,9 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("teach azimuth angles shape:", teach_scan_azimuth_angles.shape)
     print("the first teach azimuth angle:", teach_scan_azimuth_angles[0])
 
+    teach_vertex_time = teach_vertex_timestamps[repeat_vertex_idx]
+    print("sam: teach vertex time:", teach_vertex_time[0])
+
     teach_cv_scan_cartesian = radar_polar_to_cartesian(teach_cv_scan_polar,teach_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
     
 

@@ -68,3 +68,5 @@ localization_data/*
 
 *.png
 *.pyc
+
+.vscode/*

@@ -611,7 +611,10 @@ class GPStateEstimator:
             local_map_path = local_map_path + '/local_map_one_to_one/'
             os.makedirs(local_map_path, exist_ok=True)
             if self.local_map is not None:
-                    cv2.imwrite(local_map_path + str(fix_frame.timestamps[200]/1e9) + '.png', self.local_map.detach().cpu().numpy()*255)
+                    mid_scan_timestamp = fix_frame.timestamps[200]/1e9
+
+                    # print("sam: local map timestamp one to one", fix_frame.timestamps[1]/1e9)
+                    cv2.imwrite(local_map_path + str(mid_scan_timestamp) + '.png', self.local_map.detach().cpu().numpy()*255)
 
             result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
             self.state_init = result.clone()
