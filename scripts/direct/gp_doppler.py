@@ -9,7 +9,7 @@ import os
 
 import pyboreas as pb
 
-from motion_models import *
+from scripts.direct.motion_models import *
 
 class GPStateEstimator:
     def __init__(self, opts, res):
@@ -375,6 +375,8 @@ class GPStateEstimator:
                 
                 temp_polar_intensity_sparse = torch.zeros(self.local_map_blurred.shape, device=self.device)
                 temp_polar_intensity_sparse[cart_idx_sparse.int()[:,0],cart_idx_sparse.int()[:,1]] = self.polar_intensity_sparse
+
+                # print("sam: I am in costFunctionAndJacobian_ and the shape of temp_polar_intensity_sparse is", temp_polar_intensity_sparse.shape)
                
                 # fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
 
@@ -384,13 +386,13 @@ class GPStateEstimator:
                 # fig.colorbar(im1, ax=axs[0])
 
                 # # Second plot
-                # axs[1].set_title("Sparse Polar Intensity")
-                # im2 = axs[1].imshow(temp_polar_intensity_sparse.cpu().numpy())
+                # axs[1].set_title("Sparse Polar Intensity Repeat Scan")
+                # im2 = axs[1].imshow((temp_polar_intensity_sparse.cpu().numpy()*10000).astype(np.uint8))
                 # fig.colorbar(im2, ax=axs[1])
 
                 # # Adjust spacing and show
                 # plt.tight_layout()
-                # plt.show()
+
                 
                 jacobian_direct_sparse = ((d_interp_direct_d_xy_sparse @ d_cart_sparse_d_state) * (self.polar_intensity_sparse.unsqueeze(-1).unsqueeze(-1))).squeeze()
 
@@ -409,10 +411,10 @@ class GPStateEstimator:
             elif doppler:
                 return residual, jacobian
             elif direct:
-                return residual_direct, jacobian_direct
+                return residual_direct, jacobian_direct, temp_polar_intensity_sparse
             
 
-    def toLocalMapRegistration(self, teach_local_map, repeat_frame, chirp_up=True, potential_flip=False):
+    def toLocalMapRegistration(self, teach_local_map, teach_frame, repeat_frame, chirp_up=True, potential_flip=False):
         with torch.no_grad():
             self.chirp_up = chirp_up
             self.timestamps = torch.tensor(repeat_frame.timestamps.flatten()).to(self.device).squeeze()
@@ -459,12 +461,10 @@ class GPStateEstimator:
             # print("mask_direct shape", mask_direct.shape)
             self.polar_intensity_sparse = temp_intensity[mask_direct] #self.local_map_blurred
 
-            # import matplotlib.pyplot as plt
-            # plt.figure()
-            # plt.title("Polar Intensity- pairwise")
-            # plt.imshow(temp_intensity.cpu().numpy())
-            # plt.colorbar()
-            # plt.show()
+            # # I want to plot the polar intensity sparse in cart format 
+            # print("sam: polar_intensity shape", self.polar_intensity.shape)
+            # print("sam: polar_intensity_sparse shape", self.polar_intensity_sparse.shape)
+
             
             self.direct_r_sparse = self.range_vec.unsqueeze(0).repeat(self.nb_azimuths, 1)[mask_direct]
             # print("direct_r_sparse shape", self.direct_r_sparse.shape)
@@ -482,30 +482,16 @@ class GPStateEstimator:
             # sam no undertstand 
 
             self.local_map = torch.tensor(teach_local_map).to(self.device)
-
-            # repeat_frame_cart = pb.utils.radar.radar_polar_to_cartesian(repeat_frame.azimuths.astype(np.float32), repeat_frame.polar, 0.040308, 0.2384, 640, False, True)
-            # # Create subplots
-            # fig, axes = plt.subplots(1, 3, figsize=(15, 5))  # Adjust figsize as needed
-
-            # # Display images
-            # axes[0].imshow(teach_local_map,cmap='gray')
-            # axes[0].axis('off')  # Hide axes if desired
-            # axes[0].set_title('teach local map')
-
-            # # axes[1].imshow(teach_cv_scan_cartesian,cmap='gray')
-            # # axes[1].axis('off')
-            # # axes[1].set_title('teach cart scan (one image)')
-
-            # axes[2].imshow(repeat_frame_cart,cmap='gray')
-            # axes[2].axis('off')
-            # axes[2].set_title(f'repeat cart scan: (one image)')
-
-            # plt.tight_layout()
-            # plt.show()
-
+            
+            teach_frame_cart = pb.utils.radar.radar_polar_to_cartesian(teach_frame.azimuths.astype(np.float32), teach_frame.polar, 0.040308, 0.2384, 640, False, True)
+            repeat_frame_cart = pb.utils.radar.radar_polar_to_cartesian(repeat_frame.azimuths.astype(np.float32), self.polar_intensity.detach().cpu().numpy(), 0.040308, 0.2384, 640, False, True)
+            # print("sam converted repeat scan to cartesian shape", repeat_frame_cart.shape)
+            
             self.local_map_blurred = torchvision.transforms.functional.gaussian_blur(self.local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
             normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
             self.local_map_blurred *= normalizer
+
+
             self.step_counter = 1
             result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
             
@@ -618,6 +604,15 @@ class GPStateEstimator:
             normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
             self.local_map_blurred *= normalizer
             self.step_counter = 1
+
+
+            # save one-to-one local map
+            local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+            local_map_path = local_map_path + '/local_map_one_to_one/'
+            os.makedirs(local_map_path, exist_ok=True)
+            if self.local_map is not None:
+                    cv2.imwrite(local_map_path + str(fix_frame.timestamps[200]/1e9) + '.png', self.local_map.detach().cpu().numpy()*255)
+
             result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
             self.state_init = result.clone()
             return result.detach().cpu().numpy()
@@ -787,7 +782,7 @@ class GPStateEstimator:
             last_decreasing_grad = torch.zeros_like(state)
             for i in torch.arange(nb_iter, device=self.device):
                 
-                res, jac = self.costFunctionAndJacobian_(state, self.use_doppler, self.use_direct and (self.step_counter>0), degraded)
+                res, jac, temp_polar_intensity_sparse = self.costFunctionAndJacobian_(state, self.use_doppler, self.use_direct and (self.step_counter>0), degraded)
 
                 if remove_angular and not self.use_gyro:
                     jac = jac[:, :-1]
@@ -810,10 +805,13 @@ class GPStateEstimator:
                 grad_norm = torch.linalg.norm(grad)
 
                 if step_quantum < 1e-5:
+                    if verbose:
+                        print("Step quantum too small, breaking")
                     break
 
 
                 if grad_norm < 1e-9:
+                    print("breaking because of grad_norm < 1e-9")
                     break
                 step = (grad / grad_norm) * step_quantum
                 #step = grad * step_quantum
@@ -833,13 +831,15 @@ class GPStateEstimator:
                     first_cost = cost
                 
                 # Print iter cost step_norm cost_change with 3 decimals and scientific notation
-                # if verbose:
-                #     print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
+                if verbose:
+                    print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
 
                 if step_norm < step_tol:
+                    print("breaking because of step_norm < step_tol")
                     break
 
                 if torch.abs(cost_change/cost) < cost_tol:
+                    print("breaking because of abs(cost_change/cost) < cost_tol")
                     break
                 prev_cost = cost
 
@@ -862,8 +862,24 @@ class GPStateEstimator:
                 self.previous_vel = torch.norm(vel[-1,:])
                 self.max_diff_vel = self.motion_model.time[-1] * self.max_acc
             
-            
 
+            # fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
+
+            # # # First plot
+            # axs[0].set_title("Blurred Local Map")
+            # im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
+            # fig.colorbar(im1, ax=axs[0])
+
+
+            # # Second plot
+            # axs[1].set_title("Sparse Polar Intensity Repeat Scan")
+            # im2 = axs[1].imshow((temp_polar_intensity_sparse.cpu().numpy()*10000).astype(np.uint8))
+            # fig.colorbar(im2, ax=axs[1])
+
+            # # Adjust spacing and show
+            # plt.tight_layout()
+            # plt.show()
+            
             return state
 
     #@torch.compile
@@ -1133,8 +1149,6 @@ class GPStateEstimator:
             text_color = (0, 0, 0)
             vel_color = (255, 0, 0)
         
-
-
 
         # Normalising paramters for the display
         if self.diplay_intensity_normalisation is None:

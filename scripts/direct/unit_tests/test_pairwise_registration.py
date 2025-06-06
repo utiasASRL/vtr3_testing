@@ -1,3 +1,7 @@
+# test_pairwise registration.py
+# essentially this is one to one image registration 
+# this script will take in two image path and then do pairwise or localmap registration 
+
 import os
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,6 +18,7 @@ parent_folder = "/home/samqiao/ASRL/vtr3_testing"
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
+print("Current working dir", os.getcwd())
 
 from deps.path_tracking_error.fcns import *
 # from scripts.radar.utils.helper import *
@@ -24,18 +29,18 @@ from deps.path_tracking_error.fcns import *
 from pylgmath import Transformation
 # from vtr_utils.plot_utils import *
 # import time
-
 import yaml
-import gp_doppler as gpd
+import scripts.direct.gp_doppler as gpd
+import cv2
 import torch
 import torchvision
 
-from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
+import pyboreas as pb
 
-from utils import *
+# from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
+# from scripts.utils import *
 
 
-print("Current working dir", os.getcwd())
 
 T_novatel_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.550],
   [0.000, 1.000 , 0.000, 0.000],
@@ -126,6 +131,18 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
+def load_local_map(file_path):
+    """
+    Load a local map from a file.
+
+    :param file_path: Path to the local map file.
+    :return: Loaded local map.
+    """
+    # Assuming the local map is an image, you can use OpenCV or PIL to load it
+    # For example, using OpenCV:
+    local_map = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    return local_map.astype(np.float32) / 255.0
+
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 
 
@@ -133,6 +150,7 @@ db_bool = config['bool']
 SAVE = db_bool.get('SAVE')
 PLOT = db_bool.get('PLOT')
 DEBUG = db_bool.get('DEBUG')
+DEBUG = False
 USE_LOCAL_MAP = db_bool.get('USE_LOCAL_MAP')
 SET_INITIAL_GUESS = db_bool.get('SET_INITIAL_GUESS')
 
@@ -163,10 +181,7 @@ max_range = config['max_r']
 # config_warthog for dp state estimator
 config_warthog = load_config(os.path.join(parent_folder,'scripts/direct/warthog_config.yaml'))
 
-# start the gp estimator
-gp_state_estimator = gpd.GPStateEstimator(config_warthog, radar_resolution)
-
-
+# load data 
 # load vtr posegraph results
 TEACH_FOLDER = os.path.join(out_path_folder, "teach")
 REPEAT_FOLDER = os.path.join(out_path_folder, f"repeat")
@@ -232,222 +247,131 @@ if not os.path.exists(os.path.join(REPEAT_FOLDER, "repeat_ppk.npz")):
 r2_pose_repeat_ppk_dirty = repeat_ppk_df['r2_pose_repeat_ppk']
 
 
-# the things that I need
-# 1. repeat_edge_transforms = repeat_df['repeat_edge_transforms']
-print("repeat times shape:", repeat_times.shape)
-print("repeat_edge_transforms shape:", repeat_edge_transforms.shape)
+# ---------- code start here -----------
 
-gps_norm = []
-vtr_norm = []
+# start the gp estimator
+gp_state_estimator_1 = gpd.GPStateEstimator(config_warthog, radar_resolution)
+gp_state_estimator_2 = gpd.GPStateEstimator(config_warthog, radar_resolution)
 
-vtr_x_error = []
-vtr_y_error = []
-vtr_yaw_error = []
 
-# maybe lets run it for 10 times
-print("begin loop")
-for repeat_vertex_idx in range(0,repeat_times.shape[0]):
-    print("------------------ repeat idx: ", repeat_vertex_idx,"------------------")
-    teach_vertex_time = teach_times[repeat_vertex_idx]
-    repeat_vertex_time = repeat_times[repeat_vertex_idx]
+image1_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179490.9871147_scan.png'
+image2_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179491.236846.png'
+# Load the images
+img1 = cv2.imread(image1_path)
+img2 = cv2.imread(image2_path)
 
-    print("teach vertex time:", teach_vertex_time[0])
-    print("repeat vertex time:", repeat_vertex_time[0])
+# show images and its shape
+print("Image 1 shape:", img1.shape)
+print("Image 2 shape:", img2.shape)
 
-    # populate vtr norm with the 2d euclidean distance
-    print("repeat_edge_transforms shape:", repeat_edge_transforms.shape)
+# Convert images to grayscale
+img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
 
-    T_teach_repeat_edge = repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time[0]]
+# # Show images
+# plt.figure(figsize=(10, 5))
+# plt.subplot(1, 2, 1)
+# plt.imshow(img1_gray, cmap='gray')
+# plt.title('Cart Image 1')
+# plt.axis('off')
 
-    # print("T_teach_repeat_edge shape:", T_teach_repeat_edge.matrix())
-    
-    r_repeat_teach_in_teach = T_teach_repeat_edge.inverse().r_ba_ina()
-    print("r_repeat_teach_in_teach shape:", r_repeat_teach_in_teach.shape)
+# plt.subplot(1, 2, 2)
+# plt.imshow(img2_gray, cmap='gray')
+# plt.title('Cart Image 2')
+# plt.axis('off')
 
-    vtr_norm.append(np.linalg.norm(r_repeat_teach_in_teach[0:2]))
-    print("vtr norm:", vtr_norm[repeat_vertex_idx])
+# plt.show()
 
-    # do the same for gps
-    def get_closest_gps_measurement(r2_pose_ppk,t_query):
-        """
-        Find the closest GPS measurement to a given timestamp.
+target_timestamp = 1738179490.9871147
+# lets find the polar information from the cartesian images
+idx =  np.argmin(np.abs(teach_times - target_timestamp))
+print("Index of closest timestamp:", idx)
+idx = 1
+print("The teach vertex timestamp:", teach_vertex_timestamps[1][0])
 
-        :param r2_pose_ppk: Array of GPS measurements.
-        :param t_query: Timestamp to find the closest measurement for.
-        :return: Closest GPS measurement and its index.
-        """
-        idx = np.argmin(np.abs(r2_pose_ppk[:, 0] - t_query))
-        return r2_pose_ppk[idx], idx
-    
-    # get the closest gps measurement
-    teach_ppk, idx = get_closest_gps_measurement(r2_pose_teach_ppk_dirty, teach_vertex_time)
-    print("teach_ppk idx", idx)
-    repeat_ppk,idx= get_closest_gps_measurement(r2_pose_repeat_ppk_dirty, repeat_vertex_time)
-    print("repeat_ppk idx", idx)
-    print("teach_ppk:", teach_ppk)
-    print("repeat_ppk:", repeat_ppk)
+# Get the polar image and azimuth angles for the closest timestamp
+polar_image = teach_polar_imgs[idx]
+azimuth_angles = teach_azimuth_angles[idx]
+azimuth_timestamps = teach_azimuth_timestamps[idx]
 
-    # calculate the norm
-    gps_norm.append(np.linalg.norm(teach_ppk[1:3] - repeat_ppk[1:3]))
-    print("gps norm:", gps_norm[repeat_vertex_idx])
-    # print("T_teach_repeat_edge_options:", T_teach_repeat_edge_options)
+# Convert the polar image to cartesian
+cart_image = radar_polar_to_cartesian(polar_image, azimuth_angles, radar_resolution, cart_resolution=cart_resolution)
 
+# # Show the cartesian image
+# plt.figure(figsize=(10, 5))
+# plt.subplot(1, 2, 1)
+# plt.imshow(cart_image, cmap='gray')
+# plt.title('Cartesian Image from Polar Data')
+# plt.axis('off')
+# plt.show()
+
+# now we will do teach image to teach local map registration
+# we will constrast the optimization score with teach image to teach image registration
 class RadarFrame:
     def __init__(self, polar, azimuths, timestamps):
         self.polar = polar[:, :].astype(np.float32) / 255.0
         self.azimuths=azimuths
         self.timestamps=timestamps.flatten().astype(np.int64) 
 
-dir_norm = []
-vtr_se2_pose = []
-direct_se2_pose = []
+teach_frame = RadarFrame(polar_image, azimuth_angles, azimuth_timestamps)
 
-# load all the local maps of the teach path
-# open the directory
-teach_local_maps_path = config["radar_data"]["grassy"]["local_maps_path"]
-print(teach_local_maps_path)
-teach_local_maps_files = os.listdir(teach_local_maps_path)
-
-teach_local_maps = {}
-for file in teach_local_maps_files:
-    if file.endswith(".png"):
-        file_path = os.path.join(teach_local_maps_path, file)
-        teach_local_maps[file.replace(".png","")] = file_path
-
-def load_local_map(file_path):
+def preprocess_frame(frame):
     """
-    Load a local map from a file.
-
-    :param file_path: Path to the local map file.
-    :return: Loaded local map.
+    Preprocess the radar frame by converting polar data to cartesian.
     """
-    # Assuming the local map is an image, you can use OpenCV or PIL to load it
-    # For example, using OpenCV:
-    local_map = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
-    return local_map.astype(np.float32) / 255.0
-
-def find_closest_local_map(teach_local_maps, timestamp):
-    """
-    Find the closest local map to a given timestamp.
-
-    :param teach_local_maps: Dictionary of local maps.
-    :param timestamp: Timestamp to find the closest local map for.
-    :return: Closest local map and its key.
-    """
-    print("looking for: ", timestamp)
-    closest_key = min(teach_local_maps.keys(), key=lambda k: abs(float(k) - timestamp))
-    print("closest key:", closest_key)
-    return teach_local_maps[closest_key], closest_key
-
-# print("------ dir norm ------")
-# now we can set up the direct localization stuff
-for repeat_vertex_idx in range(0,repeat_times.shape[0]):
-    print("------------------ repeat idx: ", repeat_vertex_idx,"------------------")
-    repeat_vertex_time = repeat_times[repeat_vertex_idx]
-
-    teach_cv_scan_polar = teach_polar_imgs[repeat_vertex_idx]
-    teach_scan_azimuth_angles = teach_azimuth_angles[repeat_vertex_idx][:] # need to add : so the first element is correct
-    teach_scan_timestamps = teach_azimuth_timestamps[repeat_vertex_idx]
-
-    print("teach azimuth angles shape:", teach_scan_azimuth_angles.shape)
-    print("the first teach azimuth angle:", teach_scan_azimuth_angles[0])
-
-    teach_cv_scan_cartesian = radar_polar_to_cartesian(teach_cv_scan_polar,teach_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
-    
-
-    repeat_cv_scan_polar = repeat_polar_imgs[repeat_vertex_idx]
-    repeat_scan_azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx][:]
-    repeat_scan_timestamps = repeat_azimuth_timestamps[repeat_vertex_idx]
-
-    repeat_cv_scan_cartesian = radar_polar_to_cartesian(repeat_cv_scan_polar,repeat_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
-
-    teach_frame = RadarFrame(teach_cv_scan_polar, teach_scan_azimuth_angles, teach_scan_timestamps.reshape(-1,1))
-    repeat_frame = RadarFrame(repeat_cv_scan_polar, repeat_scan_azimuth_angles, repeat_scan_timestamps.reshape(-1,1))
-
-    # we can use teach and repeat result as a intial guess
-    T_teach_repeat_edge = repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time[0]]    
-    T_teach_repeat_edge_in_radar = T_radar_robot @ T_teach_repeat_edge @ T_radar_robot.inverse()
-    r_repeat_teach_in_teach = T_teach_repeat_edge_in_radar.inverse().r_ba_ina() # inverse?
-
-    # we might need to transform r_repeat_teach to the radar frame
-    roll, pitch, yaw = rotation_matrix_to_euler_angles(T_teach_repeat_edge.C_ba().T) 
-
-    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)to_euler_angles(T_teach_repeat_edge.C_ba().T) # ba means teach_repeat
-    r_repeat_teach_in_teach[2] = wrap_angle(yaw)
-   
-
-    vtr_se2_pose.append(r_repeat_teach_in_teach.T[0])
-    intial_guess = torch.from_numpy(np.squeeze(r_repeat_teach_in_teach)).to('cuda')
-    # print("intial_guess shape:", intial_guess.shape)
-
-    if SET_INITIAL_GUESS:
-        # set the state to the intial guess
-        gp_state_estimator.setIntialState(intial_guess)
-
-    # teach_timestamp = teach_times[repeat_vertex_idx]
-
-    if USE_LOCAL_MAP:
-        teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_times[repeat_vertex_idx][0])
-        # print("teach_local_map_file:", teach_local_map_file)
-
-        teach_local_map = load_local_map(teach_local_map_file)
-
+    with torch.no_grad():
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        timestamps = torch.tensor(frame.timestamps.flatten()).to(device).squeeze()
+        # Prepare the data in torch
+        azimuths = torch.tensor(frame.azimuths.flatten()).to(device).float()
+        nb_azimuths = torch.tensor(len(frame.azimuths.flatten())).to(device) # number of azimuths 400
+        # motion_model.setTime(self.timestamps, self.timestamps[0])
         
-        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
+        # # Initialise the direction vectors
+        # # only use for doppler
+        # dirs = torch.empty((self.nb_azimuths, 2), device=self.device) # 400 by 2
+        # dirs[:, 0] = torch.cos(self.azimuths)
+        # dirs[:, 1] = torch.sin(self.azimuths)
+        # self.vel_to_bin_vec = self.vel_to_bin*dirs
+        # # doppler possible
 
-    else:
-        state = gp_state_estimator.pairwiseRegistration(teach_frame, teach_frame)
+        polar_intensity = torch.tensor(frame.polar).to(device)
+        # print("polar_intensity shape", self.polar_intensity.shape)
 
+        # normalization and smoothing
+        polar_std = torch.std(polar_intensity, dim=1)
+        polar_mean = torch.mean(polar_intensity, dim=1)
+        polar_intensity -= (polar_mean.unsqueeze(1) + 2*polar_std.unsqueeze(1))
+        polar_intensity[polar_intensity < 0] = 0
+        polar_intensity = torchvision.transforms.functional.gaussian_blur(polar_intensity.unsqueeze(0), (9,1), 3).squeeze()
+        polar_intensity /= torch.max(polar_intensity, dim=1, keepdim=True)[0]
+        polar_intensity[torch.isnan(polar_intensity)] = 0
 
-    direct_se2_pose.append(state)
-    norm_state = np.linalg.norm(state[0:2])
+        frame_cart = pb.utils.radar.radar_polar_to_cartesian(frame.azimuths.astype(np.float32), polar_intensity.detach().cpu().numpy(), 0.040308, 0.2384, 640, False, True)
 
-    dir_norm.append(norm_state)
+        # visualize the cartesian image
+        plt.imshow(frame_cart, cmap='gray')
+        plt.title('Cartesian Image from Polar Data')
+        plt.axis('off')
+        plt.show()
 
-    print("r_repeat_teach_in_teach:", r_repeat_teach_in_teach.T[0])
-    print("direct estimated state:", state)
-
-    # if repeat_vertex_idx == 2:
-    #     break
-
-
-
-result_folder = os.path.join(out_path_folder, "direct")
-if not os.path.exists(result_folder):
-    os.makedirs(result_folder)
-    print(f"Folder '{result_folder}' created.")
-
-
-# save the results
-vtr_norm = np.array(vtr_norm)
-gps_norm = np.array(gps_norm)
-dir_norm = np.array(dir_norm)
-direct_se2_pose = np.array(direct_se2_pose)
-vtr_se2_pose = np.array(vtr_se2_pose)
-
-# also want to save the gps here t,x,y
-gps_teach_pose = r2_pose_teach_ppk_dirty
-gps_repeat_pose = r2_pose_repeat_ppk_dirty
-
-# need to get gps_path_tracking_error
-# step 1: make a path matrix
-# step 2: accumulate the signed distance
-
-print("vtr_norm shape:", vtr_norm.shape)
-print("gps_norm shape:", gps_norm.shape)
-print("dir_norm shape:", dir_norm.shape)
-print("gps_teach_pose shape:", gps_teach_pose.shape)
-print("gps_repeat_pose shape:", gps_repeat_pose.shape)
-print("direct_se2_pose shape:", direct_se2_pose.shape)
-print("vtr_se2_pose shape:", vtr_se2_pose.shape)
+        return polar_intensity,frame_cart, azimuths, timestamps, nb_azimuths
 
 
-np.savez(os.path.join(result_folder, "result.npz"),
-         vtr_norm=vtr_norm,
-         gps_norm=gps_norm,
-         dir_norm=dir_norm,
-         direct_se2_pose=direct_se2_pose,
-         vtr_se2_pose=vtr_se2_pose, 
-         gps_teach_pose=gps_teach_pose,
-         gps_repeat_pose=gps_repeat_pose)
-    
+# cart_frame = preprocess_frame(teach_frame)
+
+
+# # first we will do teach image to teach local map registration
+teach_local_map_file = image2_path
+teach_local_map = load_local_map(teach_local_map_file)
+state = gp_state_estimator_1.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
+
+print("State after teach image to teach local map registration:", state)
+# now we will do teach image to teach image registration
+print("-----------------------perform teach image to teach image registration-----------------------")
+state = gp_state_estimator_2.pairwiseRegistration(teach_frame, teach_frame)
+print("State after teach image to teach image registration:", state)
+
+
+
+
