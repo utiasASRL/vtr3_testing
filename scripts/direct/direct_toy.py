@@ -10,12 +10,12 @@ np.set_printoptions(suppress=True)
 # import argparse
 
 import sys
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/wenda/repositories/vtr3_testing"
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
 
-from deps.path_tracking_error.fcns import *
+# from deps.path_tracking_error.fcns import *
 # from scripts.radar.utils.helper import *
 
 # # point cloud vis
@@ -126,7 +126,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_wenda.yaml'))
 
 
 db_bool = config['bool']
@@ -303,16 +303,16 @@ vtr_se2_pose = []
 direct_se2_pose = []
 
 # load all the local maps of the teach path
-# open the directory
-teach_local_maps_path = config["radar_data"]["grassy"]["local_maps_path"]
-print(teach_local_maps_path)
-teach_local_maps_files = os.listdir(teach_local_maps_path)
+# # open the directory
+# teach_local_maps_path = config["radar_data"]["grassy"]["local_maps_path"]
+# print(teach_local_maps_path)
+# teach_local_maps_files = os.listdir(teach_local_maps_path)
 
-teach_local_maps = {}
-for file in teach_local_maps_files:
-    if file.endswith(".png"):
-        file_path = os.path.join(teach_local_maps_path, file)
-        teach_local_maps[file.replace(".png","")] = file_path
+# teach_local_maps = {}
+# for file in teach_local_maps_files:
+#     if file.endswith(".png"):
+#         file_path = os.path.join(teach_local_maps_path, file)
+#         teach_local_maps[file.replace(".png","")] = file_path
 
 def load_local_map(file_path):
     """
@@ -399,7 +399,7 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
         state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
 
     else:
-        state = gp_state_estimator.pairwiseRegistration(teach_frame, teach_frame)
+        state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
 
 
     direct_se2_pose.append(state)

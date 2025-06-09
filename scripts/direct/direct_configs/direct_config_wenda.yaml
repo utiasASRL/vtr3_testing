@@ -1,0 +1,36 @@
+# config.yaml
+# Database configuration
+radar_resolution: 0.040308
+cart_resolution: 0.2384
+min_r: 2.0
+max_r: 69.0
+radar_data:
+# Database connection string
+  grassy:
+    rosbag_path: 
+      teach: "/home/wenda/repositories/vtr3_testing/localization_data/rosbags/grassy2"
+      repeat1: "/home/wenda/repositories/vtr3_testing/localization_data/rosbags/grassy3"
+    pose_graph_path: 
+      grassy_t2_r3: "/home/wenda/repositories/vtr3_testing/localization_data/posegraphes/grassy_t2_r3/graph"
+    local_maps_path: "/home/wenda/repositories/radar_sandbox/output/grassy_t2/local_map"
+
+  parking:
+    pose_graph_path:
+      parking_t3_r4: "/home/wenda/repositories/vtr3_testing/localization_data/posegraphes/parking_t3_r4/graph"
+
+ppk:
+  grassy:
+    teach: "/home/wenda/repositories/vtr3_testing/localization_data/ppk/grassy_t2"
+    repeat: "/home/wenda/repositories/vtr3_testing/localization_data/ppk/grassy_t3"
+  parking:
+    teach: "/home/wenda/repositories/vtr3_testing/localization_data/ppk/parking_t3"
+    repeat: "/home/wenda/repositories/vtr3_testing/localization_data/ppk/parking_t4"
+
+bool:
+  SAVE: False
+  PLOT: False
+  DEBUG: True
+  USE_LOCAL_MAP: False
+  SET_INITIAL_GUESS: False
+
+output: "/home/wenda/repositories/vtr3_testing/scripts/direct"

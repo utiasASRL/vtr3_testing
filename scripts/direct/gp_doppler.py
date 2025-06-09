@@ -607,7 +607,7 @@ class GPStateEstimator:
 
 
             # save one-to-one local map
-            local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+            local_map_path = "/home/wenda/repositories/vtr3_testing/scripts/direct/grassy_t2_r3"
             local_map_path = local_map_path + '/local_map_one_to_one/'
             os.makedirs(local_map_path, exist_ok=True)
             if self.local_map is not None:
@@ -834,8 +834,8 @@ class GPStateEstimator:
                     first_cost = cost
                 
                 # Print iter cost step_norm cost_change with 3 decimals and scientific notation
-                if verbose:
-                    print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
+                # if verbose:
+                #     print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
 
                 if step_norm < step_tol:
                     print("breaking because of step_norm < step_tol")

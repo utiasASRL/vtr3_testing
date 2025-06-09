@@ -17,7 +17,7 @@ import yaml
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
 
-from deps.path_tracking_error.fcns import *
+# from deps.path_tracking_error.fcns import *
 
 
 print("Current working dir", os.getcwd())
