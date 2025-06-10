@@ -30,7 +30,7 @@ bool:
   SAVE: False
   PLOT: False
   DEBUG: True
-  USE_LOCAL_MAP: False
+  USE_LOCAL_MAP: True
   SET_INITIAL_GUESS: False
 
 output: "/home/samqiao/ASRL/vtr3_testing/scripts/direct"

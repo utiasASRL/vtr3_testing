@@ -834,8 +834,8 @@ class GPStateEstimator:
                     first_cost = cost
                 
                 # Print iter cost step_norm cost_change with 3 decimals and scientific notation
-                if verbose:
-                    print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
+                # if verbose:
+                #     print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
 
                 if step_norm < step_tol:
                     print("breaking because of step_norm < step_tol")
