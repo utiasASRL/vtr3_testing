@@ -536,6 +536,7 @@ class GPStateEstimator:
             # print("polar_intensity shape", self.polar_intensity.shape)
 
             # normalization and smoothing
+            # preprocess moving frame image
             polar_std = torch.std(self.polar_intensity, dim=1)
             polar_mean = torch.mean(self.polar_intensity, dim=1)
             self.polar_intensity -= (polar_mean.unsqueeze(1) + 2*polar_std.unsqueeze(1))

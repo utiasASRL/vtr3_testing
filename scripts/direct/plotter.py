@@ -10,14 +10,14 @@ from pylgmath import Transformation
 
 
 import sys
-parent_folder = "/home/leonardo/vtr3_testing"
+parent_folder = "/home/sahakhsh/Documents/vtr3_testing"
 
 import yaml
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
 
-from deps.path_tracking_error.fcns import *
+# from deps.path_tracking_error.fcns import *
 
 
 print("Current working dir", os.getcwd())
@@ -434,16 +434,16 @@ class Plotter:
 
 
 
-if __name__ == "__main__":
-    path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+# if __name__ == "__main__":
+#     path_to_data = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
 
-    plotter = Plotter()
+#     plotter = Plotter()
 
-    plotter.set_data(path_to_data)
+#     plotter.set_data(path_to_data)
 
-    # plotter.plot()
+#     # plotter.plot()
 
-    plotter.plot_localziation_error()
+#     plotter.plot_localziation_error()
 
-    # plotter.show_plots()
+#     # plotter.show_plots()
 

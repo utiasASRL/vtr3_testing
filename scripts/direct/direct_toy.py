@@ -10,12 +10,12 @@ np.set_printoptions(suppress=True)
 # import argparse
 
 import sys
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/sahakhsh/Documents/vtr3_testing"
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
 
-from deps.path_tracking_error.fcns import *
+# from deps.path_tracking_error.fcns import *
 # from scripts.radar.utils.helper import *
 
 # # point cloud vis
@@ -30,7 +30,7 @@ import gp_doppler as gpd
 import torch
 import torchvision
 
-from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
+# from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 
 from utils import *
 
@@ -126,7 +126,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_sam.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_hshmat.yaml'))
 
 
 db_bool = config['bool']
@@ -202,9 +202,9 @@ repeat_polar_imgs = repeat_df['repeat_polar_imgs']
 repeat_azimuth_angles = repeat_df['repeat_azimuth_angles']
 repeat_azimuth_timestamps = repeat_df['repeat_azimuth_timestamps']
 repeat_vertex_timestamps = repeat_df['repeat_vertex_timestamps']
-repeat_edge_transforms = repeat_df['repeat_edge_transforms']
+repeat_edge_transforms = repeat_df['repeat_edge_transforms'] # ICRA baseline
 
-vtr_estimated_ptr = repeat_df['dist']
+vtr_estimated_ptr = repeat_df['dist'] # path tracking error metric for icra baseline
 
 if DEBUG:
     print("repeat_polar_imgs shape:", repeat_polar_imgs.shape)
@@ -245,6 +245,7 @@ vtr_y_error = []
 vtr_yaw_error = []
 
 # maybe lets run it for 10 times
+# this seems to get metrics for the icra baseline
 print("begin loop")
 for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("------------------ repeat idx: ", repeat_vertex_idx,"------------------")
@@ -307,13 +308,13 @@ direct_se2_pose = []
 # open the directory
 teach_local_maps_path = config["radar_data"]["grassy"]["local_maps_path"]
 print(teach_local_maps_path)
-teach_local_maps_files = os.listdir(teach_local_maps_path)
+# teach_local_maps_files = os.listdir(teach_local_maps_path)
 
-teach_local_maps = {}
-for file in teach_local_maps_files:
-    if file.endswith(".png"):
-        file_path = os.path.join(teach_local_maps_path, file)
-        teach_local_maps[file.replace(".png","")] = file_path
+# teach_local_maps = {}
+# for file in teach_local_maps_files:
+#     if file.endswith(".png"):
+#         file_path = os.path.join(teach_local_maps_path, file)
+#         teach_local_maps[file.replace(".png","")] = file_path
 
 def load_local_map(file_path):
     """
@@ -366,7 +367,7 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     repeat_frame = RadarFrame(repeat_cv_scan_polar, repeat_scan_azimuth_angles, repeat_scan_timestamps.reshape(-1,1))
 
     # we can use teach and repeat result as a intial guess
-    T_teach_repeat_edge = repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time[0]]    
+    T_teach_repeat_edge = repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time[0]]    # ICRA baseline, stored in repeat.npz
     T_teach_repeat_edge_in_radar = T_radar_robot @ T_teach_repeat_edge @ T_radar_robot.inverse()
     r_repeat_teach_in_teach = T_teach_repeat_edge_in_radar.inverse().r_ba_ina() # inverse?
 

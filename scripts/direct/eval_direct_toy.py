@@ -10,12 +10,12 @@ np.set_printoptions(suppress=True)
 # import argparse
 
 import sys
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/sahakhsh/Documents/vtr3_testing"
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
 
-from deps.path_tracking_error.fcns import *
+# from deps.path_tracking_error.fcns import *
 
 # from radar.utils.helper import *
 
@@ -64,7 +64,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_sam.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_hshmat.yaml'))
 
 
 db_bool = config['bool']
