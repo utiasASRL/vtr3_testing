@@ -394,7 +394,7 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
         # print("teach_local_map_file:", teach_local_map_file)
 
         teach_local_map = load_local_map(teach_local_map_file)
-        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, repeat_frame)
+        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
 
     else:
         state = gp_state_estimator.pairwiseRegistration(teach_frame, teach_frame)

@@ -600,13 +600,7 @@ class GPStateEstimator:
             self.local_map[self.local_map_mask] = local_map_update[self.local_map_mask]
             # print("local map mask shape", self.local_map_mask.shape)
 
-            self.local_map_blurred = torchvision.transforms.functional.gaussian_blur(self.local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
-            normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
-            self.local_map_blurred *= normalizer
-            self.step_counter = 1
-
-
-            # save one-to-one local map
+             # save one-to-one local map
             local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
             local_map_path = local_map_path + '/local_map_one_to_one/'
             os.makedirs(local_map_path, exist_ok=True)
@@ -615,6 +609,12 @@ class GPStateEstimator:
 
                     # print("sam: local map timestamp one to one", fix_frame.timestamps[1]/1e9)
                     cv2.imwrite(local_map_path + str(mid_scan_timestamp) + '.png', self.local_map.detach().cpu().numpy()*255)
+
+            self.local_map_blurred = torchvision.transforms.functional.gaussian_blur(self.local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
+            normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
+            self.local_map_blurred *= normalizer
+            self.step_counter = 1
+
 
             result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
             self.state_init = result.clone()

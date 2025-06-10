@@ -101,7 +101,6 @@ class ConstRotationConstTranslation(MotionModel):
 # Sam
 
 
-
 class ConstVelConstW(MotionModel):
     def __init__(self, device='cpu'):
         super().__init__(3, device)
