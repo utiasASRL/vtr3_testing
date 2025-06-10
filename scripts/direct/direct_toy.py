@@ -126,7 +126,11 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
+<<<<<<< HEAD
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_hshmat.yaml'))
+=======
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
+>>>>>>> origin/main
 
 
 db_bool = config['bool']
@@ -251,7 +255,7 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("------------------ repeat idx: ", repeat_vertex_idx,"------------------")
     teach_vertex_time = teach_times[repeat_vertex_idx]
     repeat_vertex_time = repeat_times[repeat_vertex_idx]
-    # state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)peat_vertex_idx]
+
     print("teach vertex time:", teach_vertex_time[0])
     print("repeat vertex time:", repeat_vertex_time[0])
 
@@ -288,8 +292,7 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("teach_ppk:", teach_ppk)
     print("repeat_ppk:", repeat_ppk)
 
-    # delta_x_delta_y_ppk = repeat_ppk[1:3] - teach_ppk[1:3]
-
+    # calculate the norm
     gps_norm.append(np.linalg.norm(teach_ppk[1:3] - repeat_ppk[1:3]))
     print("gps norm:", gps_norm[repeat_vertex_idx])
     # print("T_teach_repeat_edge_options:", T_teach_repeat_edge_options)
@@ -354,6 +357,9 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("teach azimuth angles shape:", teach_scan_azimuth_angles.shape)
     print("the first teach azimuth angle:", teach_scan_azimuth_angles[0])
 
+    teach_vertex_time = teach_vertex_timestamps[repeat_vertex_idx]
+    print("sam: teach vertex time:", teach_vertex_time[0])
+
     teach_cv_scan_cartesian = radar_polar_to_cartesian(teach_cv_scan_polar,teach_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
     
 
@@ -379,7 +385,6 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
    
 
     vtr_se2_pose.append(r_repeat_teach_in_teach.T[0])
-
     intial_guess = torch.from_numpy(np.squeeze(r_repeat_teach_in_teach)).to('cuda')
     # print("intial_guess shape:", intial_guess.shape)
 
@@ -391,11 +396,13 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
 
     if USE_LOCAL_MAP:
         teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_times[repeat_vertex_idx][0])
-        teach_local_map = load_local_map(teach_local_map_file)
+        # print("teach_local_map_file:", teach_local_map_file)
 
-        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, repeat_frame)
+        teach_local_map = load_local_map(teach_local_map_file)
+        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
+
     else:
-        state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
+        state = gp_state_estimator.pairwiseRegistration(teach_frame, teach_frame)
 
 
     direct_se2_pose.append(state)
@@ -405,6 +412,9 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
 
     print("r_repeat_teach_in_teach:", r_repeat_teach_in_teach.T[0])
     print("direct estimated state:", state)
+
+    # if repeat_vertex_idx == 2:
+    #     break
 
 
 
@@ -428,7 +438,6 @@ gps_repeat_pose = r2_pose_repeat_ppk_dirty
 # need to get gps_path_tracking_error
 # step 1: make a path matrix
 # step 2: accumulate the signed distance
-
 
 print("vtr_norm shape:", vtr_norm.shape)
 print("gps_norm shape:", gps_norm.shape)

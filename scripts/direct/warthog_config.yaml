@@ -9,7 +9,7 @@ data:
 estimation:
   doppler_cost: false
   direct_cost: true
-  motion_model: 'const_rotation_const_translation' #'const_body_vel_gyro' # const_vel_const_w, const_acc_const_w
+  motion_model: 'const_rotation_const_translation' # const_rotation_const_translation' #'const_body_vel_gyro' # const_vel_const_w, const_acc_const_w
   gyro_bias_estimation: false
   max_acceleration: 2.0 # m/s^2 This is used to detect failure modes due to too many outliers number 6.0 comes for the max performance of a car that is 0-100 in approx 3s (high performance car)
   optimisation_first_step: 0.02
