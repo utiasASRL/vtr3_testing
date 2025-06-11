@@ -4,11 +4,91 @@ import torchvision
 import os
 import numpy as np
 
-parent_folder = "/home/leonardo/sam/vtr3_testing"
+from pylgmath import Transformation
+import cv2
+import pyboreas as pb
 
-# for each teach pose, I'm gonna compute the n nearest poses (the distance in some bounds).
+import matplotlib.pyplot as plt
+plt.ion()  # Turn on interactive mode
+
+parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+
+T_radar_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.025],
+                                                 [0.000, -1.000 , 0.000, -0.002],
+                                                 [0.000 ,0.000, -1.000 , 1.032],
+                                                 [0.000 , 0.000 ,0.000, 1.000]]))
+
+
+# Leo's comments: for each teach pose, I'm gonna compute the n nearest poses (the distance in some bounds).
 # with the relative translormation to the current pose I'm gonna trasform the cartesian point in the current pose
 # for each polar image compute the cartesian point, apply the relative trasform, project back
+
+def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resolution=0.2384, cart_pixel_width=640,
+                             interpolate_crossover=False, fix_wobble=True):
+    # TAKEN FROM PYBOREAS
+    """Convert a polar radar scan to cartesian.
+    Args:
+        azimuths (np.ndarray): Rotation for each polar radar azimuth (radians)
+        fft_data (np.ndarray): Polar radar power readings
+        radar_resolution (float): Resolution of the polar radar data (metres per pixel)
+        cart_resolution (float): Cartesian resolution (metres per pixel)
+        cart_pixel_width (int): Width and height of the returned square cartesian output (pixels)
+        interpolate_crossover (bool, optional): If true interpolates between the end and start  azimuth of the scan. In
+            practice a scan before / after should be used but this prevents nan regions in the return cartesian form.
+
+    Returns:
+        np.ndarray: Cartesian radar power readings
+    """
+    # print("in radar_polar_to_cartesian")
+    # Compute the range (m) captured by pixels in cartesian scan
+    if (cart_pixel_width % 2) == 0:
+        cart_min_range = (cart_pixel_width / 2 - 0.5) * cart_resolution
+    else:
+        cart_min_range = cart_pixel_width // 2 * cart_resolution
+    
+    # Compute the value of each cartesian pixel, centered at 0
+    coords = np.linspace(-cart_min_range, cart_min_range, cart_pixel_width, dtype=np.float32)
+
+    Y, X = np.meshgrid(coords, -1 * coords)
+    sample_range = np.sqrt(Y * Y + X * X)
+    sample_angle = np.arctan2(Y, X)
+    sample_angle += (sample_angle < 0).astype(np.float32) * 2. * np.pi
+
+    # Interpolate Radar Data Coordinates
+    azimuth_step = (azimuths[-1] - azimuths[0]) / (azimuths.shape[0] - 1)
+    sample_u = (sample_range - radar_resolution / 2) / radar_resolution
+
+    # print("------")
+    # print("sample_angle.shape",sample_angle.shape)
+    # print("azimuths[0]",azimuths[0])
+    # print("azimuth step shape" ,azimuth_step.shape)
+
+    sample_v = (sample_angle - azimuths[0]) / azimuth_step
+    # This fixes the wobble in the old CIR204 data from Boreas
+    M = azimuths.shape[0]
+    azms = azimuths.squeeze()
+    if fix_wobble:
+        c3 = np.searchsorted(azms, sample_angle.squeeze())
+        c3[c3 == M] -= 1
+        c2 = c3 - 1
+        c2[c2 < 0] += 1
+        a3 = azms[c3]
+        diff = sample_angle.squeeze() - a3
+        a2 = azms[c2]
+        delta = diff * (diff < 0) * (c3 > 0) / (a3 - a2 + 1e-14)
+        sample_v = (c3 + delta).astype(np.float32)
+
+    # We clip the sample points to the minimum sensor reading range so that we
+    # do not have undefined results in the centre of the image. In practice
+    # this region is simply undefined.
+    sample_u[sample_u < 0] = 0
+
+    if interpolate_crossover:
+        fft_data = np.concatenate((fft_data[-1:], fft_data, fft_data[:1]), 0)
+        sample_v = sample_v + 1
+
+    polar_to_cart_warp = np.stack((sample_u, sample_v), -1)
+    return cv2.remap(fft_data, polar_to_cart_warp, None, cv2.INTER_LINEAR)
 
 def load_config(config_path='config.yaml'):
     """
@@ -116,7 +196,7 @@ local_map_zero_idx = torch.tensor(int(max_local_map_range/local_map_res)).to(dev
 local_map_polar = localMapToPolarCoord(local_map_xy)
 
 # change here
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_leo.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 result_folder = config.get('output')
 out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
@@ -143,49 +223,110 @@ teach_vertex_transforms = teach_df['teach_vertex_transforms']
 teach_times = teach_df['teach_times']
 
 
-max_distance = 2
+max_distance = 1 # 2 m 
 
-for index in range(len(teach_times)):
+# save path for local maps
+local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+local_map_path = local_map_path + '/local_map_vtr/'
+os.makedirs(local_map_path, exist_ok=True)
+
+cnt = 0 
+
+for index in range(len(teach_times)): # for every pose
     cur_pose_time = teach_times[index]
 
-    cur_pose = list(teach_vertex_transforms[index][0].values())[0].matrix()
+    cur_pose = list(teach_vertex_transforms[index][0].values())[0].matrix() # T_robot_world
 
     local_map = torch.zeros((local_map_size, local_map_size)).to(device)
 
-    for i in range(len(teach_times)):
-        print(f"Processing pose {i} at time {teach_times[i]}")
+    for i in range(len(teach_times)): # for the neighbouring poses
+        print(f"Processing pose {i} at time {teach_times[i][0]}")
         # if i == index:
             # continue
         pose = list(teach_vertex_transforms[i][0].values())[0].matrix()
         # compute the distance between the poses
-        print(type(pose))
-        delta_pose = np.linalg.inv(pose) @ cur_pose
+        # print(type(pose))
+        delta_pose = np.linalg.inv(cur_pose) @ pose  # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix() # need to do a transofrm
 
-        if np.linalg.norm(delta_pose[1:3, 3]) > max_distance:
+        delta_pose = T_radar_robot.matrix() @ delta_pose @ np.linalg.inv(T_radar_robot.matrix())  # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix
+        
+        if np.linalg.norm(delta_pose[0:3, 3]) > max_distance:
             continue
 
         azimuths = torch.tensor(teach_azimuth_angles[i]).to(device).float()
         nb_azimuths = torch.tensor(len(azimuths)).to(device)
-        polar_image = torch.tensor(teach_polar_imgs[i]).to(device).float()
-      
-        temp_polar_to_interp = local_map_polar.clone()
+        polar_intensity = torch.tensor(teach_polar_imgs[i]).to(device).float()
+
+        # add normalization to polar_image
+        # polar_intensity = torch.tensor(polar_image).to(device)
+        polar_std = torch.std(polar_intensity, dim=1)
+        polar_mean = torch.mean(polar_intensity, dim=1)
+        polar_intensity -= (polar_mean.unsqueeze(1) + 2*polar_std.unsqueeze(1))
+        polar_intensity[polar_intensity < 0] = 0
+        polar_intensity = torchvision.transforms.functional.gaussian_blur(polar_intensity.unsqueeze(0), (9,1), 3).squeeze()
+        polar_intensity /= torch.max(polar_intensity, dim=1, keepdim=True)[0]
+        polar_intensity[torch.isnan(polar_intensity)] = 0
+
+
+        # if i == index:
+        #     print("haha")
+        #     cart_resolution = 0.234
+        #     cart_pixel_width = 640
+        #     cart_polar_intensity = pb.utils.radar.radar_polar_to_cartesian(teach_azimuth_angles[i].astype(np.float32), polar_intensity.cpu().numpy(), radar_res, 0.234, 640, False, True)
+            # cv2.imshow("cart_polar_intensity", cart_polar_intensity)
+            # cv2.imwrite(local_map_path + "teach_scan" + str(cur_pose_time[0]) + '.png', cart_polar_intensity)
+
+
+        temp_polar_to_interp = local_map_polar.clone()            
         temp_polar_to_interp[:,:,0] -= (azimuths[0])
         temp_polar_to_interp[temp_polar_to_interp[:,:,0]<0] = temp_polar_to_interp[temp_polar_to_interp[:,:,0]<0] + torch.tensor((2*torch.pi, 0)).to(device)
         temp_polar_to_interp[:,:,0] *= ((nb_azimuths) / (2*torch.pi))
         temp_polar_to_interp[:,:,1] -= (radar_res/2.0)
         temp_polar_to_interp[:,:,1] /= radar_res
 
-        cart_img = bilinearInterpolation(polar_image, temp_polar_to_interp)
+        cart_img = bilinearInterpolation(polar_intensity, temp_polar_to_interp)
         
-        position = torch.tensor(delta_pose[1:2, 3]).to(device).float()
+        position = torch.tensor(delta_pose[0:2, 3]).to(device).float()
         rotation = torch.atan2(torch.tensor(delta_pose[1, 0]).to(device).float(), torch.tensor(delta_pose[0, 0]).to(device).float())
         delta_map = moveLocalMap(position, rotation, cart_img, local_map_xy, local_map_res, local_map_zero_idx)
+        
 
-        local_map += delta_map
+        local_map = 0.5*local_map + 0.5*delta_map
 
-    # show local map with matplotlib
-    import matplotlib.pyplot as plt
-    plt.imshow(local_map.cpu().numpy(), cmap='gray')
-    plt.title(f"Local Map at pose {index} (time: {cur_pose_time})")
-    plt.colorbar()
-    plt.show()
+        # # show local map with matplotlib
+        # plt.clf()
+        # plt.imshow(local_map.cpu().numpy(), cmap='gray')
+        # plt.title(f"Delta Map at pose {i} (time: {teach_times[i]})")
+        # plt.colorbar()
+        # # plt.show()
+        # plt.draw()
+        # plt.pause(0.5)
+
+        # plt.show()
+ 
+    cnt += 1
+    # no need to blur
+    # local_map = local_map / torch.max(local_map)  # normalize the local map
+    # local_map_blurred = torchvision.transforms.functional.gaussian_blur(local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
+    # normalizer = torch.max(local_map) / torch.max(local_map_blurred)
+    # local_map_blurred *= normalizer
+
+    # Dump local maps 
+    # VTR local maps
+     # save one-to-one local map
+    if local_map is not None:
+            mid_scan_timestamp = teach_vertex_timestamps[index][0]
+            cv2.imwrite(local_map_path + str(mid_scan_timestamp) + '.png', local_map.detach().cpu().numpy()*255)
+    
+    
+
+    if cnt == 4:
+        break
+    
+
+
+
+    # plt.imshow(local_map.cpu().numpy(), cmap='gray')
+    # plt.title(f"Local Map at pose {index} (time: {cur_pose_time})")
+    # plt.colorbar()
+    # plt.show()
