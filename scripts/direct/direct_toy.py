@@ -305,7 +305,7 @@ direct_se2_pose = []
 
 # load all the local maps of the teach path
 # open the directory
-teach_local_maps_path = config["radar_data"]["grassy"]["local_maps_path"]
+teach_local_maps_path = config["radar_data"]["grassy"]["teach_local_maps_path"]
 print(teach_local_maps_path)
 # teach_local_maps_files = os.listdir(teach_local_maps_path)
 

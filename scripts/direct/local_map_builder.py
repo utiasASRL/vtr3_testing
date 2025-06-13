@@ -11,7 +11,11 @@ import pyboreas as pb
 import matplotlib.pyplot as plt
 plt.ion()  # Turn on interactive mode
 
+<<<<<<< HEAD
 parent_folder = "/home/sahakhsh/Documents/vtr3_testing"
+=======
+parent_folder = "/home/leonardo/sam/vtr3_testing"
+>>>>>>> origin/main
 
 T_radar_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.025],
                                                  [0.000, -1.000 , 0.000, -0.002],
@@ -199,7 +203,11 @@ local_map_zero_idx = torch.tensor(int(max_local_map_range/local_map_res)).to(dev
 local_map_polar = localMapToPolarCoord(local_map_xy)
 
 # change here
+<<<<<<< HEAD
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_hshmat.yaml'))
+=======
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_leo.yaml'))
+>>>>>>> origin/main
 result_folder = config.get('output')
 out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
@@ -226,14 +234,20 @@ teach_vertex_transforms = teach_df['teach_vertex_transforms']
 teach_times = teach_df['teach_times']
 
 
-max_distance = 1 # 2 m 
+max_distance = 3 # 2 m 
+max_time_dist = 4
 
 # save path for local maps
+<<<<<<< HEAD
 local_map_path = "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/grassy_t2_r3"
+=======
+local_map_path = "/home/leonardo/sam/vtr3_testing/scripts/direct/grassy_t2_r3"
+>>>>>>> origin/main
 local_map_path = local_map_path + '/local_map_vtr/'
 os.makedirs(local_map_path, exist_ok=True)
 
 cnt = 0 
+first_pose = None
 
 for index in range(len(teach_times)): # for every pose
     cur_pose_time = teach_times[index]
@@ -242,21 +256,46 @@ for index in range(len(teach_times)): # for every pose
     cur_pose = list(teach_vertex_transforms[index][0].values())[0].matrix() # T_robot_world
     print(f"cur_pose is {cur_pose}")
 
+<<<<<<< HEAD
     local_map = torch.zeros((local_map_size, local_map_size)).to(device) # 4001 x 4001
+=======
+    if (first_pose is None):
+        first_pose = cur_pose
+
+    local_map = torch.zeros((local_map_size, local_map_size)).to(device)
+>>>>>>> origin/main
+
+    deltas = {}
+
+    poses = []
 
     for i in range(len(teach_times)): # for the neighbouring poses
-        print(f"Processing pose {i} at time {teach_times[i][0]}")
+        id = int(teach_times[i][0]*1e4)
+
+        if id in deltas.keys():
+            print("continuing cause id is already seen")
+            continue
+        print(teach_times[i][0])
+        print(id)
+        print(deltas.keys())
         # if i == index:
             # continue
         pose = list(teach_vertex_transforms[i][0].values())[0].matrix()
         # compute the distance between the poses
         # print(type(pose))
-        delta_pose = np.linalg.inv(cur_pose) @ pose  # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix() # need to do a transofrm
+        delta_pose = np.linalg.inv(first_pose) @  cur_pose @ np.linalg.inv(pose)  # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix() # need to do a transofrm
 
         delta_pose = T_radar_robot.matrix() @ delta_pose @ np.linalg.inv(T_radar_robot.matrix())  # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix
-        
-        if np.linalg.norm(delta_pose[0:3, 3]) > max_distance:
+
+        delta_time = np.abs(teach_times[i][0] - cur_pose_time[0])
+        if np.linalg.norm(delta_pose[0:2, 3]) > max_distance or delta_time > max_time_dist:
+            print("skipping cause the vertex are too far")
             continue
+        
+        poses.append(torch.tensor(first_pose) @ torch.tensor(np.linalg.inv(pose)))
+        deltas[id] = delta_pose
+        print("id: ", id)
+        print("delta: ", delta_pose)
 
         azimuths = torch.tensor(teach_azimuth_angles[i]).to(device).float()
         nb_azimuths = torch.tensor(len(azimuths)).to(device)
@@ -298,24 +337,60 @@ for index in range(len(teach_times)): # for every pose
         position = torch.tensor(delta_pose[0:2, 3]).to(device).float()
         rotation = torch.atan2(torch.tensor(delta_pose[1, 0]).to(device).float(), torch.tensor(delta_pose[0, 0]).to(device).float())
         delta_map = moveLocalMap(position, rotation, cart_img, local_map_xy, local_map_res, local_map_zero_idx)
+
+        # motion undistortion: local_xy should contain the cartesian coordinates of the local map
+        # I need to apply the motion undistortion to the local_map_xy using the velocity
         
 
-        local_map = 0.5*local_map + 0.5*delta_map
+        local_map += delta_map
 
         # # show local map with matplotlib
-        # plt.clf()
-        # plt.imshow(local_map.cpu().numpy(), cmap='gray')
-        # plt.title(f"Delta Map at pose {i} (time: {teach_times[i]})")
-        # plt.colorbar()
-        # # plt.show()
-        # plt.draw()
-        # plt.pause(0.5)
-
+        plt.clf()
+        plt.imshow(local_map.cpu().numpy(), cmap='gray')
+        plt.title(f"Delta Map at pose {i} (time: {teach_times[i]})")
+        plt.colorbar()
         # plt.show()
+        plt.draw()
+        plt.pause(0.5)
+
+        plt.show()
+
+    print("numer of deltas: ", len(deltas))
+    print("numer of poses: ", len(poses))
+
+    # # sort deltas by the key
+    deltas = dict(sorted(deltas.items(), key=lambda item: item[0]))
+
+    pose = np.eye(4)
+    pose_t = Transformation(T_ba=pose)
+    current_pose_t = Transformation(T_ba=cur_pose)
+    first_pose_t = Transformation(T_ba=first_pose)
+    traj = []
+    for key, delta_pose in deltas.items():
+        delta_pose_t = Transformation(T_ba=delta_pose)
+        pose_t = current_pose_t @ delta_pose_t 
+        position = pose_t.r_ab_inb()
+        # rotation = torch.atan2(torch.tensor(pose[1, 0]), torch.tensor(pose[0, 0]))
+        traj.append(position)
+
+    import matplotlib.pyplot as plt
+
+    x_traj = [p[0].item() for p in traj]
+    y_traj = [p[1].item() for p in traj]
+    x_poses = [p[0,3].item() for p in poses]
+    y_poses = [p[1,3].item() for p in poses]
+
+    # plt.figure()
+    # plt.plot(x_traj, y_traj, 'b.-', label='Trajectory')
+    # plt.plot(x_poses, y_poses, 'r.', label='Poses')
+    # plt.legend()
+    # plt.axis('equal')
+    # plt.tight_layout()
+    # plt.show()
  
     cnt += 1
     # no need to blur
-    # local_map = local_map / torch.max(local_map)  # normalize the local map
+    local_map = local_map / torch.max(local_map) # normalize the local map
     # local_map_blurred = torchvision.transforms.functional.gaussian_blur(local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
     # normalizer = torch.max(local_map) / torch.max(local_map_blurred)
     # local_map_blurred *= normalizer
@@ -329,8 +404,8 @@ for index in range(len(teach_times)): # for every pose
     
     
 
-    if cnt == 4:
-        break
+    # if cnt == 4:
+    #     break
     
 
 

@@ -25,7 +25,7 @@ import time
 import yaml
 from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 
-from direct.animation import *
+from scripts.visualization.animation import *
 
 
 print("Current working dir", os.getcwd())

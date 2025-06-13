@@ -36,7 +36,7 @@ import torchvision
 # from process_vtr import get_vtr_ptr_baseline
 
 from utils import *
-from plotter import Plotter
+from scripts.visualization.plotter import Plotter
 
 
 # print("Current working dir", os.getcwd())
