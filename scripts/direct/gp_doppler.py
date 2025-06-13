@@ -372,9 +372,6 @@ class GPStateEstimator:
                 d_cart_sparse_d_state[:,0,:] = d_cart_sparse_d_state[:,0,:] / (-self.local_map_res)
                 d_cart_sparse_d_state[:,1,:] = d_cart_sparse_d_state[:,1,:] / self.local_map_res
 
-                
-                temp_polar_intensity_sparse = torch.zeros(self.local_map_blurred.shape, device=self.device)
-                temp_polar_intensity_sparse[cart_idx_sparse.int()[:,0],cart_idx_sparse.int()[:,1]] = self.polar_intensity_sparse
 
                 # print("sam: I am in costFunctionAndJacobian_ and the shape of temp_polar_intensity_sparse is", temp_polar_intensity_sparse.shape)
                
@@ -411,7 +408,7 @@ class GPStateEstimator:
             elif doppler:
                 return residual, jacobian
             elif direct:
-                return residual_direct, jacobian_direct, temp_polar_intensity_sparse
+                return residual_direct, jacobian_direct
             
 
     def toLocalMapRegistration(self, teach_local_map, teach_frame, repeat_frame, chirp_up=True, potential_flip=False):
@@ -786,7 +783,7 @@ class GPStateEstimator:
             last_decreasing_grad = torch.zeros_like(state)
             for i in torch.arange(nb_iter, device=self.device):
                 
-                res, jac, temp_polar_intensity_sparse = self.costFunctionAndJacobian_(state, self.use_doppler, self.use_direct and (self.step_counter>0), degraded)
+                res, jac = self.costFunctionAndJacobian_(state, self.use_doppler, self.use_direct and (self.step_counter>0), degraded)
 
                 if remove_angular and not self.use_gyro:
                     jac = jac[:, :-1]

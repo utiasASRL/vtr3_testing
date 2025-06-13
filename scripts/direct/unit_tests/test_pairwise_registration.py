@@ -254,8 +254,8 @@ gp_state_estimator_1 = gpd.GPStateEstimator(config_warthog, radar_resolution)
 gp_state_estimator_2 = gpd.GPStateEstimator(config_warthog, radar_resolution)
 
 
-image1_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179490.9871147_scan.png'
-image2_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179491.236846_local_map.png'
+image2_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3/local_map_vtr/1738179490.9864898.png'
+image1_path = '/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179490.9871147.png'
 # Load the images
 img1 = cv2.imread(image1_path)
 img2 = cv2.imread(image2_path)
@@ -365,9 +365,10 @@ polar_intensity, frame_cart, azimyths, timestamps, nb_azimuths = preprocess_fram
 teach_local_map_file = image2_path
 teach_local_map = load_local_map(teach_local_map_file)
 state = gp_state_estimator_1.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
-
 print("State after teach image to teach local map registration:", state)
+
 # now we will do teach image to teach image registration
+
 print("-----------------------perform teach image to teach image registration-----------------------")
 state = gp_state_estimator_2.pairwiseRegistration(teach_frame, teach_frame)
 print("State after teach image to teach image registration:", state)
