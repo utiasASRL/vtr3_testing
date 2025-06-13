@@ -11,11 +11,8 @@ import pyboreas as pb
 import matplotlib.pyplot as plt
 plt.ion()  # Turn on interactive mode
 
-<<<<<<< HEAD
+
 parent_folder = "/home/sahakhsh/Documents/vtr3_testing"
-=======
-parent_folder = "/home/leonardo/sam/vtr3_testing"
->>>>>>> origin/main
 
 T_radar_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.025],
                                                  [0.000, -1.000 , 0.000, -0.002],
@@ -203,11 +200,7 @@ local_map_zero_idx = torch.tensor(int(max_local_map_range/local_map_res)).to(dev
 local_map_polar = localMapToPolarCoord(local_map_xy)
 
 # change here
-<<<<<<< HEAD
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_hshmat.yaml'))
-=======
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_leo.yaml'))
->>>>>>> origin/main
 result_folder = config.get('output')
 out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
@@ -238,11 +231,7 @@ max_distance = 3 # 2 m
 max_time_dist = 4
 
 # save path for local maps
-<<<<<<< HEAD
 local_map_path = "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/grassy_t2_r3"
-=======
-local_map_path = "/home/leonardo/sam/vtr3_testing/scripts/direct/grassy_t2_r3"
->>>>>>> origin/main
 local_map_path = local_map_path + '/local_map_vtr/'
 os.makedirs(local_map_path, exist_ok=True)
 
@@ -256,14 +245,10 @@ for index in range(len(teach_times)): # for every pose
     cur_pose = list(teach_vertex_transforms[index][0].values())[0].matrix() # T_robot_world
     print(f"cur_pose is {cur_pose}")
 
-<<<<<<< HEAD
-    local_map = torch.zeros((local_map_size, local_map_size)).to(device) # 4001 x 4001
-=======
     if (first_pose is None):
         first_pose = cur_pose
 
     local_map = torch.zeros((local_map_size, local_map_size)).to(device)
->>>>>>> origin/main
 
     deltas = {}
 
