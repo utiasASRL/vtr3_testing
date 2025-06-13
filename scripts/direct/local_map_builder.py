@@ -11,7 +11,7 @@ import pyboreas as pb
 import matplotlib.pyplot as plt
 plt.ion()  # Turn on interactive mode
 
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/sahakhsh/Documents/vtr3_testing"
 
 T_radar_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.025],
                                                  [0.000, -1.000 , 0.000, -0.002],
@@ -122,7 +122,10 @@ def localMapToPolarCoord(local_map_xy):
         #polar[:,:,1] /= radar_res
         return polar
 
+# Samples values from a 2D radar image im using bilinear interpolation at floating-point (azimuth, range) coordinates
 def bilinearInterpolation(im, az_r):
+    # im is torch.Size([400, 1712])
+    # az_r is torch.Size([4001, 4001, 2]); uses im to interpolate value at floating point az and r
     with torch.no_grad():
         az0 = torch.floor(az_r[:, :, 0]).int()
         az1 = az0 + 1
@@ -196,7 +199,7 @@ local_map_zero_idx = torch.tensor(int(max_local_map_range/local_map_res)).to(dev
 local_map_polar = localMapToPolarCoord(local_map_xy)
 
 # change here
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_hshmat.yaml'))
 result_folder = config.get('output')
 out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
@@ -226,7 +229,7 @@ teach_times = teach_df['teach_times']
 max_distance = 1 # 2 m 
 
 # save path for local maps
-local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+local_map_path = "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/grassy_t2_r3"
 local_map_path = local_map_path + '/local_map_vtr/'
 os.makedirs(local_map_path, exist_ok=True)
 
@@ -234,10 +237,12 @@ cnt = 0
 
 for index in range(len(teach_times)): # for every pose
     cur_pose_time = teach_times[index]
+    print(f"cur_pose_time is {cur_pose_time}")
 
     cur_pose = list(teach_vertex_transforms[index][0].values())[0].matrix() # T_robot_world
+    print(f"cur_pose is {cur_pose}")
 
-    local_map = torch.zeros((local_map_size, local_map_size)).to(device)
+    local_map = torch.zeros((local_map_size, local_map_size)).to(device) # 4001 x 4001
 
     for i in range(len(teach_times)): # for the neighbouring poses
         print(f"Processing pose {i} at time {teach_times[i][0]}")
@@ -277,13 +282,17 @@ for index in range(len(teach_times)): # for every pose
             # cv2.imwrite(local_map_path + "teach_scan" + str(cur_pose_time[0]) + '.png', cart_polar_intensity)
 
 
-        temp_polar_to_interp = local_map_polar.clone()            
+        temp_polar_to_interp = local_map_polar.clone()  # 4001 x 4001 x 2 storing az, r of each cartesian pixel         
         temp_polar_to_interp[:,:,0] -= (azimuths[0])
         temp_polar_to_interp[temp_polar_to_interp[:,:,0]<0] = temp_polar_to_interp[temp_polar_to_interp[:,:,0]<0] + torch.tensor((2*torch.pi, 0)).to(device)
         temp_polar_to_interp[:,:,0] *= ((nb_azimuths) / (2*torch.pi))
         temp_polar_to_interp[:,:,1] -= (radar_res/2.0)
         temp_polar_to_interp[:,:,1] /= radar_res
 
+        print(f"polar_intensity.shape = {polar_intensity.shape}")
+        print(f"temp_polar_to_interp.shape = {temp_polar_to_interp.shape}")
+        print(f"min and max range in temp_polar_to_interp are {temp_polar_to_interp[:, :, 1].min().item()} and {temp_polar_to_interp[:, :, 1].max().item()}")
+        print(temp_polar_to_interp)
         cart_img = bilinearInterpolation(polar_intensity, temp_polar_to_interp)
         
         position = torch.tensor(delta_pose[0:2, 3]).to(device).float()

@@ -599,7 +599,7 @@ class GPStateEstimator:
             # print("local map mask shape", self.local_map_mask.shape)
 
              # save one-to-one local map
-            local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+            local_map_path = "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/grassy_t2_r3"
             local_map_path = local_map_path + '/local_map_one_to_one/'
             os.makedirs(local_map_path, exist_ok=True)
             if self.local_map is not None:

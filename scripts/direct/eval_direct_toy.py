@@ -64,11 +64,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-<<<<<<< HEAD
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_hshmat.yaml'))
-=======
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
->>>>>>> origin/main
 
 
 db_bool = config['bool']
