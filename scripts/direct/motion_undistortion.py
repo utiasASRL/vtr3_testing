@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torchvision
 
+from utils import * # import radar_polar_to_cartesian
 
 def preprocessing_polar_image(polar_image, device):
     
@@ -23,7 +24,22 @@ def preprocessing_polar_image(polar_image, device):
 
 
 
-def motion_undistortion(polar_images, odometry, device):
+def motion_undistortion(polar_image, azimuth_angles, azimuth_timestamps, T_v_w, dt, device):
     """
     Undistort the radar image using the current odometry estimates.
     """
+    polar_intensity = preprocessing_polar_image(polar_image, device)
+    # get the velocity in polar coordinates
+
+    azimuths = torch.tensor(azimuth_angles).to(device).float()
+    nb_azimuths = torch.tensor(len(azimuths)).to(device)
+
+    # you need to get the cartesian image first and then undistort it
+
+    velocity_estimated = torch.zeros_like(azimuths) ### assume constant velocity
+
+
+
+    undistorted_polar_intensity = torch.zeros_like(polar_intensity)
+
+    return undistorted_polar_intensity

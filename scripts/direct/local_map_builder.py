@@ -223,7 +223,7 @@ teach_vertex_transforms = teach_df['teach_vertex_transforms']
 teach_times = teach_df['teach_times']
 
 
-max_distance = 1 # 2 m 
+max_distance = 1.5 # 2 m 
 
 # save path for local maps
 local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
@@ -289,9 +289,12 @@ for index in range(len(teach_times)): # for every pose
         position = torch.tensor(delta_pose[0:2, 3]).to(device).float()
         rotation = torch.atan2(torch.tensor(delta_pose[1, 0]).to(device).float(), torch.tensor(delta_pose[0, 0]).to(device).float())
         delta_map = moveLocalMap(position, rotation, cart_img, local_map_xy, local_map_res, local_map_zero_idx)
+
+        # motion undistortion: local_xy should contain the cartesian coordinates of the local map
+        # I need to apply the motion undistortion to the local_map_xy using the velocity
         
 
-        local_map = 0.5*local_map + 0.5*delta_map
+        local_map += delta_map
 
         # # show local map with matplotlib
         # plt.clf()
@@ -306,7 +309,7 @@ for index in range(len(teach_times)): # for every pose
  
     cnt += 1
     # no need to blur
-    # local_map = local_map / torch.max(local_map)  # normalize the local map
+    local_map = local_map / torch.max(local_map) # normalize the local map
     # local_map_blurred = torchvision.transforms.functional.gaussian_blur(local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
     # normalizer = torch.max(local_map) / torch.max(local_map_blurred)
     # local_map_blurred *= normalizer
@@ -320,8 +323,8 @@ for index in range(len(teach_times)): # for every pose
     
     
 
-    if cnt == 4:
-        break
+    # if cnt == 4:
+    #     break
     
 
 

@@ -439,6 +439,8 @@ class GPStateEstimator:
             self.polar_intensity = torchvision.transforms.functional.gaussian_blur(self.polar_intensity.unsqueeze(0), (9,1), 3).squeeze()
             self.polar_intensity /= torch.max(self.polar_intensity, dim=1, keepdim=True)[0]
             self.polar_intensity[torch.isnan(self.polar_intensity)] = 0
+
+            print("sam: polar_intensity shape: ", self.polar_intensity.shape) 
             
             # sam no undertstand
             # run in debug mode and inspect matrix shape and structures 
@@ -480,8 +482,8 @@ class GPStateEstimator:
 
             self.local_map = torch.tensor(teach_local_map).to(self.device)
             
-            teach_frame_cart = pb.utils.radar.radar_polar_to_cartesian(teach_frame.azimuths.astype(np.float32), teach_frame.polar, 0.040308, 0.2384, 640, False, True)
-            repeat_frame_cart = pb.utils.radar.radar_polar_to_cartesian(repeat_frame.azimuths.astype(np.float32), self.polar_intensity.detach().cpu().numpy(), 0.040308, 0.2384, 640, False, True)
+            # teach_frame_cart = pb.utils.radar.radar_polar_to_cartesian(teach_frame.azimuths.astype(np.float32), teach_frame.polar, 0.040308, 0.2384, 640, False, True)
+            # repeat_frame_cart = pb.utils.radar.radar_polar_to_cartesian(repeat_frame.azimuths.astype(np.float32), self.polar_intensity.detach().cpu().numpy(), 0.040308, 0.2384, 640, False, True)
             # print("sam converted repeat scan to cartesian shape", repeat_frame_cart.shape)
             
             self.local_map_blurred = torchvision.transforms.functional.gaussian_blur(self.local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
@@ -621,11 +623,24 @@ class GPStateEstimator:
     def localMaptoLocalMapRegistration(self, teach_local_map, repeat_local_map, chirp_up=True, potential_flip=False):
         # use DRO to generate local maps for teach and repeat sequences
         with torch.no_grad():
+            self.local_map = torch.tensor(teach_local_map).to(self.device)
 
-            
+            self.local_map_blurred = torchvision.transforms.functional.gaussian_blur(self.local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
+            normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
+            self.local_map_blurred *= normalizer
 
 
-            result = None
+            repeat_local_map = torch.tensor(repeat_local_map).to(self.device)
+            # should be a point where I apply motion distortion
+
+            self.polar_intensity_sparse  = self.bi
+
+
+            self.step_counter = 1
+
+
+            result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
+            self.state_init = result.clone()
             return result.detach().cpu().numpy()
 
 
