@@ -87,7 +87,7 @@ def load_config(config_path='config.yaml'):
     return config
 
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_sam.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 
 # Access database configuration
 db = config['radar_data']['grassy']
@@ -255,6 +255,8 @@ teach_vertex_timestamps = []
 teach_vertex_transforms = []
 # 6. teach vertext time
 teach_times = []
+# 7. teach vertex id
+teach_vertex_ids = []
 # in the repeat
 repeat_folder = os.path.join(out_path_folder, f"repeat")
 if not os.path.exists(repeat_folder):
@@ -272,6 +274,8 @@ repeat_vertex_timestamps = []
 repeat_edge_transforms = []
 # 6. repeat vertex time
 repeat_times = []
+# 7. repeat vertex id
+repeat_vertex_ids = []
 # needed for image conversion
 bridge = CvBridge()
 
@@ -280,13 +284,17 @@ for vertex, e in TemporalIterator(v_start): # I am going through all the repeat 
     # this vertex is the repeat vertex
 
     repeat_vertex = vertex
+    repeat_vertex_id = repeat_vertex.id
     repeat_vertex_time = repeat_vertex.stamp/1e9
     repeat_times.append(repeat_vertex_time)
+    repeat_vertex_ids.append(repeat_vertex_id)
 
     teach_vertex = g_utils.get_closest_teach_vertex(repeat_vertex) 
+    teach_vertex_id = teach_vertex.id
     print("closest teach vertex id:",teach_vertex.id)
     teach_vertex_time = teach_vertex.stamp/1e9
     teach_times.append(teach_vertex_time)
+    teach_vertex_ids.append(teach_vertex_id)
 
     teach_b_scan_msg = teach_vertex.get_data("radar_b_scan_img") # map 
     teach_b_scan_img_ROS = teach_b_scan_msg.b_scan_img
@@ -378,6 +386,7 @@ for vertex, e in TemporalIterator(v_start): # I am going through all the repeat 
 print("path length:",path_len)
 # make them into numpy arrays
 teach_times = np.array(teach_times).reshape(-1,1)
+teach_vertex_ids = np.array(teach_vertex_ids).reshape(-1,1)
 teach_polar_imgs = np.array(teach_polar_imgs)
 teach_azimuth_angles = np.array(teach_azimuth_angles)
 teach_azimuth_timestamps = np.array(teach_azimuth_timestamps)
@@ -385,6 +394,7 @@ teach_vertex_timestamps = np.array(teach_vertex_timestamps).reshape(-1,1)
 teach_vertex_transforms = np.array(teach_vertex_transforms).reshape(-1,1)
 
 repeat_times = np.array(repeat_times).reshape(-1,1)
+repeat_vertex_ids = np.array(repeat_vertex_ids).reshape(-1,1)
 repeat_polar_imgs = np.array(repeat_polar_imgs)
 repeat_azimuth_angles = np.array(repeat_azimuth_angles)
 repeat_azimuth_timestamps = np.array(repeat_azimuth_timestamps)
@@ -395,6 +405,7 @@ dist = np.array(dist).reshape(-1,1)
 
 if DEBUG:   
     print("teach times shape:", teach_times.shape)
+    print("teach vertex ids shape:", teach_vertex_ids.shape)
     print("teach polar imgs shape:", teach_polar_imgs.shape)
     print("teach azimuth angles shape:", teach_azimuth_angles.shape)
     print("teach azimuth timestamps shape:", teach_azimuth_timestamps.shape)
@@ -402,6 +413,7 @@ if DEBUG:
     print("teach vertex transforms shape:", teach_vertex_transforms.shape)
 
     print("repeat times shape:", repeat_times.shape)
+    print("repeat vertex ids shape:", repeat_vertex_ids.shape)
     print("repeat polar imgs shape:", repeat_polar_imgs.shape)
     print("repeat azimuth angles shape:", repeat_azimuth_angles.shape)
     print("repeat azimuth timestamps shape:", repeat_azimuth_timestamps.shape)
@@ -428,7 +440,7 @@ np.savez_compressed(teach_folder + "/teach.npz",
                     teach_azimuth_timestamps=teach_azimuth_timestamps,
                     teach_vertex_timestamps=teach_vertex_timestamps,
                     teach_vertex_transforms=teach_vertex_transforms,
-                    teach_times=teach_times)
+                    teach_times=teach_times, teach_vertex_ids=teach_vertex_ids)
 # SAVE REPEAT CONTENT IN THE REPEAT FOLDER
 np.savez_compressed(repeat_folder + "/repeat.npz",
                     repeat_polar_imgs=repeat_polar_imgs,
@@ -436,8 +448,7 @@ np.savez_compressed(repeat_folder + "/repeat.npz",
                     repeat_azimuth_timestamps=repeat_azimuth_timestamps,
                     repeat_vertex_timestamps=repeat_vertex_timestamps,
                     repeat_edge_transforms=repeat_edge_transforms,
-                    repeat_times=repeat_times,
-                    dist=dist)
+                    repeat_times=repeat_times, repeat_vertex_ids = repeat_vertex_ids,dist=dist)
     
     # # repeat point cloud
     # repeat_new_points, T_v_s = extract_points_from_vertex(repeat_vertex, msg="filtered_point_cloud", return_tf=True)
