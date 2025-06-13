@@ -616,6 +616,18 @@ class GPStateEstimator:
             result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
             self.state_init = result.clone()
             return result.detach().cpu().numpy()
+        
+
+    def localMaptoLocalMapRegistration(self, teach_local_map, repeat_local_map, chirp_up=True, potential_flip=False):
+        # use DRO to generate local maps for teach and repeat sequences
+        with torch.no_grad():
+
+            
+
+
+            result = None
+            return result.detach().cpu().numpy()
+
 
 
     # The shift is in pixels (thus should be alternating signs)
