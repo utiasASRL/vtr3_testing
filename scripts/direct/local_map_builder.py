@@ -206,7 +206,7 @@ for index in range(len(teach_times)): # for every pose
         # print(type(pose))
         delta_pose =  cur_pose @ neighbour_pose.inverse() # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix() # need to do a transofrm # check here
 
-        # delta_pose = T_radar_robot @ delta_pose @ T_radar_robot.inverse()  # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix
+        delta_pose = T_radar_robot @ delta_pose @ T_radar_robot.inverse()  # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix
 
         delta_time = np.abs(teach_times[i][0] - cur_pose_time[0])
         if np.linalg.norm(delta_pose.matrix()[0:2, 3]) > max_distance or delta_time > max_time_dist:
@@ -214,7 +214,7 @@ for index in range(len(teach_times)): # for every pose
             continue
 
 
-        poses.append(neighbour_pose) # only takes the poses we care about pls
+        poses.append(T_radar_robot @ neighbour_pose) # only takes the poses we care about pls
         deltas[id] = delta_pose
         print("id: ", id)
         print("delta: ", delta_pose)
@@ -301,7 +301,7 @@ for index in range(len(teach_times)): # for every pose
 
     for key, delta_pose in deltas.items():
 
-        neighbour_pose =  (delta_pose.inverse() @ cur_pose).inverse()    # delta_pose = cur_pose @ neighbour_pose.inverse() # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix() # need to do a transofrm # check here
+        neighbour_pose =  (delta_pose.inverse() @ T_radar_robot @ cur_pose).inverse()    # delta_pose = cur_pose @ neighbour_pose.inverse() # T_radar_robot @ delta_pose @ T_radar_robot.inverse().matrix() # need to do a transofrm # check here
 
         position = neighbour_pose.r_ab_inb() # neighbour pose x,y, and z
 

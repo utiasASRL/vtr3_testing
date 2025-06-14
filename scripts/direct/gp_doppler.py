@@ -631,12 +631,20 @@ class GPStateEstimator:
 
 
             repeat_local_map = torch.tensor(repeat_local_map).to(self.device)
+
+            radar_res = 0.040308
+            self.local_map_polar = self.localMapToPolarCoord_(radar_res, 400)
+            # self.local_map_mask = (self.local_map_polar[:,:,1] < max_local_map_range) & (self.local_map_polar[:,:,1] > float(opts['direct']['min_range']))
+
+            # repeat_local_map_polar = self.
             # should be a point where I apply motion distortion
 
             self.polar_intensity_sparse  = self.bi
 
 
             self.step_counter = 1
+
+            ### need help on this function..... :((((((()))))))
 
 
             result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
