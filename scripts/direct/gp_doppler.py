@@ -440,7 +440,7 @@ class GPStateEstimator:
             self.polar_intensity /= torch.max(self.polar_intensity, dim=1, keepdim=True)[0]
             self.polar_intensity[torch.isnan(self.polar_intensity)] = 0
 
-            print("sam: polar_intensity shape: ", self.polar_intensity.shape) 
+            # print("sam: polar_intensity shape: ", self.polar_intensity.shape) 
             
             # sam no undertstand
             # run in debug mode and inspect matrix shape and structures 

@@ -40,8 +40,10 @@ def load_config(config_path='config.yaml'):
 def cartToLocalMapID(xy, local_map_res, local_map_zero_idx):
     out = torch.empty_like(xy, device=device)
     out[:,:,0,0] = (xy[:,:,0,0] / (-local_map_res)) + local_map_zero_idx
-    out[:,:,1,0] = (xy[:,:,1,0] / (local_map_res)) + local_map_zero_idx
+    out[:,:,1,0] = (xy[:,:,1,0] / (local_map_res)) + local_map_zero_idx 
+    # look at last commit the function is change ..... from cedric
     return out
+
 
 def localMapToPolarCoord(local_map_xy):
     with torch.no_grad():
@@ -57,6 +59,7 @@ def localMapToPolarCoord(local_map_xy):
         #polar[:,:,0] *= (nb_azimuths / (2*torch.pi))
         #polar[:,:,1] /= radar_res
         return polar
+
 
 def bilinearInterpolation(im, az_r):
     with torch.no_grad():
@@ -99,7 +102,7 @@ def moveLocalMap(pos, rot, local_map, local_map_xy, local_map_res, local_map_zer
         local_map[:, 0] = 0
         local_map[:, -1] = 0
 
-        # Get the coordinate of the new localMap in the former localMap
+        # Get the coordinate of the new localMap in the former localMap # TODO using the motion model
         temp_rot_mat = torch.tensor([[torch.cos(rot), -torch.sin(rot)], [torch.sin(rot), torch.cos(rot)]]).to(device)
         temp_pos = pos.reshape((-1,1))
 
@@ -116,8 +119,17 @@ config_warthog = load_config(os.path.join(parent_folder,'scripts/direct/warthog_
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Prepare the local_map cart coordinates
 radar_res = 0.040308
+
 local_map_res = float(config_warthog['direct']['local_map_res'])
 max_local_map_range = float(config_warthog['direct']['max_local_map_range'])
+
+
+max_range_idx_direct = torch.tensor(int(np.floor(config_warthog['direct']['max_range'] / radar_res)))
+min_range_idx_direct = torch.tensor(int(np.ceil(config_warthog['direct']['min_range'] / radar_res)))
+
+print("max_range_idx_direct: ", max_range_idx_direct)
+print("min_range_idx_direct: ", min_range_idx_direct)
+
 local_map_size = int(max_local_map_range/local_map_res)*2 + 1
 
 temp_x = (torch.arange( -local_map_size//2, local_map_size//2, 1).to(device) + 1) * local_map_res
@@ -131,10 +143,11 @@ local_map_zero_idx = torch.tensor(int(max_local_map_range/local_map_res)).to(dev
 
 local_map_polar = localMapToPolarCoord(local_map_xy)
 
+
 # change here
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 result_folder = config.get('output')
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -165,7 +178,7 @@ max_distance = 3 # 2 m
 max_time_dist = 4 # 4 secs
 
 # save path for local maps
-local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4"
 local_map_path = local_map_path + '/local_map_vtr/'
 os.makedirs(local_map_path, exist_ok=True)
 
@@ -173,6 +186,7 @@ cnt = 0
 first_pose = None
 
 for index in range(len(teach_times)): # for every pose
+    print("--------------------processing vertex index: --------------------- ", index, "percentage processed: ", index/len(teach_times)*100)
     cur_pose_time = teach_times[index]
 
     cur_pose = teach_vertex_transforms[index][0][teach_times[index][0]] # T_robot_world
@@ -198,7 +212,7 @@ for index in range(len(teach_times)): # for every pose
         print(deltas.keys())
 
 
-        print("sam:", teach_times[i][0], cur_pose_time[0])
+        # print("sam:", teach_times[i][0], cur_pose_time[0])
         neighbour_pose = teach_vertex_transforms[i][0][teach_times[i][0]] # T_robot_world  repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time[0]]   
         
 
@@ -216,8 +230,8 @@ for index in range(len(teach_times)): # for every pose
 
         poses.append(T_radar_robot @ neighbour_pose) # only takes the poses we care about pls
         deltas[id] = delta_pose
-        print("id: ", id)
-        print("delta: ", delta_pose)
+        # print("id: ", id)
+        # print("delta: ", delta_pose)
 
         azimuths = torch.tensor(teach_azimuth_angles[i]).to(device).float()
         nb_azimuths = torch.tensor(len(azimuths)).to(device)
@@ -232,6 +246,9 @@ for index in range(len(teach_times)): # for every pose
         polar_intensity = torchvision.transforms.functional.gaussian_blur(polar_intensity.unsqueeze(0), (9,1), 3).squeeze()
         polar_intensity /= torch.max(polar_intensity, dim=1, keepdim=True)[0]
         polar_intensity[torch.isnan(polar_intensity)] = 0
+
+        # sam: crop range
+        # polar_intensity = polar_intensity[min_range_idx_direct:, : max_range_idx_direct] # crop the polar image to the range we care about
 
 
         # if i == index:
@@ -285,14 +302,14 @@ for index in range(len(teach_times)): # for every pose
 
         # plt.show()
 
-    print("numer of deltas: ", len(deltas))
-    print("numer of poses: ", len(poses))
+    # print("numer of deltas: ", len(deltas))
+    # print("numer of poses: ", len(poses))
 
     # # sort deltas by the key
     deltas = dict(sorted(deltas.items(), key=lambda item: item[0]))
 
     first_pose_t = teach_vertex_transforms[0][0][teach_times[0][0]] # T_robot_world
-    print("sam first pose: ", first_pose_t.matrix())
+    # print("sam first pose: ", first_pose_t.matrix())
 
     # current pose is wrt the world frame
     # delta pose takes the neighbour and express in the current frame
@@ -339,13 +356,6 @@ for index in range(len(teach_times)): # for every pose
             mid_scan_timestamp = teach_vertex_timestamps[index][0]
             cv2.imwrite(local_map_path + str(mid_scan_timestamp) + '.png', local_map.detach().cpu().numpy()*255)
     
-    
-
-    # if cnt == 4:
-    #     break
-    
-
-
 
     # plt.imshow(local_map.cpu().numpy(), cmap='gray')
     # plt.title(f"Local Map at pose {index} (time: {cur_pose_time})")

@@ -146,7 +146,7 @@ print("SET_INITIAL_GUESS:", SET_INITIAL_GUESS)
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -304,7 +304,7 @@ direct_se2_pose = []
 
 # load all the local maps of the teach path
 # open the directory
-teach_local_maps_path = config["radar_data"]["grassy"]["teach_local_maps_path"]
+teach_local_maps_path = config["radar_data"]["parking"]["teach_local_maps_path"]
 print(teach_local_maps_path)
 teach_local_maps_files = os.listdir(teach_local_maps_path)
 
@@ -349,8 +349,8 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     teach_scan_azimuth_angles = teach_azimuth_angles[repeat_vertex_idx][:] # need to add : so the first element is correct
     teach_scan_timestamps = teach_azimuth_timestamps[repeat_vertex_idx]
 
-    print("teach azimuth angles shape:", teach_scan_azimuth_angles.shape)
-    print("the first teach azimuth angle:", teach_scan_azimuth_angles[0])
+    # print("teach azimuth angles shape:", teach_scan_azimuth_angles.shape)
+    # print("the first teach azimuth angle:", teach_scan_azimuth_angles[0])
 
     teach_vertex_time = teach_vertex_timestamps[repeat_vertex_idx]
     print("sam: teach vertex time:", teach_vertex_time[0])
@@ -394,10 +394,10 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
         # print("teach_local_map_file:", teach_local_map_file)
 
         teach_local_map = load_local_map(teach_local_map_file)
-        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
+        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, repeat_frame)
 
     else:
-        state = gp_state_estimator.pairwiseRegistration(teach_frame, teach_frame)
+        state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
 
 
     direct_se2_pose.append(state)

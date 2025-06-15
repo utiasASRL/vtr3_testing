@@ -77,7 +77,7 @@ DEBUG = db_bool.get('DEBUG')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -125,7 +125,7 @@ def align_trajectories(odom, gt):
 
 # print(result_folder)
 
-sequence = "grassy_t2_r3"
+sequence = "parking_t3_r4"
 
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
@@ -528,26 +528,62 @@ starting_plot_idx = 1
 
 plt.figure(1) # need to make it 2 by 1
 plt.subplot(3, 1, 1) # I wan to have rmse in the label
-plt.plot(repeat_times[starting_plot_idx:], errorx_vtr[starting_plot_idx:], label=f'RMSE x vtr: {np.sqrt(np.mean(errorx_vtr[starting_plot_idx:]**2)):.4f} m')
-plt.plot(repeat_times[starting_plot_idx:], errorx_direct[starting_plot_idx:], label=f"RMSE x direct: {np.sqrt(np.mean(errorx_direct[starting_plot_idx:]**2)):.4f} m")
+
+rmse_x_vtr = np.sqrt(np.mean(errorx_vtr[starting_plot_idx:]**2))
+rmse_x_direct = np.sqrt(np.mean(errorx_direct[starting_plot_idx:]**2))
+rmse_x_improvement = (rmse_x_vtr - rmse_x_direct) / rmse_x_vtr * 100 
+
+max_error_x_vtr = np.max(np.abs(errorx_vtr[starting_plot_idx:]))
+max_error_x_direct = np.max(np.abs(errorx_direct[starting_plot_idx:]))
+max_error_x_improvement = (max_error_x_vtr - max_error_x_direct) / max_error_x_vtr * 100
+
+plt.plot(repeat_times[starting_plot_idx:], errorx_vtr[starting_plot_idx:], label=f'RMSE x vtr: {rmse_x_vtr:.4f} m')
+plt.plot(repeat_times[starting_plot_idx:], errorx_direct[starting_plot_idx:], label=f'RMSE x direct: {rmse_x_direct:.4f} m')
 plt.title('Direct & VTR estimate error in x,y')
 plt.ylabel('error x (m)')
 plt.grid()
 plt.legend()
 plt.subplot(3, 1, 2)
-plt.plot(repeat_times[starting_plot_idx:], errory_vtr[starting_plot_idx:], label=f'RMSE y vtr: {np.sqrt(np.mean(errory_vtr**2)):.4f} m')
-plt.plot(repeat_times[starting_plot_idx:], errory_direct[starting_plot_idx:], label=f'RMSE y direct: {np.sqrt(np.mean(errory_direct**2)):.4f} m')
+
+rmse_y_vtr = np.sqrt(np.mean(errory_vtr[starting_plot_idx:]**2))
+rmse_y_direct = np.sqrt(np.mean(errory_direct[starting_plot_idx:]**2))
+rmse_y_improvement = (rmse_y_vtr - rmse_y_direct) / rmse_y_vtr * 100
+
+max_error_y_vtr = np.max(np.abs(errory_vtr[starting_plot_idx:]))
+max_error_y_direct = np.max(np.abs(errory_direct[starting_plot_idx:]))
+max_error_y_improvement = (max_error_y_vtr - max_error_y_direct) / max_error_y_vtr * 100
+
+plt.plot(repeat_times[starting_plot_idx:], errory_vtr[starting_plot_idx:], label=f'RMSE y vtr: {rmse_y_vtr:.4f} m')
+plt.plot(repeat_times[starting_plot_idx:], errory_direct[starting_plot_idx:], label=f'RMSE y direct: {rmse_y_direct:.4f} m')
 plt.ylabel('error y (m)')
 plt.grid()
 # plt.xlabel('Repeat Times')
 plt.legend()
 plt.subplot(3, 1, 3)
+
+rmse_norm_vtr = np.sqrt(np.mean(error_norm_vtr[starting_plot_idx:]**2))
+rmse_norm_direct = np.sqrt(np.mean(error_norm_direct[starting_plot_idx:]**2))
+rmse_norm_improvement = (rmse_norm_vtr - rmse_norm_direct) / rmse_norm_vtr * 100
+
+max_error_norm_vtr = np.max(np.abs(error_norm_vtr[starting_plot_idx:]))
+max_error_norm_direct = np.max(np.abs(error_norm_direct[starting_plot_idx:]))
+max_error_norm_improvement = (max_error_norm_vtr - max_error_norm_direct) / max_error_norm_vtr * 100
+
 plt.plot(repeat_times[starting_plot_idx:], error_norm_vtr[starting_plot_idx:], label='VTR error norm (Euclidean), RMSE: {:.4f} m'.format(np.sqrt(np.mean(error_norm_vtr[starting_plot_idx:]**2))))
 plt.plot(repeat_times[starting_plot_idx:], error_norm_direct[starting_plot_idx:], label='Direct error norm (Euclidean), RMSE: {:.4f} m'.format(np.sqrt(np.mean(error_norm_direct[starting_plot_idx:]**2))))
 plt.ylabel('error norm (m)')
 plt.grid()
 plt.legend()
 plt.xlabel('Repeat Times')
+
+print("------------------Improvement Summary-----------------")
+print(f"RMSE x improvement: {rmse_x_improvement:.2f}%")
+print(f"RMSE y improvement: {rmse_y_improvement:.2f}%")
+print(f"RMSE norm improvement: {rmse_norm_improvement:.2f}%")
+
+print(f"Max error x improvement: {max_error_x_improvement:.2f}%")
+print(f"Max error y improvement: {max_error_y_improvement:.2f}%")
+print(f"Max error norm improvement: {max_error_norm_improvement:.2f}%")
 
 
 # plotter.set_data(sequence_path)

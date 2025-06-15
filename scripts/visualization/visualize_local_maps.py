@@ -27,7 +27,7 @@ from pylgmath import Transformation
 # import time
 
 import yaml
-import gp_doppler as gpd
+# import gp_doppler as gpd
 import torch
 import torchvision
 
@@ -35,7 +35,7 @@ import torchvision
 
 # from process_vtr import get_vtr_ptr_baseline
 
-from utils import *
+# from utils import *
 from scripts.visualization.plotter import Plotter
 
 
@@ -64,7 +64,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_config_sam.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 
 
 db_bool = config['bool']
@@ -145,7 +145,7 @@ gps_repeat_pose = result_df['gps_repeat_pose']
 print("gps_teach_pose", gps_teach_pose.shape)
 
 
-local_maps_folder = config['radar_data']['grassy']['local_maps_path']
+local_maps_folder = config['radar_data']['grassy']['teach_local_maps_path']
 print("local_map_folder", local_maps_folder)
 
 import os
@@ -222,7 +222,7 @@ def create_video(image_folder, output_file, fps=30, output_size=None, format='mp
 
 
 out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
-create_video(local_maps_folder, os.path.join(out_path_folder, "grassy_local_maps.mp4"), fps=30, output_size=(4001, 4001), format='mp4')
+create_video(local_maps_folder, os.path.join(out_path_folder, "grassy_local_vtr_maps.mp4"), fps=30, output_size=(4001, 4001), format='mp4')
 
 
 
