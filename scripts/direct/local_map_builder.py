@@ -147,7 +147,7 @@ local_map_polar = localMapToPolarCoord(local_map_xy)
 # change here
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 result_folder = config.get('output')
-out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
+out_path_folder = os.path.join(result_folder,f"mars_t1_r2/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -178,15 +178,17 @@ max_distance = 3 # 2 m
 max_time_dist = 4 # 4 secs
 
 # save path for local maps
-local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4"
+local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2"
 local_map_path = local_map_path + '/local_map_vtr/'
+local_map_blurred_path = local_map_path + '_blurred/'
 os.makedirs(local_map_path, exist_ok=True)
 
 cnt = 0 
 first_pose = None
 
 for index in range(len(teach_times)): # for every pose
-    print("--------------------processing vertex index: --------------------- ", index, "percentage processed: ", index/len(teach_times)*100)
+    print(f"--------------------processing vertex index: {index}---------------------  percentage processed: {(index / len(teach_times)) * 100:.4f}")
+
     cur_pose_time = teach_times[index]
 
     cur_pose = teach_vertex_transforms[index][0][teach_times[index][0]] # T_robot_world
@@ -204,12 +206,12 @@ for index in range(len(teach_times)): # for every pose
         id = teach_vertex_ids[i][0]
 
         if id in deltas.keys():
-            print("continuing cause id is already seen")
+            # print("continuing cause id is already seen")
             continue
 
-        print(teach_times[i][0])
-        print(id)
-        print(deltas.keys())
+        # print(teach_times[i][0])
+        # print(id)
+        # print(deltas.keys())
 
 
         # print("sam:", teach_times[i][0], cur_pose_time[0])
@@ -224,7 +226,7 @@ for index in range(len(teach_times)): # for every pose
 
         delta_time = np.abs(teach_times[i][0] - cur_pose_time[0])
         if np.linalg.norm(delta_pose.matrix()[0:2, 3]) > max_distance or delta_time > max_time_dist:
-            print("skipping cause the vertex are too far")
+            # print("skipping cause the vertex are too far")
             continue
 
 
@@ -340,13 +342,14 @@ for index in range(len(teach_times)): # for every pose
     # plt.show()
  
     cnt += 1
-    # no need to blur
+    
+
     local_map = local_map / torch.max(local_map) # normalize the local map
     
-    
-    # local_map_blurred = torchvision.transforms.functional.gaussian_blur(local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
-    # normalizer = torch.max(local_map) / torch.max(local_map_blurred)
-    # local_map_blurred *= normalizer
+    # blur the map and normalize it
+    local_map_blurred = torchvision.transforms.functional.gaussian_blur(local_map.unsqueeze(0).unsqueeze(0), 3).squeeze()
+    normalizer = torch.max(local_map) / torch.max(local_map_blurred)
+    local_map_blurred *= normalizer
 
     # Dump local maps 
     # VTR local maps
@@ -354,7 +357,14 @@ for index in range(len(teach_times)): # for every pose
     # break
     if local_map is not None:
             mid_scan_timestamp = teach_vertex_timestamps[index][0]
+    
             cv2.imwrite(local_map_path + str(mid_scan_timestamp) + '.png', local_map.detach().cpu().numpy()*255)
+            
+            if local_map_blurred is not None:
+            # save blurred local map
+                cv2.imwrite(local_map_blurred_path + str(mid_scan_timestamp) + '.png', local_map_blurred.detach().cpu().numpy()*255)
+
+
     
 
     # plt.imshow(local_map.cpu().numpy(), cmap='gray')

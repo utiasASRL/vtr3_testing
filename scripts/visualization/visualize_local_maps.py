@@ -77,7 +77,7 @@ DEBUG = db_bool.get('DEBUG')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -85,7 +85,7 @@ else:
     print(f"Folder '{out_path_folder}' already exists.")    
 
 
-sequence = "grassy_t2_r3"
+sequence = "parking_t3_r4"
 
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
@@ -145,7 +145,7 @@ gps_repeat_pose = result_df['gps_repeat_pose']
 print("gps_teach_pose", gps_teach_pose.shape)
 
 
-local_maps_folder = config['radar_data']['grassy']['teach_local_maps_path']
+local_maps_folder = config['radar_data']['parking']['teach_local_maps_path']
 print("local_map_folder", local_maps_folder)
 
 import os
@@ -221,8 +221,8 @@ def create_video(image_folder, output_file, fps=30, output_size=None, format='mp
     print(f"Output saved to {output_file}")
 
 
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
-create_video(local_maps_folder, os.path.join(out_path_folder, "grassy_local_vtr_maps.mp4"), fps=30, output_size=(4001, 4001), format='mp4')
+out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
+create_video(local_maps_folder, os.path.join(out_path_folder, "parking_local_vtr_maps.mp4"), fps=30, output_size=(4001, 4001), format='mp4')
 
 
 

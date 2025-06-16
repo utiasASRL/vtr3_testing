@@ -77,7 +77,7 @@ DEBUG = db_bool.get('DEBUG')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
+out_path_folder = os.path.join(result_folder,f"mars_t1_r2/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -125,7 +125,7 @@ def align_trajectories(odom, gt):
 
 # print(result_folder)
 
-sequence = "parking_t3_r4"
+sequence = "mars_t1_r2"
 
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
@@ -283,7 +283,7 @@ print("repeat_world_vtr shape:", repeat_world_vtr.shape)
 # plotter.plot_traj(teach_world,repeat_world_direct)
 # plotter.show_plots()
 
-window_size = 50
+window_size = 70
 
 errorx_direct = []
 errory_direct = []
@@ -518,6 +518,7 @@ error_norm_vtr = np.linalg.norm(np.hstack((errorx_vtr,errory_vtr)),axis=1)
 max_idx = np.argmax(error_norm_direct)
 print("max_idx:", max_idx)
 
+print("repeat_times shape:", repeat_times.shape)
 print("errorx_direct shape:", errorx_direct.shape)
 print("errory_direct shape:", errory_direct.shape)
 print("error_norm shape:", error_norm_direct.shape)
