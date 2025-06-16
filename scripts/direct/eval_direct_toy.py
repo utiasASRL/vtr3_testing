@@ -77,7 +77,7 @@ DEBUG = db_bool.get('DEBUG')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"mars_t1_r2/")
+out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -125,7 +125,7 @@ def align_trajectories(odom, gt):
 
 # print(result_folder)
 
-sequence = "mars_t1_r2"
+sequence = "grassy_t2_r3"
 
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
@@ -283,7 +283,7 @@ print("repeat_world_vtr shape:", repeat_world_vtr.shape)
 # plotter.plot_traj(teach_world,repeat_world_direct)
 # plotter.show_plots()
 
-window_size = 70
+window_size = 50
 
 errorx_direct = []
 errory_direct = []
@@ -323,6 +323,7 @@ for repeat_idx in range(0,window_size):
     print("the segment teach length is: ", segment_length,"m")
     if segment_length < 10:
         print("segment length is too small!")
+        continue
         # raise ValueError("segment length is too small!")
 
 
@@ -467,6 +468,7 @@ for repeat_idx in range(repeat_times.shape[0]-window_size,repeat_times.shape[0])
     print("the segment teach length is: ", segment_length,"m")
     if segment_length < 10:
         print("segment length is too small!")
+        continue
         # raise ValueError("segment length is too small!")
 
     # print("corr_gps_teach shape:", corr_gps_teach.shape)

@@ -79,7 +79,7 @@ print("SET_INITIAL_GUESS:", SET_INITIAL_GUESS)
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"mars_t1_r2/")
+out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -237,7 +237,7 @@ direct_se2_pose = []
 
 # load all the local maps of the teach path
 # open the directory
-teach_local_maps_path = config["radar_data"]["parking"]["teach_local_maps_path"]
+teach_local_maps_path = config["radar_data"]["grassy"]["teach_local_maps_path"]
 print(teach_local_maps_path)
 teach_local_maps_files = os.listdir(teach_local_maps_path)
 

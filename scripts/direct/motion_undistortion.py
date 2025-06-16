@@ -9,6 +9,8 @@ import torchvision
 import yaml
 from pylgmath import Transformation
 
+from utils import radar_polar_to_cartesian # this is a custom function to convert polar radar images to cartesian
+
 T_radar_robot =  Transformation(T_ba = np.array([[1.000, 0.000, 0.000, 0.025],
                                                  [0.000, -1.000 , 0.000, -0.002],
                                                  [0.000 ,0.000, -1.000 , 1.032],
@@ -27,74 +29,6 @@ def preprocessing_polar_image(polar_image, device):
     return polar_intensity
 
 
-def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution=0.040308, cart_resolution=0.2384, cart_pixel_width=640,
-                             interpolate_crossover=False, fix_wobble=False):
-    # TAKEN FROM PYBOREAS
-    """Convert a polar radar scan to cartesian.
-    Args:
-        azimuths (np.ndarray): Rotation for each polar radar azimuth (radians)
-        fft_data (np.ndarray): Polar radar power readings
-        radar_resolution (float): Resolution of the polar radar data (metres per pixel)
-        cart_resolution (float): Cartesian resolution (metres per pixel)
-        cart_pixel_width (int): Width and height of the returned square cartesian output (pixels)
-        interpolate_crossover (bool, optional): If true interpolates between the end and start  azimuth of the scan. In
-            practice a scan before / after should be used but this prevents nan regions in the return cartesian form.
-
-    Returns:
-        np.ndarray: Cartesian radar power readings
-    """
-    # print("in radar_polar_to_cartesian")
-    # Compute the range (m) captured by pixels in cartesian scan
-    if (cart_pixel_width % 2) == 0:
-        cart_min_range = (cart_pixel_width / 2 - 0.5) * cart_resolution
-    else:
-        cart_min_range = cart_pixel_width // 2 * cart_resolution
-    
-    # Compute the value of each cartesian pixel, centered at 0
-    coords = np.linspace(-cart_min_range, cart_min_range, cart_pixel_width, dtype=np.float32)
-
-    X, Y = np.meshgrid(coords, -coords)
-    sample_range = np.sqrt(Y * Y + X * X)
-    sample_angle = np.arctan2(Y, X)
-    sample_angle += (sample_angle < 0).astype(np.float32) * 2. * np.pi
-
-    # Interpolate Radar Data Coordinates
-    azimuth_step = (azimuths[-1] - azimuths[0]) / (azimuths.shape[0] - 1)
-    sample_u = (sample_range - radar_resolution / 2) / radar_resolution
-
-    # print("------")
-    # print("sample_angle.shape",sample_angle.shape)
-    # print("azimuths[0]",azimuths[0])
-    # print("azimuth step shape" ,azimuth_step.shape)
-
-    sample_v = (sample_angle - azimuths[0]) / azimuth_step
-    # This fixes the wobble in the old CIR204 data from Boreas
-    M = azimuths.shape[0]
-    azms = azimuths.squeeze()
-    if fix_wobble:
-        c3 = np.searchsorted(azms, sample_angle.squeeze())
-        c3[c3 == M] -= 1
-        c2 = c3 - 1
-        c2[c2 < 0] += 1
-        a3 = azms[c3]
-        diff = sample_angle.squeeze() - a3
-        a2 = azms[c2]
-        delta = diff * (diff < 0) * (c3 > 0) / (a3 - a2 + 1e-14)
-        sample_v = (c3 + delta).astype(np.float32)
-
-    # We clip the sample points to the minimum sensor reading range so that we
-    # do not have undefined results in the centre of the image. In practice
-    # this region is simply undefined.
-    sample_u[sample_u < 0] = 0
-
-    if interpolate_crossover:
-        fft_data = np.concatenate((fft_data[-1:], fft_data, fft_data[:1]), 0)
-        sample_v = sample_v + 1
-
-    polar_to_cart_warp = np.stack((sample_u, sample_v), -1)
-    return cv2.remap(fft_data, polar_to_cart_warp, None, cv2.INTER_LINEAR)
-
-
 def motion_undistortion(
     polar_image: np.ndarray,
     azimuth_angles: np.ndarray,
@@ -102,7 +36,7 @@ def motion_undistortion(
     T_v_w: np.ndarray,
     dt: float,
     device: torch.device,
-    radar_res: float = 0.040308,      # m per range-bin (CIR-204 default)
+    radar_res: float = 0.040308,      # m per range-bin (RAS3 default)
 ) -> torch.Tensor:
     """
     Undistort a polar radar scan by **applying a 3 × 3 homogeneous
@@ -155,7 +89,7 @@ def motion_undistortion(
     # ------------------------------------------------------------------
     τ          = t_beam.view(A, 1)                         # (A,1)
     dx, dy     = (v_xy[0] * τ, v_xy[1] * τ)                # (A,1)
-    dθ         = w_z * τ                                   # (A,1)
+    dθ         =   w_z * τ                                   # (A,1)
     cosθ, sinθ = torch.cos(dθ), torch.sin(dθ)              # (A,1)
 
     # Assemble Tᵢ as [R  p; 0 1]  where R = R(+ωτ),  p = v τ
@@ -182,6 +116,9 @@ def motion_undistortion(
     x_u = pts_0[:, :, 0, 0]
     y_u = pts_0[:, :, 1, 0]
 
+
+    # Important note: stay in cartesian sapce as converting to polar indices introduces rounding errors (maybe just return the )
+
     # ------------------------------------------------------------------
     # 6.  Convert back to polar indices (nearest-neighbour)
     # ------------------------------------------------------------------
@@ -200,7 +137,8 @@ def motion_undistortion(
     undistorted = torch.zeros_like(polar_intensity)
     undistorted[az_idx.view(-1), r_idx.view(-1)] = polar_intensity.view(-1)
     # print(undistorted-polar_intensity)
-    return undistorted
+
+    return polar_intensity, undistorted
 
 # ---------------------------------------------------------------------
 #  Helpers -------------------------------------------------------------
@@ -218,157 +156,318 @@ def normalise_to_u8(img: np.ndarray) -> np.ndarray:
     return (img * 255).astype(np.uint8)
 
 
-def dummy_test(device=torch.device("cpu"),
-               out_dir: str = "dummy_out") -> None:
-    """
-    Fabricate a toy scan, undistort it, save PNGs of
-    the RAW (still distorted) and UND (undistorted) Cartesian images.
-    """
-    # ------------------------------------------------- synthetic scan
-    A, R        = 400, 1712
-    radar_res   = 0.040308
-    azimuths    = np.linspace(0.0, 2*np.pi*(A-1)/A, A).astype(np.float32)
-    print(f"azimuths are {azimuths} with size {azimuths.size}")
-    az_t        = np.linspace(0.0, 0.1, A).astype(np.float32)   # dt = 0.1 s
-    print(f"az_t is {az_t} with size {az_t.size}")
+# def dummy_test(device=torch.device("cpu"),
+#                out_dir: str = "dummy_out") -> None:
+#     """
+#     Fabricate a toy scan, undistort it, save PNGs of
+#     the RAW (still distorted) and UND (undistorted) Cartesian images.
+#     """
+#     # ------------------------------------------------- synthetic scan
+#     A, R        = 400, 1712
+#     radar_res   = 0.040308
+#     azimuths    = np.linspace(0.0, 2*np.pi*(A-1)/A, A).astype(np.float32)
+#     print(f"azimuths are {azimuths} with size {azimuths.size}")
+#     az_t        = np.linspace(0.0, 0.1, A).astype(np.float32)   # dt = 0.1 s
+#     print(f"az_t is {az_t} with size {az_t.size}")
 
-    polar_raw   = np.zeros((A, R), dtype=np.float32)
-    polar_raw[:, 150] = 1.0                                     # bright ring
+#     polar_raw   = np.zeros((A, R), dtype=np.float32)
+#     polar_raw[:, 150] = 1.0                                     # bright ring
 
-    # ------------------------------------------------- fake motion (robot frame)
-    fwd, yaw_deg = 150*radar_res*2, 0.0
-    yaw_rad      = np.deg2rad(yaw_deg)
-    T_v_w = np.eye(4, dtype=np.float32)
-    T_v_w[0, 3] = fwd
-    T_v_w[:2, :2] = [[ np.cos(yaw_rad), -np.sin(yaw_rad)],
-                     [ np.sin(yaw_rad),  np.cos(yaw_rad)]]
+#     # ------------------------------------------------- fake motion (robot frame)
+#     fwd, yaw_deg = 150*radar_res*2, 0.0
+#     yaw_rad      = np.deg2rad(yaw_deg)
+#     T_v_w = np.eye(4, dtype=np.float32)
+#     T_v_w[0, 3] = fwd
+#     T_v_w[:2, :2] = [[ np.cos(yaw_rad), -np.sin(yaw_rad)],
+#                      [ np.sin(yaw_rad),  np.cos(yaw_rad)]]
 
-    # ------------------------------------------------- call undistortion
-    polar_und = motion_undistortion(
-        polar_raw, azimuths, az_t, T_v_w, dt=0.1, device=device
-    ).cpu().numpy()
+#     # ------------------------------------------------- call undistortion
+#     polar_und = motion_undistortion(
+#         polar_raw, azimuths, az_t, T_v_w, dt=0.1, device=device
+#     ).cpu().numpy()
     
-    # ------------------------------------------------- Cartesian renderings
-    cart_raw = radar_polar_to_cartesian(
-        polar_raw.astype(np.float32), azimuths, radar_resolution=radar_res
-    )
-    cart_und = radar_polar_to_cartesian(
-        polar_und.astype(np.float32), azimuths, radar_resolution=radar_res
-    )
-    nonzero_y, nonzero_x = np.nonzero(cart_und)  # row, col indices
-    idx_pairs = list(zip(nonzero_y, nonzero_x))  # (row, col) = (y, x)
+#     # ------------------------------------------------- Cartesian renderings
+#     cart_raw = radar_polar_to_cartesian(
+#         polar_raw.astype(np.float32), azimuths, radar_resolution=radar_res
+#     )
+#     cart_und = radar_polar_to_cartesian(
+#         polar_und.astype(np.float32), azimuths, radar_resolution=radar_res
+#     )
 
-    print(f"Found {len(idx_pairs)} non-zero pixels:")
-    for yx in idx_pairs:
-        print(yx)
+#     nonzero_y, nonzero_x = np.nonzero(cart_und)  # row, col indices
+#     idx_pairs = list(zip(nonzero_y, nonzero_x))  # (row, col) = (y, x)
 
-    # ------------------------------------------------- save PNGs
-    os.makedirs(out_dir, exist_ok=True)
-    cv2.imwrite(os.path.join(out_dir, "dummy_raw.png"),
-                normalise_to_u8(cart_raw))
-    cv2.imwrite(os.path.join(out_dir, "dummy_und.png"),
-                normalise_to_u8(cart_und))
+#     print(f"Found {len(idx_pairs)} non-zero pixels:")
+#     for yx in idx_pairs:
+#         print(yx)
 
-    # ------------------------------------------------- simple numeric check
-    mad = np.mean(np.abs(polar_raw - polar_und))
-    print(f"mean|Δ| between RAW and UND = {mad:.4f}")
-    print("PNG files written to", out_dir)
+#     # ------------------------------------------------- save PNGs
+#     os.makedirs(out_dir, exist_ok=True)
+#     cv2.imwrite(os.path.join(out_dir, "dummy_raw.png"),
+#                 normalise_to_u8(cart_raw))
+#     cv2.imwrite(os.path.join(out_dir, "dummy_und.png"),
+#                 normalise_to_u8(cart_und))
 
-
-# ---------------------------------------------------------------------
-#  MAIN ----------------------------------------------------------------
-# ---------------------------------------------------------------------
-def main(parent_folder: str = "/home/sahakhsh/Documents/vtr3_testing") -> None:
-    """
-    * Reads the *teach* run produced by your VTR scripts,
-    * undistorts every scan with `motion_undistortion`,
-    * and writes side-by-side PNGs to
-
-          …/scripts/direct/grassy_t2_r3/local_map_vtr/<timestamp>.png
-    """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # ----------------------- reproduce your folder logic --------------
-    config_direct = load_config(
-        os.path.join(parent_folder, "scripts/direct/direct_configs/direct_config_hshmat.yaml")
-    )
-    result_folder   = config_direct.get("output")
-    out_path_folder = os.path.join(result_folder, "grassy_t2_r3")
-    teach_folder    = os.path.join(out_path_folder, "teach")
-
-    local_map_path = (
-        "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/grassy_t2_r3/motion_distortion_fix/"
-    )
-    os.makedirs(local_map_path, exist_ok=True)
-
-    # ----------------------- load teach data --------------------------
-    teach = np.load(os.path.join(teach_folder, "teach.npz"), allow_pickle=True)
-    polar_imgs      = teach["teach_polar_imgs"]          # (N,400,1712)
-    az_angles_all   = teach["teach_azimuth_angles"]      # (N,400,1)
-    az_stamps_all   = teach["teach_azimuth_timestamps"]  # (N,400,1)
-    vtx_stamps      = teach["teach_vertex_timestamps"]   # (N,1)
-    vtx_T_world     = teach["teach_vertex_transforms"]   # (N,4,4)
-
-    N = polar_imgs.shape[0]
-    if N < 2:
-        raise RuntimeError("Need at least two radar frames for motion estimates.")
-
-    print(f"Processing {N-1} scans …")
-
-    # ----------------------- iterate ----------------------------------
-    for k in range(N - 1):
-        raw     = torch.tensor(polar_imgs[k]).to(device).float()
-        az      = az_angles_all[k].squeeze()
-        az_t    = az_stamps_all[k].squeeze()
-        dt      = float(vtx_stamps[k + 1, 0] - vtx_stamps[k, 0])
-
-        T_curr = np.asarray(list(vtx_T_world[k][0].values())[0].matrix())
-        T_next = np.asarray(list(vtx_T_world[k + 1][0].values())[0].matrix())
-        T_v_w   = np.linalg.inv(T_curr) @ T_next              # next←curr
-
-        und     = motion_undistortion(
-            raw, az, az_t, T_v_w, dt, device=device
-        ).cpu().numpy()
-
-        # 1.  Run the same preprocessing on the raw scan
-        prep_tensor = preprocessing_polar_image(raw, device)          # (400,1712) torch
-        prep_np     = prep_tensor.cpu().numpy().astype(np.float32)
-
-        # `und` is already the motion-undistorted *and* preprocessed tensor → NumPy
-        und_np = und.astype(np.float32)
-
-        # 2.  Polar → Cartesian    (640 × 640, CIR-204 defaults)
-        prep_cart = radar_polar_to_cartesian(
-            prep_np,
-            az.astype(np.float32),
-            radar_resolution=0.040308
-        )
-        und_cart  = radar_polar_to_cartesian(
-            und_np,
-            az.astype(np.float32),
-            radar_resolution=0.040308
-        )
-
-        prep_u8 = normalise_to_u8(prep_cart)   # “raw” (still motion-distorted)
-        und_u8  = normalise_to_u8(und_cart)    # motion-undistorted
-
-        mid_scan_timestamp = vtx_stamps[k][0]
-
-        cv2.imwrite(
-            os.path.join(local_map_path, f"{mid_scan_timestamp}_raw.png"),
-            prep_u8,
-        )
-        cv2.imwrite(
-            os.path.join(local_map_path, f"{mid_scan_timestamp}_und.png"),
-            und_u8,
-        )
-        print(f"saved  {mid_scan_timestamp}.png")
-
-    print("✅  all scans processed and saved.")
+#     # ------------------------------------------------- simple numeric check
+#     mad = np.mean(np.abs(polar_raw - polar_und))
+#     print(f"mean|Δ| between RAW and UND = {mad:.4f}")
+#     print("PNG files written to", out_dir)
 
 
-# ---------------------------------------------------------------------
-# Call just once when you run the script directly
-# ---------------------------------------------------------------------
+# # ---------------------------------------------------------------------
+# #  MAIN ----------------------------------------------------------------
+# # ---------------------------------------------------------------------
+# def main(parent_folder: str = "/home/sahakhsh/Documents/vtr3_testing") -> None:
+#     """
+#     * Reads the *teach* run produced by your VTR scripts,
+#     * undistorts every scan with `motion_undistortion`,
+#     * and writes side-by-side PNGs to
+
+#           …/scripts/direct/grassy_t2_r3/local_map_vtr/<timestamp>.png
+#     """
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+#     # ----------------------- reproduce your folder logic --------------
+#     config_direct = load_config(
+#         os.path.join(parent_folder, "scripts/direct/direct_configs/direct_config_hshmat.yaml")
+#     )
+#     result_folder   = config_direct.get("output")
+#     out_path_folder = os.path.join(result_folder, "grassy_t2_r3")
+#     teach_folder    = os.path.join(out_path_folder, "teach")
+
+#     local_map_path = (
+#         "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/grassy_t2_r3/motion_distortion_fix/"
+#     )
+#     os.makedirs(local_map_path, exist_ok=True)
+
+#     # ----------------------- load teach data --------------------------
+#     teach = np.load(os.path.join(teach_folder, "teach.npz"), allow_pickle=True)
+#     polar_imgs      = teach["teach_polar_imgs"]          # (N,400,1712)
+#     az_angles_all   = teach["teach_azimuth_angles"]      # (N,400,1)
+#     az_stamps_all   = teach["teach_azimuth_timestamps"]  # (N,400,1)
+#     vtx_stamps      = teach["teach_vertex_timestamps"]   # (N,1)
+#     vtx_T_world     = teach["teach_vertex_transforms"]   # (N,4,4)
+
+#     N = polar_imgs.shape[0]
+#     if N < 2:
+#         raise RuntimeError("Need at least two radar frames for motion estimates.")
+
+#     print(f"Processing {N-1} scans …")
+
+#     # ----------------------- iterate ----------------------------------
+#     for k in range(N - 1):
+#         raw     = torch.tensor(polar_imgs[k]).to(device).float()
+#         az      = az_angles_all[k].squeeze()
+#         az_t    = az_stamps_all[k].squeeze()
+#         dt      = float(vtx_stamps[k + 1, 0] - vtx_stamps[k, 0])
+
+#         T_curr = np.asarray(list(vtx_T_world[k][0].values())[0].matrix())
+#         T_next = np.asarray(list(vtx_T_world[k + 1][0].values())[0].matrix())
+#         T_v_w   = np.linalg.inv(T_curr) @ T_next              # next←curr
+
+#         und     = motion_undistortion(
+#             raw, az, az_t, T_v_w, dt, device=device
+#         ).cpu().numpy()
+
+#         # 1.  Run the same preprocessing on the raw scan
+#         prep_tensor = preprocessing_polar_image(raw, device)          # (400,1712) torch
+#         prep_np     = prep_tensor.cpu().numpy().astype(np.float32)
+
+#         # `und` is already the motion-undistorted *and* preprocessed tensor → NumPy
+#         und_np = und.astype(np.float32)
+
+#         # 2.  Polar → Cartesian    (640 × 640, CIR-204 defaults)
+#         prep_cart = radar_polar_to_cartesian(
+#             prep_np,
+#             az.astype(np.float32),
+#             radar_resolution=0.040308
+#         )
+#         und_cart  = radar_polar_to_cartesian(
+#             und_np,
+#             az.astype(np.float32),
+#             radar_resolution=0.040308
+#         )
+
+#         prep_u8 = normalise_to_u8(prep_cart)   # “raw” (still motion-distorted)
+#         und_u8  = normalise_to_u8(und_cart)    # motion-undistorted
+
+#         mid_scan_timestamp = vtx_stamps[k][0]
+
+#         cv2.imwrite(
+#             os.path.join(local_map_path, f"{mid_scan_timestamp}_raw.png"),
+#             prep_u8,
+#         )
+#         cv2.imwrite(
+#             os.path.join(local_map_path, f"{mid_scan_timestamp}_und.png"),
+#             und_u8,
+#         )
+#         print(f"saved  {mid_scan_timestamp}.png")
+
+#     print("✅  all scans processed and saved.")
+
+
+
 if __name__ == "__main__":
-    dummy_test()
+    # here is the game plan:
+
+    # I load teach.npz and then save undistorted images 
+    # lets see if this script does what I want it to do
+
+    parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+
+    config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
+    db_bool = config['bool']
+    SAVE = db_bool.get('SAVE')
+    SAVE = False
+    print("SAVE:",SAVE)
+    PLOT = db_bool.get('PLOT')
+    DEBUG = db_bool.get('DEBUG')
+
+    result_folder = config.get('output')
+
+    # change here
+    out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+    if not os.path.exists(out_path_folder):
+        os.makedirs(out_path_folder)
+        print(f"Folder '{out_path_folder}' created.")
+    else:
+        print(f"Folder '{out_path_folder}' already exists.")    
+
+
+
+    # print(result_folder)
+
+    sequence = "grassy_t2_r3"
+
+    sequence_path = os.path.join(result_folder, sequence)
+    if not os.path.exists(sequence_path):
+        print("ERROR: No sequence found in " + sequence_path)
+        exit(0)
+
+    TEACH_FOLDER = os.path.join(sequence_path, "teach")
+    REPEAT_FOLDER = os.path.join(sequence_path, "repeat")
+    RESULT_FOLDER = os.path.join(sequence_path, "direct")
+
+    if not os.path.exists(TEACH_FOLDER):
+        raise FileNotFoundError(f"Teach folder {TEACH_FOLDER} does not exist.")
+    if not os.path.exists(REPEAT_FOLDER):
+        raise FileNotFoundError(f"Repeat folder {REPEAT_FOLDER} does not exist.")
+    if not os.path.exists(RESULT_FOLDER):
+        raise FileNotFoundError(f"Result folder {RESULT_FOLDER} does not exist.")
+
+    teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+
+    # in the teach
+    # 1. (932,400,1712) images
+    teach_polar_imgs = teach_df['teach_polar_imgs']
+    # 2. (932,400, 1) azimuth angles
+    teach_azimuth_angles = teach_df['teach_azimuth_angles']
+    # 3. (932,400, 1) azimuth timestamps
+    teach_azimuth_timestamps = teach_df['teach_azimuth_timestamps']
+    # 4. (932,1) vertex timestamps
+    teach_vertex_timestamps = teach_df['teach_vertex_timestamps']
+    # 5. Pose at each vertex: (932,4,4)
+    teach_vertex_transforms = teach_df['teach_vertex_transforms']
+    # 6. teach vertext time
+    teach_times = teach_df['teach_times']
+    # 7. teach vertex ids
+    teach_vertex_ids = teach_df['teach_vertex_ids']
+
+    for teach_vertex_idx in range(0,teach_times.shape[0]):
+        print("teach vertex idx:",teach_vertex_idx)
+        # get the pose at the teach vertex
+        teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
+
+
+        teach_vertex_id_k_p_1 = teach_vertex_ids[teach_vertex_idx+1]
+
+        if(teach_vertex_id_k == teach_vertex_id_k_p_1):
+            print("Skipping the same vertex id:", teach_vertex_id_k)
+            continue
+
+        teach_vertex_time_k = teach_times[teach_vertex_idx]
+
+
+        teach_vertex_time_k_p_1 = teach_vertex_timestamps[teach_vertex_idx+1]
+
+        dt = teach_vertex_time_k_p_1[0] - teach_vertex_time_k[0]
+
+        T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
+        # T_gps_world_teach = T_novatel_robot @ T_teach_world
+
+        T_teach_world_next = teach_vertex_transforms[teach_vertex_idx+1][0][teach_vertex_time_k_p_1[0]]
+
+        T_increment = T_teach_world_current.inverse() @ T_teach_world_next
+
+        print("T_increment:",T_increment.matrix())
+        print("dt :",dt)
+
+
+        polar_image = teach_polar_imgs[teach_vertex_idx][:, :].astype(np.float32) / 255.0
+        azimuth_angles = teach_azimuth_angles[teach_vertex_idx].squeeze()
+        azimuth_timestamps = teach_azimuth_timestamps[teach_vertex_idx].squeeze()
+
+
+        print("polar_image shape:", polar_image.shape)
+        print("azimuth_angles shape:", azimuth_angles.shape)
+        print("azimuth_timestamps shape:", azimuth_timestamps.shape)
+
+        # call the motion undistortion function
+        polar_intensity, undistorted = motion_undistortion(
+            polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
+        )
+
+        cart_image = radar_polar_to_cartesian(
+            polar_intensity.numpy().astype(np.float32),
+            azimuth_angles.astype(np.float32),
+            radar_resolution=0.040308
+        )
+
+        cart_undistorted = radar_polar_to_cartesian(
+            undistorted.numpy().astype(np.float32),
+            azimuth_angles.astype(np.float32),
+            radar_resolution=0.040308
+        )
+
+        print("cart_image shape:", cart_image.shape)
+        print("cart_undistorted shape:", cart_undistorted.shape)
+
+        # Compute absolute difference
+        diff = cv2.absdiff(cart_image, cart_undistorted)
+        # cv2.imshow('Difference', diff)
+        # cv2.waitKey(0)
+
+
+        # # Count non-zero pixels
+        # num_different_pixels = np.count_nonzero(thresh)
+        # print(f"Number of different pixels: {num_different_pixels}")
+
+        # i want to display two images side by side
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(12, 6))
+        plt.subplot(1, 3, 1)
+        plt.imshow(cart_image, cmap='gray')
+        plt.title("Polar Intensity")
+        plt.axis('off')
+        plt.subplot(1, 3, 2)
+        plt.imshow(cart_undistorted, cmap='gray')
+        plt.title("Undistorted Image")
+        plt.axis('off')
+        plt.subplot(1, 3, 3)
+        plt.imshow(diff, cmap='gray')
+        plt.title("Difference Image")
+        plt.axis('off')
+        plt.tight_layout()
+        # plt.savefig(os.path.join(out_path_folder, f"undistorted_{teach_vertex_time_k[0]}.png"))
+        plt.show()
+
+
+        
+
+        break
+
+
+
+
+
+    pass

@@ -147,7 +147,7 @@ local_map_polar = localMapToPolarCoord(local_map_xy)
 # change here
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 result_folder = config.get('output')
-out_path_folder = os.path.join(result_folder,f"mars_t1_r2/")
+out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -178,16 +178,20 @@ max_distance = 3 # 2 m
 max_time_dist = 4 # 4 secs
 
 # save path for local maps
-local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2"
-local_map_path = local_map_path + '/local_map_vtr/'
-local_map_blurred_path = local_map_path + '_blurred/'
-os.makedirs(local_map_path, exist_ok=True)
+local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+local_map_vtr_path = local_map_path + '/local_map_vtr/'
+local_map_blurred_path = local_map_path + '/local_map_vtr_blurred/'
+
+os.makedirs(local_map_vtr_path, exist_ok=True)
+print(f"Created directory: {local_map_vtr_path}")
+os.makedirs(local_map_blurred_path, exist_ok=True)
+print(f"Created directory: {local_map_blurred_path}")
 
 cnt = 0 
 first_pose = None
 
 for index in range(len(teach_times)): # for every pose
-    print(f"--------------------processing vertex index: {index}---------------------  percentage processed: {(index / len(teach_times)) * 100:.4f}")
+    print(f"--------------------processing vertex index: {index}---------------------  percentage processed: {((index / len(teach_times)) * 100):.2f} %")
 
     cur_pose_time = teach_times[index]
 
@@ -250,15 +254,15 @@ for index in range(len(teach_times)): # for every pose
         polar_intensity[torch.isnan(polar_intensity)] = 0
 
         # sam: crop range
-        # polar_intensity = polar_intensity[min_range_idx_direct:, : max_range_idx_direct] # crop the polar image to the range we care about
+        # polar_intensity = polar_intensity[min_range_idx_direct:
 
 
-        # if i == index:
-        #     print("haha")
-        #     cart_resolution = 0.234
-        #     cart_pixel_width = 640
-        #     cart_polar_intensity = pb.utils.radar.radar        # # # show local map with matplotlib
-        # plt.clf()
+        poses.append(T_radar_robot @ neighbour_pose) # only takes the poses we care about pls
+        deltas[id] = delta_pose
+        # print("id: ", id)
+        # print("delta: ", delta_pose)
+
+
         # plt.imshow(local_map.cpu().numpy(), cmap='gray')
         # plt.title(f"Delta Map at pose {i} (time: {teach_times[i]})")
         # plt.colorbar()
@@ -351,18 +355,35 @@ for index in range(len(teach_times)): # for every pose
     normalizer = torch.max(local_map) / torch.max(local_map_blurred)
     local_map_blurred *= normalizer
 
+    # # i want to plot them side by side
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(local_map.cpu().numpy(), cmap='gray')
+    # plt.title(f"Local Map at pose {index} (time: {cur_pose_time})")
+    # plt.colorbar()
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(local_map_blurred.cpu().numpy(), cmap='gray')
+    # plt.title(f"Blurred Local Map at pose {index} (time: {cur_pose_time})")
+    # plt.colorbar()
+    # plt.show()    
+
     # Dump local maps 
     # VTR local maps
      # save one-to-one local map
     # break
     if local_map is not None:
-            mid_scan_timestamp = teach_vertex_timestamps[index][0]
-    
-            cv2.imwrite(local_map_path + str(mid_scan_timestamp) + '.png', local_map.detach().cpu().numpy()*255)
-            
-            if local_map_blurred is not None:
-            # save blurred local map
-                cv2.imwrite(local_map_blurred_path + str(mid_scan_timestamp) + '.png', local_map_blurred.detach().cpu().numpy()*255)
+        mid_scan_timestamp = teach_vertex_timestamps[index][0]
+
+        cv2.imwrite(local_map_vtr_path + str(mid_scan_timestamp) + '.png', local_map.detach().cpu().numpy()*255)
+    else:
+        print(f"Local map at index {index} is None, skipping saving local map.")
+
+
+    if local_map_blurred is not None:
+    # save blurred local map
+        mid_scan_timestamp = teach_vertex_timestamps[index][0]
+        cv2.imwrite(local_map_blurred_path + str(mid_scan_timestamp) + '.png', local_map_blurred.detach().cpu().numpy()*255)
+    else:
+        print(f"Blurred local map at index {index} is None, skipping saving blurred local map.")
 
 
     
