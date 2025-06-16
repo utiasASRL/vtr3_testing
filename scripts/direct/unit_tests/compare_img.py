@@ -9,8 +9,8 @@ parent_folder = "/home/samqiao/ASRL/vtr3_testing"
 sys.path.insert(0, parent_folder)
 
 # Load images
-img1 = cv2.imread('/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3/local_map_vtr/1738179490.9864898.png')
-img2 = cv2.imread('/home/samqiao/ASRL/vtr3_testing/scripts/direct/unit_tests/unit_test_data/1738179490.9871147.png')
+img1 = cv2.imread('/home/sahakhsh/Documents/vtr3_testing/scripts/dummy_out/dummy_raw.png')
+img2 = cv2.imread('/home/sahakhsh/Documents/vtr3_testing/scripts/dummy_out/dummy_und.png')
 
 outpath = "scripts/direct/unit_tests"
 
