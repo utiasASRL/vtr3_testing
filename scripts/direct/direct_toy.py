@@ -67,6 +67,7 @@ SAVE = db_bool.get('SAVE')
 PLOT = db_bool.get('PLOT')
 DEBUG = db_bool.get('DEBUG')
 USE_LOCAL_MAP = db_bool.get('USE_LOCAL_MAP')
+UNDISTORTION = db_bool.get('UNDISTORTION')
 SET_INITIAL_GUESS = db_bool.get('SET_INITIAL_GUESS')
 
 print("Bool values from config:")
@@ -74,6 +75,7 @@ print("SAVE:", SAVE)
 print("PLOT:", PLOT)
 print("DEBUG:", DEBUG)
 print("USE_LOCAL_MAP:", USE_LOCAL_MAP)
+print("UNDISTORTION:", UNDISTORTION)
 print("SET_INITIAL_GUESS:", SET_INITIAL_GUESS)
 
 result_folder = config.get('output')
@@ -104,7 +106,12 @@ gp_state_estimator = gpd.GPStateEstimator(config_warthog, radar_resolution)
 TEACH_FOLDER = os.path.join(out_path_folder, "teach")
 REPEAT_FOLDER = os.path.join(out_path_folder, f"repeat")
 
-teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+if UNDISTORTION:
+    print("Using undistorted data")
+    teach_df = np.load(os.path.join(TEACH_FOLDER, "teach_undistorted.npz"),allow_pickle=True)
+else:
+    teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+
 # in the teach
 # 1. (932,400,1712) images
 teach_polar_imgs = teach_df['teach_polar_imgs']
@@ -327,10 +334,10 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
         # print("teach_local_map_file:", teach_local_map_file)
 
         teach_local_map = load_local_map(teach_local_map_file)
-        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, repeat_frame)
+        state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
 
     else:
-        state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
+        state = gp_state_estimator.pairwiseRegistration(teach_frame, teach_frame)
 
 
     direct_se2_pose.append(state)

@@ -148,6 +148,25 @@ local_map_polar = localMapToPolarCoord(local_map_xy)
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 result_folder = config.get('output')
 out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+
+# boolean values
+db_bool = config['bool']
+SAVE = db_bool.get('SAVE')
+PLOT = db_bool.get('PLOT')
+DEBUG = db_bool.get('DEBUG')
+USE_LOCAL_MAP = db_bool.get('USE_LOCAL_MAP')
+UNDISTORTION = db_bool.get('UNDISTORTION')
+SET_INITIAL_GUESS = db_bool.get('SET_INITIAL_GUESS')
+
+print("Bool values from config:")
+print("SAVE:", SAVE)
+print("PLOT:", PLOT)
+print("DEBUG:", DEBUG)
+print("USE_LOCAL_MAP:", USE_LOCAL_MAP)
+print("UNDISTORTION:", UNDISTORTION)
+print("SET_INITIAL_GUESS:", SET_INITIAL_GUESS)
+
+
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -156,7 +175,12 @@ else:
 
 TEACH_FOLDER = os.path.join(out_path_folder, "teach")
 
-teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+if UNDISTORTION:
+    print("Using undistorted data")
+    teach_df = np.load(os.path.join(TEACH_FOLDER, "teach_undistorted.npz"),allow_pickle=True)
+else:
+    teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+
 # in the teach
 # 1. (932,400,1712) images
 teach_polar_imgs = teach_df['teach_polar_imgs']
@@ -241,7 +265,9 @@ for index in range(len(teach_times)): # for every pose
 
         azimuths = torch.tensor(teach_azimuth_angles[i]).to(device).float()
         nb_azimuths = torch.tensor(len(azimuths)).to(device)
-        polar_intensity = torch.tensor(teach_polar_imgs[i]).to(device).float()
+        polar_intensity = torch.tensor(teach_polar_imgs[i]).to(device).float() 
+        
+        # be careful with range offset 
 
         # add normalization to polar_image
         # polar_intensity = torch.tensor(polar_image).to(device)
