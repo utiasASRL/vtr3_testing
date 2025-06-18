@@ -51,6 +51,7 @@ def motion_undistortion(
     # ------------------------------------------------------------------
     # polar_intensity = preprocessing_polar_image(polar_image, device)
     polar_intensity = torch.from_numpy(polar_image).float().to(device)
+    print(f"polar_intensity shape: {polar_intensity.shape}")
 
     A, R = polar_intensity.shape      # usually 400 × 1712
 
@@ -452,24 +453,24 @@ if __name__ == "__main__":
         # print(f"Number of different pixels: {num_different_pixels}")
 
         # i want to display two images side by side
-        # import matplotlib.pyplot as plt
-        # # plt.ion()
-        # plt.figure(figsize=(12, 6))
-        # plt.subplot(1, 3, 1)
-        # plt.imshow(cart_image, cmap='gray')
-        # plt.title("Polar Intensity")
-        # plt.axis('off')
-        # plt.subplot(1, 3, 2)
-        # plt.imshow(cart_undistorted, cmap='gray')
-        # plt.title("Undistorted Image")
-        # plt.axis('off')
-        # plt.subplot(1, 3, 3)
-        # plt.imshow(diff, cmap='gray')
-        # plt.title("Difference Image")
-        # plt.axis('off')
-        # plt.tight_layout()
-        # # interactive mode
-        # plt.show()
+        import matplotlib.pyplot as plt
+        # plt.ion()
+        plt.figure(figsize=(12, 6))
+        plt.subplot(1, 3, 1)
+        plt.imshow(cart_image, cmap='gray')
+        plt.title("Polar Intensity")
+        plt.axis('off')
+        plt.subplot(1, 3, 2)
+        plt.imshow(cart_undistorted, cmap='gray')
+        plt.title("Undistorted Image")
+        plt.axis('off')
+        plt.subplot(1, 3, 3)
+        plt.imshow(diff, cmap='gray')
+        plt.title("Difference Image")
+        plt.axis('off')
+        plt.tight_layout()
+        # interactive mode
+        plt.show()
 
         # lets handle the last vertex case
         if teach_vertex_idx == teach_times.shape[0] - 1:
@@ -502,9 +503,23 @@ if __name__ == "__main__":
 
             teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
 
-
+        print("polar image:", polar_image)
+        print("undistorted plar image", undistorted)
+        print("undistorted shape:", undistorted.shape)
         # save the undistorted image in the teach_polar_imgs_undistorted array
-        teach_polar_imgs_undistorted[teach_vertex_idx] = undistorted.numpy()
+  
+        teach_polar_imgs_undistorted[teach_vertex_idx] = undistorted.detach().cpu().clone().numpy().reshape(400, 1712)
+
+        print(teach_polar_imgs_undistorted.shape)
+
+        print(teach_polar_imgs_undistorted[teach_vertex_idx])
+
+        # plt.imshow(undistorted.detach().numpy().reshape(400, 1712), cmap='gray')
+        plt.imshow(teach_polar_imgs_undistorted[teach_vertex_idx], cmap='gray')
+        plt.show()
+
+
+        break
     
 
     # break
