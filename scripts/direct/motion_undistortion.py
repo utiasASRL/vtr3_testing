@@ -50,7 +50,7 @@ def motion_undistortion(
     # 0.  Pre-processing
     # ------------------------------------------------------------------
     # polar_intensity = preprocessing_polar_image(polar_image, device)
-    polar_intensity = torch.tensor(polar_image)
+    polar_intensity = torch.from_numpy(polar_image).float().to(device)
 
     A, R = polar_intensity.shape      # usually 400 × 1712
 
