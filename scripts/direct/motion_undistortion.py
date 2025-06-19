@@ -51,7 +51,8 @@ def motion_undistortion(
     # ------------------------------------------------------------------
     # polar_intensity = preprocessing_polar_image(polar_image, device)
     polar_intensity = torch.from_numpy(polar_image).float().to(device)
-    print(f"polar_intensity shape: {polar_intensity.shape}")
+    # polar_intensity = preprocessing_polar_image(polar_intensity, device)
+    # print(f"polar_intensity shape: {polar_intensity.shape}")
 
     A, R = polar_intensity.shape      # usually 400 × 1712
 
@@ -379,151 +380,156 @@ if __name__ == "__main__":
 
     teach_polar_imgs_undistorted = np.zeros_like(teach_polar_imgs)
 
-    for teach_vertex_idx in range(0,teach_times.shape[0]): # there is an edge case for the last vertex but we can handle that later
-        print("-------------processing teach vertex idx:",teach_vertex_idx, "-----------------")
-        # get the pose at the teach vertex
-        teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
-        
-        # find the next vertex witha different vertex id
-        for next_idx in range(teach_vertex_idx+1, teach_times.shape[0]):
-            if teach_vertex_ids[next_idx] != teach_vertex_id_k:
-                teach_vertex_id_next = teach_vertex_ids[next_idx]
-                teach_vertex_idx_next = next_idx
-                print("Next vertex id found:", teach_vertex_id_next)
-                print("Next vertex index found:", teach_vertex_idx_next)
-                break
+    with torch.no_grad():
 
-
-        teach_vertex_time_k = teach_times[teach_vertex_idx]
-        teach_vertex_time_k_p_1 = teach_vertex_timestamps[teach_vertex_idx_next]
-
-        dt = teach_vertex_time_k_p_1[0] - teach_vertex_time_k[0]
-
-        T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
-        # T_gps_world_teach = T_novatel_robot @ T_teach_world
-
-        T_teach_world_next = teach_vertex_transforms[teach_vertex_idx_next][0][teach_vertex_time_k_p_1[0]]
-
-        T_increment = T_teach_world_current.inverse() @ T_teach_world_next
-
-        # print("T_increment:",T_increment.matrix())
-        print("dt :",dt)
-
-
-        polar_image = teach_polar_imgs[teach_vertex_idx][:, :].astype(np.float32) / 255.0
-        azimuth_angles = teach_azimuth_angles[teach_vertex_idx].squeeze()
-        azimuth_timestamps = teach_azimuth_timestamps[teach_vertex_idx].squeeze()
-
-
-        # print("polar_image shape:", polar_image.shape)
-        # print("azimuth_angles shape:", azimuth_angles.shape)
-        # print("azimuth_timestamps shape:", azimuth_timestamps.shape)
-
-        # call the motion undistortion function
-        polar_intensity, undistorted = motion_undistortion(
-            polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
-        )
-
-        # print("undistorted shape:", undistorted.shape)
-
-
-        cart_image = radar_polar_to_cartesian(
-            polar_intensity.numpy().astype(np.float32),
-            azimuth_angles.astype(np.float32),
-            radar_resolution=0.040308
-        )
-
-        cart_undistorted = radar_polar_to_cartesian(
-            undistorted.numpy().astype(np.float32),
-            azimuth_angles.astype(np.float32),
-            radar_resolution=0.040308
-        )
-
-        print("cart_image shape:", cart_image.shape)
-        print("cart_undistorted shape:", cart_undistorted.shape)
-
-        # Compute absolute difference
-        diff = cv2.absdiff(cart_image, cart_undistorted)
-        # cv2.imshow('Difference', diff)
-        # cv2.waitKey(0)
-
-
-        # # Count non-zero pixels
-        # num_different_pixels = np.count_nonzero(thresh)
-        # print(f"Number of different pixels: {num_different_pixels}")
-
-        # i want to display two images side by side
-        import matplotlib.pyplot as plt
-        # plt.ion()
-        plt.figure(figsize=(12, 6))
-        plt.subplot(1, 3, 1)
-        plt.imshow(cart_image, cmap='gray')
-        plt.title("Polar Intensity")
-        plt.axis('off')
-        plt.subplot(1, 3, 2)
-        plt.imshow(cart_undistorted, cmap='gray')
-        plt.title("Undistorted Image")
-        plt.axis('off')
-        plt.subplot(1, 3, 3)
-        plt.imshow(diff, cmap='gray')
-        plt.title("Difference Image")
-        plt.axis('off')
-        plt.tight_layout()
-        # interactive mode
-        plt.show()
-
-        # lets handle the last vertex case
-        if teach_vertex_idx == teach_times.shape[0] - 1:
-        # I would just use the previous velocity estimates
-
-            print("Last vertex, using the previous velocity estimates")
+        for teach_vertex_idx in range(0,teach_times.shape[0]): # there is an edge case for the last vertex but we can handle that later
+            print("-------------processing teach vertex idx:",teach_vertex_idx, "-----------------")
+            # get the pose at the teach vertex
+            teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
+            
             # find the next vertex witha different vertex id
-            for prev_idx in range(teach_vertex_idx, 0,-1):
-                if teach_vertex_ids[prev_idx] != teach_vertex_id_k:
-                    teach_vertex_id_prev = teach_vertex_ids[prev_idx]
-                    teach_vertex_idx_prev = prev_idx
-                    print("Previous vertex id found:", teach_vertex_id_prev)
-                    print("Previous vertex index found:", teach_vertex_idx_prev)
+            for next_idx in range(teach_vertex_idx+1, teach_times.shape[0]):
+                if teach_vertex_ids[next_idx] != teach_vertex_id_k:
+                    teach_vertex_id_next = teach_vertex_ids[next_idx]
+                    teach_vertex_idx_next = next_idx
+                    print("Next vertex id found:", teach_vertex_id_next)
+                    print("Next vertex index found:", teach_vertex_idx_next)
                     break
 
-            teach_vertex_time_k_p_1 = teach_times[teach_vertex_idx_prev]
+
+            teach_vertex_time_k = teach_times[teach_vertex_idx]
+            teach_vertex_time_k_p_1 = teach_vertex_timestamps[teach_vertex_idx_next]
+
+            dt = teach_vertex_time_k_p_1[0] - teach_vertex_time_k[0]
 
             T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
+            # T_gps_world_teach = T_novatel_robot @ T_teach_world
 
-            T_teach_world_prev = teach_vertex_transforms[teach_vertex_idx_prev][0][teach_vertex_time_k_p_1[0]]
+            T_teach_world_next = teach_vertex_transforms[teach_vertex_idx_next][0][teach_vertex_time_k_p_1[0]]
 
-            T_increment = T_teach_world_prev.inverse() @ T_teach_world_current
+            T_increment = T_teach_world_current.inverse() @ T_teach_world_next
 
-            dt = teach_vertex_time_k[0] - teach_vertex_time_k_p_1[0]
+            # print("T_increment:",T_increment.matrix())
+            print("dt :",dt)
 
 
+            polar_image = teach_polar_imgs[teach_vertex_idx]
+            azimuth_angles = teach_azimuth_angles[teach_vertex_idx].squeeze()
+            azimuth_timestamps = teach_azimuth_timestamps[teach_vertex_idx].squeeze()
+
+
+            # print("polar_image shape:", polar_image.shape)
+            # print("azimuth_angles shape:", azimuth_angles.shape)
+            # print("azimuth_timestamps shape:", azimuth_timestamps.shape)
+
+            # call the motion undistortion function
             polar_intensity, undistorted = motion_undistortion(
                 polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
             )
 
-            teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
-
-        print("polar image:", polar_image)
-        print("undistorted plar image", undistorted)
-        print("undistorted shape:", undistorted.shape)
-        # save the undistorted image in the teach_polar_imgs_undistorted array
-  
-        teach_polar_imgs_undistorted[teach_vertex_idx] = undistorted.detach().cpu().clone().numpy().reshape(400, 1712)
-
-        print(teach_polar_imgs_undistorted.shape)
-
-        print(teach_polar_imgs_undistorted[teach_vertex_idx])
-
-        # plt.imshow(undistorted.detach().numpy().reshape(400, 1712), cmap='gray')
-        plt.imshow(teach_polar_imgs_undistorted[teach_vertex_idx], cmap='gray')
-        plt.show()
+            # print("undistorted shape:", undistorted.shape)
 
 
-        break
+            cart_image = radar_polar_to_cartesian(
+                polar_intensity.numpy().astype(np.float32),
+                azimuth_angles.astype(np.float32),
+                radar_resolution=0.040308
+            )
+
+            cart_undistorted = radar_polar_to_cartesian(
+                undistorted.numpy().astype(np.float32),
+                azimuth_angles.astype(np.float32),
+                radar_resolution=0.040308
+            )
+
+            print("cart_image shape:", cart_image.shape)
+            print("cart_undistorted shape:", cart_undistorted.shape)
+
+            # Compute absolute difference
+            diff = cv2.absdiff(cart_image, cart_undistorted)
+            # cv2.imshow('Difference', diff)
+            # cv2.waitKey(0)
+
+
+            # # Count non-zero pixels
+            # num_different_pixels = np.count_nonzero(thresh)
+            # print(f"Number of different pixels: {num_different_pixels}")
+
+            # i want to display two images side by side
+            import matplotlib.pyplot as plt
+            # # plt.ion()
+            plt.figure(figsize=(12, 6))
+            plt.subplot(1, 3, 1)
+            plt.imshow(cart_image, cmap='gray')
+            plt.title("Polar Intensity")
+            plt.axis('off')
+            plt.subplot(1, 3, 2)
+            plt.imshow(cart_undistorted, cmap='gray')
+            plt.title("Undistorted Image")
+            plt.axis('off')
+            plt.subplot(1, 3, 3)
+            plt.imshow(diff, cmap='gray')
+            plt.title("Difference Image")
+            plt.axis('off')
+            plt.tight_layout()
+            # interactive mode
+            plt.show()
+
+            # lets handle the last vertex case
+            if teach_vertex_idx == teach_times.shape[0] - 1:
+            # I would just use the previous velocity estimates
+
+                print("Last vertex, using the previous velocity estimates")
+                # find the next vertex witha different vertex id
+                for prev_idx in range(teach_vertex_idx, 0,-1):
+                    if teach_vertex_ids[prev_idx] != teach_vertex_id_k:
+                        teach_vertex_id_prev = teach_vertex_ids[prev_idx]
+                        teach_vertex_idx_prev = prev_idx
+                        print("Previous vertex id found:", teach_vertex_id_prev)
+                        print("Previous vertex index found:", teach_vertex_idx_prev)
+                        break
+
+                teach_vertex_time_k_p_1 = teach_times[teach_vertex_idx_prev]
+
+                T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
+
+                T_teach_world_prev = teach_vertex_transforms[teach_vertex_idx_prev][0][teach_vertex_time_k_p_1[0]]
+
+                T_increment = T_teach_world_prev.inverse() @ T_teach_world_current
+
+                dt = teach_vertex_time_k[0] - teach_vertex_time_k_p_1[0]
+
+
+                polar_intensity, undistorted = motion_undistortion(
+                    polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
+                )
+
+                teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
+
+            # print("polar image:", polar_image)
+            # print("undistorted plar image", undistorted)
+            # print("undistorted shape:", undistorted.shape)
+            # save the undistorted image in the teach_polar_imgs_undistorted array
     
+            teach_polar_imgs_undistorted[teach_vertex_idx] = undistorted.detach().cpu().clone().numpy().reshape(400, 1712)
 
-    # break
 
+
+            # # lets plot them 2 images side by side
+            # plt.figure(figsize=(12, 6))
+            # plt.subplot(1, 2, 1)
+            # plt.imshow(undistorted.detach().numpy().reshape(400, 1712), cmap='gray')
+            # plt.subplot(1, 2, 2)
+            # plt.imshow(teach_polar_imgs_undistorted[teach_vertex_idx], cmap='gray')
+            # plt.title(f"Teach Vertex {teach_vertex_idx} - ID: {teach_vertex_id_k}")
+            # # plt.imshow(teach_polar_imgs_undistorted[teach_vertex_idx], cmap='gray')
+            # plt.show()
+
+
+            break
+        
+
+        # break
 
 
     # save everything in the out_path_folder
