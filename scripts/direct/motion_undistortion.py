@@ -70,11 +70,11 @@ def motion_undistortion(
     )               
     # print("Tw_radar =", Tw_radar)
 
-    v_xy = Tw_radar[:2, 3] / dt                  # m s⁻¹ in radar axes
-    # v_xy = torch.tensor([-200, 0.], dtype=torch.float64)
-    yaw  = torch.atan2(Tw_radar[1, 0], Tw_radar[0, 0])
-    w_z  = yaw / dt
-    # w_z = 0.
+    # v_xy = Tw_radar[:2, 3] / dt                  # m s⁻¹ in radar axes
+    v_xy = torch.tensor([0., 5000.], dtype=torch.float64)
+    # yaw  = torch.atan2(Tw_radar[1, 0], Tw_radar[0, 0])
+    # w_z  = yaw / dt
+    w_z = 0.
     print(f"v_xy = {v_xy}")
     print(f"w_z = {w_z}")
     print(f"dt = {dt}")
@@ -85,7 +85,7 @@ def motion_undistortion(
     az = torch.as_tensor(azimuth_angles.squeeze(), device=device, dtype=torch.float64)
     t_beam = torch.as_tensor(azimuth_timestamps.squeeze(), device=device, dtype=torch.float64) / 1e9
     # print("t_beam is: ", t_beam.squeeze())
-    t_beam  = t_beam - t_beam[0]                           # τᵢ per beam (A,)
+    t_beam  = t_beam - t_beam[t_idx]                           # τᵢ per beam (A,)
 
     # ------------------------------------------------------------------
     # 3.  Cartesian coordinates for every pixel in the *measured* scan
@@ -109,6 +109,11 @@ def motion_undistortion(
     dx, dy     = (v_xy[0] * τ, v_xy[1] * τ)                # (A,1)
     dθ         =   w_z * τ                                   # (A,1)
     cosθ, sinθ = torch.cos(dθ), torch.sin(dθ)              # (A,1)
+    print("t_idx =", t_idx)
+    print("t_beam[t_idx] =", t_beam[t_idx])
+    print("t_beam[100]   =", t_beam[100])
+    print("τ[100]        =", τ[100])
+
 
     # Assemble Tᵢ as [R  p; 0 1]  where R = R(+ωτ),  p = v τ
     T = torch.zeros(A, 3, 3, device=device, dtype=torch.float64)
@@ -473,11 +478,10 @@ if __name__ == "__main__":
 
             # call the motion undistortion function
             polar_intensity, undistorted = motion_undistortion(
-                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
+                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=200
             )
 
             # print("undistorted shape:", undistorted.shape)
-
 
             cart_image = radar_polar_to_cartesian(
                 polar_intensity.numpy().astype(np.float64),
@@ -499,29 +503,28 @@ if __name__ == "__main__":
             # cv2.imshow('Difference', diff)
             # cv2.waitKey(0)
 
-
             # # Count non-zero pixels
             # num_different_pixels = np.count_nonzero(thresh)
             # print(f"Number of different pixels: {num_different_pixels}")
 
             # i want to display two images side by side
-            # # plt.ion()
-            # plt.figure(figsize=(12, 6))
-            # plt.subplot(1, 3, 1)
-            # plt.imshow(cart_image, cmap='gray')
-            # plt.title("Polar Intensity")
-            # plt.axis('off')
-            # plt.subplot(1, 3, 2)
-            # plt.imshow(cart_undistorted, cmap='gray')
-            # plt.title("Undistorted Image")
-            # plt.axis('off')
-            # plt.subplot(1, 3, 3)
-            # plt.imshow(diff, cmap='gray')
-            # plt.title("Difference Image")
-            # plt.axis('off')
-            # plt.tight_layout()
-            # # interactive mode
-            # plt.show()
+            # plt.ion()
+            plt.figure(figsize=(12, 6))
+            plt.subplot(1, 3, 1)
+            plt.imshow(cart_image, cmap='gray')
+            plt.title("Polar Intensity")
+            plt.axis('off')
+            plt.subplot(1, 3, 2)
+            plt.imshow(cart_undistorted, cmap='gray')
+            plt.title("Undistorted Image")
+            plt.axis('off')
+            plt.subplot(1, 3, 3)
+            plt.imshow(diff, cmap='gray')
+            plt.title("Difference Image")
+            plt.axis('off')
+            plt.tight_layout()
+            # interactive mode
+            plt.show()
             cart_imgs.append(cart_image)
             cart_undist_imgs.append(cart_undistorted)
             diff_imgs.append(diff)
