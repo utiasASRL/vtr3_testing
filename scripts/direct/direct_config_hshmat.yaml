@@ -1,5 +1,6 @@
 # config.yaml
 # Database configuration
+parent_folder: "/home/sahakhsh/Documents/vtr3_testing"
 radar_resolution: 0.040308
 cart_resolution: 0.2384
 min_r: 2.0
@@ -12,11 +13,18 @@ radar_data:
       repeat1: "/home/sahakhsh/Documents/vtr3_testing/localization_data/rosbags/grassy3"
     pose_graph_path: 
       grassy_t2_r3: "/home/sahakhsh/Documents/vtr3_testing/localization_data/posegraphes/grassy_t2_r3/graph"
-    local_maps_path: "/home/sahakhsh/Documents/radar_sandbox/output/grassy_t2/local_map"
+    teach_local_maps_path: "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/grassy_t2_r3/local_map_dro"
+    repeat_local_maps_path: none
 
   parking:
     pose_graph_path:
       parking_t3_r4: "/home/sahakhsh/Documents/vtr3_testing/localization_data/posegraphes/parking_t3_r4/graph"
+    teach_local_maps_path: "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/parking_t3_r4/local_map_vtr"
+
+  mars:
+    pose_graph_path:
+      mars_t1_r2: "/home/sahakhsh/Documents/vtr3_testing/localization_data/posegraphes/mars_t1_r2/graph"
+    teach_local_maps_path: "/home/sahakhsh/Documents/vtr3_testing/scripts/direct/mars_t1_r2/local_map_vtr"
 
 ppk:
   grassy:
@@ -25,11 +33,16 @@ ppk:
   parking:
     teach: "/home/sahakhsh/Documents/vtr3_testing/localization_data/ppk/parking_t3"
     repeat: "/home/sahakhsh/Documents/vtr3_testing/localization_data/ppk/parking_t4"
+  mars:
+    teach: "/home/sahakhsh/Documents/vtr3_testing/localization_data/ppk/mars_t1"
+    repeat: "/home/sahakhsh/Documents/vtr3_testing/localization_data/ppk/mars_t2"
 
 bool:
   SAVE: False
   PLOT: False
   DEBUG: True
-  USE_LOCAL_MAP: False
+  USE_LOCAL_MAP: True
+  UNDISTORTION: True
+  SET_INITIAL_GUESS: False
 
 output: "/home/sahakhsh/Documents/vtr3_testing/scripts/direct"
