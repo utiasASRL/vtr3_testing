@@ -9,6 +9,7 @@ import torchvision
 import yaml
 from pylgmath import Transformation
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 from utils import radar_polar_to_cartesian # this is a custom function to convert polar radar images to cartesian
 
@@ -38,7 +39,8 @@ def motion_undistortion(
     T_v_w: np.ndarray,
     dt: float,
     device: torch.device,
-    radar_res: float = 0.040308,      # m per range-bin (RAS3 default)
+    radar_res: float = 0.040308, #m
+    t_idx: int = 0
 ) -> torch.Tensor:
     """
     Undistort a polar radar scan by **applying a 3 × 3 homogeneous
@@ -68,11 +70,11 @@ def motion_undistortion(
     )               
     # print("Tw_radar =", Tw_radar)
 
-    # v_xy = Tw_radar[:2, 3] / dt                  # m s⁻¹ in radar axes
-    v_xy = torch.tensor([-200, 0.], dtype=torch.float64)
+    v_xy = Tw_radar[:2, 3] / dt                  # m s⁻¹ in radar axes
+    # v_xy = torch.tensor([-200, 0.], dtype=torch.float64)
     yaw  = torch.atan2(Tw_radar[1, 0], Tw_radar[0, 0])
-    # w_z  = yaw / dt
-    w_z = 0.
+    w_z  = yaw / dt
+    # w_z = 0.
     print(f"v_xy = {v_xy}")
     print(f"w_z = {w_z}")
     print(f"dt = {dt}")
@@ -176,49 +178,6 @@ def motion_undistortion(
     # print(undistorted-polar_intensity)
 
     return polar_image, undistorted
-    # # ---------------------------------------------------------------
-    # # 6.  Convert transformed Cartesian (x_u, y_u)  ➜  polar indices
-    # # ---------------------------------------------------------------
-    # r_idx = torch.round(torch.sqrt(x_u**2 + y_u**2) / radar_res).long()
-
-    # # az_step = (az[-1] - az[0]) / (A - 1)         # azimuth resolution (rad)
-    # # az_idx  = torch.round((theta - az[0]) / az_step).long()
-    # # --- azimuth index using modular arithmetic -------------------------
-    
-    # two_pi  = 2 * torch.pi
-    # az_step = two_pi / A                            # exact bin width (360°/A)
-    # theta   = torch.atan2(y_u, x_u)                 # (-π , π]
-    # theta += (theta < 0) * 2 * torch.pi          # range [0, 2π)
-    # theta  -= az[0]                                 # make 1st beam the zero-reference
-    # theta   = torch.remainder(theta, two_pi)        # wrap again after subtraction
-    # az_idx  = torch.floor(theta / az_step).long()   # 0 … A-1, no gaps, no discards
-
-    # # ---------------------------------------------------------------
-    # # 7.  Build the undistorted polar image           (average hits)
-    # # ---------------------------------------------------------------
-    # # keep only points that fall back into the canvas
-    # valid = (az_idx >= 0) & (az_idx < A) & (r_idx >= 0) & (r_idx < R)
-    # if valid.sum() == 0:                             # nothing valid → blank
-    #     return polar_image, torch.zeros_like(polar_image)
-
-    # az_valid = az_idx[valid].view(-1)                # (Npts,)
-    # r_valid  = r_idx[valid].view(-1)
-    # vals     = polar_image[valid].view(-1)
-
-    # flat_dst = (az_valid * R + r_valid)              # linearised destination
-
-    # # accumulate intensities and hit counts
-    # undist   = torch.zeros_like(polar_image, dtype=torch.float64).view(-1)
-    # hits     = torch.zeros_like(undist)
-
-    # undist.index_add_(0, flat_dst, vals)             # sum of contributions
-    # hits  .index_add_(0, flat_dst, torch.ones_like(vals))   # number of hits
-
-    # undist /= hits.clamp(min=1)                      # average where ≥1 hit
-    # undist  = undist.view(A, R)                      # back to (A, R)
-
-    # return polar_image, undist
-
 
 
 def load_config(path: str) -> dict:
@@ -399,11 +358,13 @@ def main(parent_folder: str = "/home/sahakhsh/Documents/vtr3_testing") -> None:
 
 
 if __name__ == "__main__":
-    # main()
     # here is the game plan:
 
     # I load teach.npz and then save undistorted images 
     # lets see if this script does what I want it to do
+    cart_imgs          = []      # raw polar→cartesian
+    cart_undist_imgs   = []      # undistorted polar→cartesian
+    diff_imgs          = []      # pixel-wise difference
 
     parent_folder = "/home/sahakhsh/Documents/vtr3_testing"
 
@@ -544,24 +505,26 @@ if __name__ == "__main__":
             # print(f"Number of different pixels: {num_different_pixels}")
 
             # i want to display two images side by side
-            import matplotlib.pyplot as plt
             # # plt.ion()
-            plt.figure(figsize=(12, 6))
-            plt.subplot(1, 3, 1)
-            plt.imshow(cart_image, cmap='gray')
-            plt.title("Polar Intensity")
-            plt.axis('off')
-            plt.subplot(1, 3, 2)
-            plt.imshow(cart_undistorted, cmap='gray')
-            plt.title("Undistorted Image")
-            plt.axis('off')
-            plt.subplot(1, 3, 3)
-            plt.imshow(diff, cmap='gray')
-            plt.title("Difference Image")
-            plt.axis('off')
-            plt.tight_layout()
-            # interactive mode
-            plt.show()
+            # plt.figure(figsize=(12, 6))
+            # plt.subplot(1, 3, 1)
+            # plt.imshow(cart_image, cmap='gray')
+            # plt.title("Polar Intensity")
+            # plt.axis('off')
+            # plt.subplot(1, 3, 2)
+            # plt.imshow(cart_undistorted, cmap='gray')
+            # plt.title("Undistorted Image")
+            # plt.axis('off')
+            # plt.subplot(1, 3, 3)
+            # plt.imshow(diff, cmap='gray')
+            # plt.title("Difference Image")
+            # plt.axis('off')
+            # plt.tight_layout()
+            # # interactive mode
+            # plt.show()
+            cart_imgs.append(cart_image)
+            cart_undist_imgs.append(cart_undistorted)
+            diff_imgs.append(diff)
 
             # lets handle the last vertex case
             if teach_vertex_idx == teach_times.shape[0] - 1:
@@ -619,9 +582,49 @@ if __name__ == "__main__":
 
         # break
 
+    fig, axes = plt.subplots(1, 3, figsize=(12, 6))
+    titles = ["Polar Intensity", "Undistorted", "Difference"]
 
-    # save everything in the out_path_folder
+    # draw the first frame to get the AxesImage handles
+    ims = [
+        axes[i].imshow(cart_imgs[0] if i == 0 else
+                    cart_undist_imgs[0] if i == 1 else
+                    diff_imgs[0],
+                    cmap='gray',
+                    animated=True)
+        for i in range(3)
+    ]
+    for ax, title in zip(axes, titles):
+        ax.set_title(title)
+        ax.axis("off")
 
+    def update(frame):
+        ims[0].set_array(cart_imgs[frame])
+        ims[1].set_array(cart_undist_imgs[frame])
+        ims[2].set_array(diff_imgs[frame])
+        return ims   # blitting needs a list/tuple of artists
+
+    ani = animation.FuncAnimation(fig,
+                                update,
+                                frames=len(cart_imgs),
+                                interval=50,      # ms between frames
+                                blit=True)
+ 
+    from matplotlib.animation import writers
+    Writer = writers["ffmpeg"]
+    writer = Writer(
+        fps=20,
+        codec="libx264",
+        extra_args=[
+            "-pix_fmt", "yuv420p",          # 4:2:0 chroma subsampling (mandatory!)
+            "-profile:v", "baseline",       # use the simplest H.264 profile
+            "-level", "3.0",                # ensures compatibility with older players
+            "-movflags", "+faststart"       # enables web/streaming playback
+        ]
+    )
+
+    ani.save(os.path.join(out_path_folder, "undistortion.mp4"),
+            writer=writer, dpi=100)
     # SAVE TEACH CONTENT IN THE TEACH FOLDER
     np.savez_compressed(TEACH_FOLDER + "/teach_undistorted.npz",
                         teach_polar_imgs=teach_polar_imgs_undistorted,
