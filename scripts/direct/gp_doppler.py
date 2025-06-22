@@ -497,6 +497,8 @@ class GPStateEstimator:
             self.state_init = result.clone()
 
             return result.detach().cpu().numpy()
+        
+
 
     # leo's pairwise registration WIP
     # fix_frame, moving_frame (polar_image, azimuths, timestamps)

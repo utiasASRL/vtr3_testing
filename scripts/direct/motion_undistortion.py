@@ -420,8 +420,22 @@ if __name__ == "__main__":
 
     teach_polar_imgs_undistorted = np.zeros_like(teach_polar_imgs)
 
-    with torch.no_grad():
+    # do the same for repeat
+    # in the repeat
+    repeat_times = repeat_df['repeat_times']
+    repeat_polar_imgs = repeat_df['repeat_polar_imgs']
+    repeat_azimuth_angles = repeat_df['repeat_azimuth_angles']
+    repeat_azimuth_timestamps = repeat_df['repeat_azimuth_timestamps']
+    repeat_vertex_timestamps = repeat_df['repeat_vertex_timestamps']
+    repeat_edge_transforms = repeat_df['repeat_edge_transforms']
+    vtr_estimated_ptr = repeat_df['dist']
+    repeat_vertex_ids = repeat_df['repeat_vertex_ids']
 
+
+    repeat_polar_imgs_undistorted = np.zeros_like(repeat_polar_imgs)
+
+    with torch.no_grad():
+        print("Starting motion undistortion for teach vertices...")
         for teach_vertex_idx in range(0,teach_times.shape[0]): # there is an edge case for the last vertex but we can handle that later
             print("-------------processing teach vertex idx:",teach_vertex_idx, "-----------------")
             # get the pose at the teach vertex
@@ -467,7 +481,7 @@ if __name__ == "__main__":
 
             # call the motion undistortion function
             polar_intensity, undistorted = motion_undistortion(
-                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=199
+                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=0
             )
 
             # print("undistorted shape:", undistorted.shape)
@@ -571,7 +585,106 @@ if __name__ == "__main__":
 
             # break
         
+    print("Starting motion undistortion for repeat vertices...")
+    for repeat_vertex_idx in range(0,repeat_times.shape[0]): # there is
+        print("-------------processing repeat vertex idx:",repeat_vertex_idx, "-----------------")
+        # get the pose at the repeat vertex
+        repeat_vertex_id_k = repeat_vertex_ids[repeat_vertex_idx]
+        # find the next vertex witha different vertex id
+        for next_idx in range(repeat_vertex_idx+1, repeat_times.shape[0]):
+            if repeat_vertex_ids[next_idx] != repeat_vertex_id_k:
+                repeat_vertex_id_next = repeat_vertex_ids[next_idx]
+                repeat_vertex_idx_next = next_idx
+                print("Next vertex id found:", repeat_vertex_id_next)
+                print("Next vertex index found:", repeat_vertex_idx_next)
+                break
+        repeat_vertex_time_k = repeat_times[repeat_vertex_idx]
+        repeat_vertex_time_k_p_1 = repeat_vertex_timestamps[repeat_vertex_idx_next]
+        dt = repeat_vertex_time_k_p_1[0] - repeat_vertex_time_k[0]
+        T_repeat_world_current = repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time_k[0]]
+        # T_gps_world_repeat = T_novatel_robot @ T_repeat_world
+        T_repeat_world_next = repeat_edge_transforms[repeat_vertex_idx_next][0][repeat_vertex_time_k_p_1[0]]
+        T_increment = T_repeat_world_current.inverse() @ T_repeat_world_next
+        # print("T_increment:",T_increment.matrix())
+        # print("dt :",dt)
+        polar_image = repeat_polar_imgs[repeat_vertex_idx]
+        # polar_image[:, :] = 0.
+        # polar_image[:, 150:200] = 100.0
+        azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx].squeeze()
+        print(len(azimuth_angles))
+        azimuth_timestamps = repeat_azimuth_timestamps[repeat_vertex_idx].squeeze()
+        # print("polar_image shape:", polar_image.shape)
+        # print("azimuth_angles shape:", azimuth_angles.shape)
+        # print("azimuth_timestamps shape:", azimuth_timestamps.shape)
+        # call the motion undistortion function
+        polar_intensity, undistorted = motion_undistortion(
+            polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=0
+        )
 
+        # # print("undistorted shape:", undistorted.shape)
+        # cart_image = radar_polar_to_cartesian(
+        #     polar_intensity.numpy().astype(np.float64),
+        #     azimuth_angles.astype(np.float64),
+        #     radar_resolution=0.040308
+        # )
+
+        # cart_undistorted = radar_polar_to_cartesian(
+        #     undistorted.numpy().astype(np.float64),
+        #     azimuth_angles.astype(np.float64),
+        #     radar_resolution=0.040308
+        # )
+
+
+        # lets handle the last vertex case
+        if repeat_vertex_idx == repeat_times.shape[0] - 1:
+            # I would just use the previous velocity estimates
+            print("Last vertex, using the previous velocity estimates")
+            # find the next vertex witha different vertex id
+            for prev_idx in range(repeat_vertex_idx, 0,-1):
+                if repeat_vertex_ids[prev_idx] != repeat_vertex_id_k:
+                    repeat_vertex_id_prev = repeat_vertex_ids[prev_idx]
+                    repeat_vertex_idx_prev = prev_idx
+                    print("Previous vertex id found:", repeat_vertex_id_prev)
+                    print("Previous vertex index found:", repeat_vertex_idx_prev)
+                    break
+
+            repeat_vertex_time_k_p_1 = repeat_times[repeat_vertex_idx_prev]
+
+            T_repeat_world_current = repeat_edge_transforms[repeat_vertex_idx][0][repeat_vertex_time_k[0]]
+            T_repeat_world_prev = repeat_edge_transforms[repeat_vertex_idx_prev][0][repeat_vertex_time_k_p_1[0]]
+
+            T_increment = T_repeat_world_prev.inverse() @ T_repeat_world_current
+            dt = repeat_vertex_time_k[0] - repeat_vertex_time_k_p_1[0]
+            polar_intensity, undistorted = motion_undistortion(
+                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
+            )
+            repeat_vertex_id_k = repeat_vertex_ids[repeat_vertex_idx]
+        # print("polar image:", polar_image)
+        # print("undistorted plar image", undistorted)
+        # print("undistorted shape:", undistorted.shape)
+        # save the undistorted image in the teach_polar_imgs_undistorted array
+        repeat_polar_imgs_undistorted[repeat_vertex_idx] = undistorted.detach().cpu().clone().numpy().reshape(400, 1712)
+
+        # # lets plot them 2 images side by side
+        # plt.figure(figsize=(12, 6))
+        # plt.subplot(1, 2, 1)
+        # plt.imshow(undistorted.detach().numpy().reshape(400, 1712
+        # ), cmap='gray')
+        # plt.subplot(1, 2, 2)
+        # plt.imshow(repeat_polar_imgs_undistorted[repeat_vertex_idx], cmap
+        # 'gray')
+        # plt.title(f"Repeat Vertex {repeat_vertex_idx} - ID: {repeat_vertex
+        # k}")
+        # # plt.imshow(teach_polar_imgs_undistorted[teach_vertex_idx],
+        # cmap='gray')
+        # plt.show()
+
+    # print("cart_imgs:", cart_imgs)
+    # print("cart_undist_imgs:", cart_undist_imgs)
+    # print("diff_imgs:", diff_imgs)
+    # print("teach_polar_imgs_undistorted:", teach_polar_imgs_undistorted)
+    print("All scans processed and saved.")
+    # ------------------------------------------------------------------
         # break
 
     fig, axes = plt.subplots(1, 3, figsize=(12, 6))
@@ -626,4 +739,14 @@ if __name__ == "__main__":
                         teach_vertex_timestamps=teach_vertex_timestamps,
                         teach_vertex_transforms=teach_vertex_transforms,
                         teach_times=teach_times, teach_vertex_ids=teach_vertex_ids)
+    
+    print("Saving undistorted polar images to the repeat folder...")
+# SAVE REPEAT CONTENT IN THE REPEAT FOLDER
+np.savez_compressed(REPEAT_FOLDER + "/repeat_undistorted.npz",
+                    repeat_polar_imgs=repeat_polar_imgs_undistorted,
+                    repeat_azimuth_angles=repeat_azimuth_angles,
+                    repeat_azimuth_timestamps=repeat_azimuth_timestamps,
+                    repeat_vertex_timestamps=repeat_vertex_timestamps,
+                    repeat_edge_transforms=repeat_edge_transforms,
+                    repeat_times=repeat_times, repeat_vertex_ids = repeat_vertex_ids,dist=vtr_estimated_ptr)
 

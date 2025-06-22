@@ -109,8 +109,10 @@ REPEAT_FOLDER = os.path.join(out_path_folder, f"repeat")
 if UNDISTORTION:
     print("Using undistorted data")
     teach_df = np.load(os.path.join(TEACH_FOLDER, "teach_undistorted.npz"),allow_pickle=True)
+    repeat_df = np.load(os.path.join(REPEAT_FOLDER, "repeat_undistorted.npz"),allow_pickle=True)
 else:
     teach_df = np.load(os.path.join(TEACH_FOLDER, "teach.npz"),allow_pickle=True)
+    repeat_df = np.load(os.path.join(REPEAT_FOLDER, f"repeat.npz"),allow_pickle=True)
 
 # in the teach
 # 1. (932,400,1712) images
@@ -135,7 +137,7 @@ if DEBUG:
     print("teach duration:", teach_times[-1] - teach_times[0])
     print("teach_vertex_transforms shape:", teach_vertex_transforms.shape)
 
-repeat_df = np.load(os.path.join(REPEAT_FOLDER, f"repeat.npz"),allow_pickle=True)
+
 # in the repeat
 repeat_times = repeat_df['repeat_times']
 repeat_polar_imgs = repeat_df['repeat_polar_imgs']
@@ -143,7 +145,6 @@ repeat_azimuth_angles = repeat_df['repeat_azimuth_angles']
 repeat_azimuth_timestamps = repeat_df['repeat_azimuth_timestamps']
 repeat_vertex_timestamps = repeat_df['repeat_vertex_timestamps']
 repeat_edge_transforms = repeat_df['repeat_edge_transforms']
-
 vtr_estimated_ptr = repeat_df['dist']
 
 if DEBUG:

@@ -41,7 +41,7 @@ bool:
   SAVE: False
   PLOT: False
   DEBUG: True
-  USE_LOCAL_MAP: True
+  USE_LOCAL_MAP: False
   UNDISTORTION: True
   SET_INITIAL_GUESS: False
 
