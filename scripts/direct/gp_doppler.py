@@ -410,6 +410,56 @@ class GPStateEstimator:
             elif direct:
                 return residual_direct, jacobian_direct
             
+    def localMapToLocalMapCostFunctionAndJacobian_(self, state, map, degraded=False, iter_num=0):
+        with torch.no_grad():
+            state_size = len(state)
+            _, _, pos, d_pos_d_state, rot, d_rot_d_state = self.motion_model.getVelPosRot(state, with_jac=True)
+            
+            cart_corrected_sparse, d_cart_d_rot_sparse = self.cartCoordCorrectionSparse_(pos, rot)
+             
+            # Get the corresponding localMap coordinates
+            cart_idx_sparse = self.cartToLocalMapIDSparse_(cart_corrected_sparse).squeeze()
+
+            interp_direct_sparse, d_interp_direct_d_xy_sparse = self.bilinearInterpolationSparse_(self.local_map_blurred, cart_idx_sparse)
+            #residual_direct_sparse = interp_direct_sparse * (self.polar_intensity_sparse)
+            residual_direct_sparse = interp_direct_sparse * map
+
+
+            #d_cart_sparse_d_state = (d_cart_d_shift_sparse @ d_shift_d_state.reshape((-1,1,state_size)))[self.direct_az_ids_sparse,:,:]
+            d_cart_sparse_d_state = torch.zeros((self.direct_az_ids_sparse, 2, state_size), device=self.device)
+            if d_rot_d_state is not None:
+                d_cart_sparse_d_state[:,:,-1] += (d_cart_d_rot_sparse@(d_rot_d_state[self.direct_az_ids_sparse].reshape((-1,1,1))) ).squeeze()
+            d_cart_sparse_d_state += d_pos_d_state[self.direct_az_ids_sparse].reshape((-1,2,state_size))
+            d_cart_sparse_d_state[:,0,:] = d_cart_sparse_d_state[:,0,:] / (-self.local_map_res)
+            d_cart_sparse_d_state[:,1,:] = d_cart_sparse_d_state[:,1,:] / self.local_map_res
+
+            # print("sam: I am in costFunctionAndJacobian_ and the shape of temp_polar_intensity_sparse is", temp_polar_intensity_sparse.shape)
+            
+            # fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
+
+            # # # First plot
+            # axs[0].set_title("Blurred Local Map")
+            # im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
+            # fig.colorbar(im1, ax=axs[0])
+
+            # # Second plot
+            # axs[1].set_title("Sparse Polar Intensity Repeat Scan")
+            # im2 = axs[1].imshow((temp_polar_intensity_sparse.cpu().numpy()*10000).astype(np.uint8))
+            # fig.colorbar(im2, ax=axs[1])
+
+            # # Adjust spacing and show
+            # plt.tight_layout()
+            
+            jacobian_direct_sparse = ((d_interp_direct_d_xy_sparse @ d_cart_sparse_d_state) * (map.unsqueeze(-1).unsqueeze(-1))).squeeze()
+
+            residual_direct = residual_direct_sparse.flatten()
+            jacobian_direct = jacobian_direct_sparse.reshape((-1,state_size))
+            if degraded:
+                weights_direct = ((torch.clip(torch.abs(interp_direct_sparse - self.polar_intensity_sparse), 0, 1) - 1)**6 ).flatten().unsqueeze(-1)
+                jacobian_direct = jacobian_direct * weights_direct
+
+            return residual_direct, jacobian_direct
+            
 
     def toLocalMapRegistration(self, teach_local_map, teach_frame, repeat_frame, chirp_up=True, potential_flip=False):
         with torch.no_grad():
@@ -622,7 +672,7 @@ class GPStateEstimator:
             return result.detach().cpu().numpy()
         
 
-    def localMaptoLocalMapRegistration(self, teach_local_map, repeat_local_map, chirp_up=True, potential_flip=False):
+    def localMaptoLocalMapRegistration(self, teach_local_map, repeat_local_map, azimuths, chirp_up=True, potential_flip=False):
         # use DRO to generate local maps for teach and repeat sequences
         with torch.no_grad():
             self.local_map = torch.tensor(teach_local_map).to(self.device)
@@ -631,25 +681,23 @@ class GPStateEstimator:
             normalizer = torch.max(self.local_map) / torch.max(self.local_map_blurred)
             self.local_map_blurred *= normalizer
 
+            self.nb_azimuths = torch.tensor(len(azimuths.flatten())).to(self.device) # number of azimuths 400
+            self.direct_az_ids_sparse = torch.arange(self.nb_azimuths, device=self.device).unsqueeze(-1).repeat(1,self.max_range_idx_direct)
+            self.azimuths = torch.tensor(azimuths.flatten()).to(self.device).float()
+            self.direct_nb_non_zero = torch.tensor(azimuths, device=self.device)
+            
+            # shit is gonna happen
+            self.timestamps = torch.tensor(azimuths.flatten()).to(self.device).squeeze()
+            # Prepare the data in torch
+            self.motion_model.setTime(self.timestamps, self.timestamps[0])
+
+
 
             repeat_local_map = torch.tensor(repeat_local_map).to(self.device)
 
-            radar_res = 0.040308
-            self.local_map_polar = self.localMapToPolarCoord_(radar_res, 400)
-            # self.local_map_mask = (self.local_map_polar[:,:,1] < max_local_map_range) & (self.local_map_polar[:,:,1] > float(opts['direct']['min_range']))
-
-            # repeat_local_map_polar = self.
-            # should be a point where I apply motion distortion
-
-            self.polar_intensity_sparse  = self.bi
-
-
-            self.step_counter = 1
-
-            ### need help on this function..... :((((((()))))))
-
-
-            result = self.solve_(self.state_init, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
+            print("calling solve2_ with localMaptoLocalMapRegistration")
+            result = self.solve2_(self.state_init, repeat_local_map, 1000, 1e-6, 1e-5, verbose=True, degraded=False)
+            
             self.state_init = result.clone()
             return result.detach().cpu().numpy()
 
@@ -749,6 +797,45 @@ class GPStateEstimator:
             d_cart_d_shift = d_trans_d_cart @ d_cart_d_shift
 
             return cart, d_cart_d_rot, d_cart_d_shift
+        
+    def cartCoordCorrectionSparse_(self, pos, rot):
+        with torch.no_grad():
+            # Get the polar coordinates of the image
+            c_az_min = torch.cos(self.azimuths)
+            s_az_min = torch.sin(self.azimuths)
+            c_az = c_az_min[self.direct_az_ids_sparse]
+            s_az = s_az_min[self.direct_az_ids_sparse]
+            x = torch.empty(self.direct_nb_non_zero, device=self.device)
+            y = torch.empty(self.direct_nb_non_zero, device=self.device)
+            x = c_az * self.range_vec
+            y = s_az * self.range_vec
+
+
+            # Rotate the coordinates
+            c_rot_min = torch.cos(rot.squeeze())
+            s_rot_min = torch.sin(rot.squeeze())
+            c_rot = c_rot_min[self.direct_az_ids_sparse]
+            s_rot = s_rot_min[self.direct_az_ids_sparse]
+            x_c_rot = x * c_rot
+            y_s_rot = y * s_rot
+            x_s_rot = x * s_rot
+            y_c_rot = y * c_rot
+            x_rot = x_c_rot - y_s_rot
+            y_rot = x_s_rot + y_c_rot
+
+            # Translate the coordinates
+            x_trans = x_rot + pos.squeeze()[self.direct_az_ids_sparse, 0]
+            y_trans = y_rot + pos.squeeze()[self.direct_az_ids_sparse, 1]
+
+            # Stack the coordinates
+            cart = torch.stack((x_trans.unsqueeze(-1), y_trans.unsqueeze(-1)), dim=1)
+
+            # Compute the jacobians
+            d_cart_d_rot = torch.zeros((self.direct_nb_non_zero, 2, 1), device=self.device)
+            d_cart_d_rot[:, 0, 0] = -y_rot
+            d_cart_d_rot[:, 1, 0] = x_rot
+
+            return cart, d_cart_d_rot
 
 
 
@@ -820,6 +907,131 @@ class GPStateEstimator:
             for i in torch.arange(nb_iter, device=self.device):
                 
                 res, jac = self.costFunctionAndJacobian_(state, self.use_doppler, self.use_direct and (self.step_counter>0), degraded)
+
+                if remove_angular and not self.use_gyro:
+                    jac = jac[:, :-1]
+
+
+                grad = 3*torch.sum(res.flatten().unsqueeze(-1)**2 * jac.reshape((-1,jac.shape[-1])), 0)
+                cost = torch.sum((res**3).flatten())
+
+                if i == 0:
+                    last_decreasing_grad = grad.clone()
+                else:
+                    if cost < prev_cost:
+                        state = last_decreasing_state.clone()
+                        grad = last_decreasing_grad.clone()
+                        step_quantum = step_quantum / 2
+                    else:
+                        last_decreasing_state = state.clone()
+                        last_decreasing_grad = grad.clone()
+
+                grad_norm = torch.linalg.norm(grad)
+
+                if step_quantum < 1e-5:
+                    if verbose:
+                        print("Step quantum too small, breaking")
+                    break
+
+
+                if grad_norm < 1e-9:
+                    print("breaking because of grad_norm < 1e-9")
+                    break
+                step = (grad / grad_norm) * step_quantum
+                #step = grad * step_quantum
+
+                
+                if remove_angular and not self.use_gyro:
+                    step = torch.cat((step, torch.zeros(1).to(self.device)), dim=0)
+                
+                # print("step shape", step.shape)
+                state += step
+
+
+                step_norm = torch.linalg.norm(step)
+                cost_change = cost - prev_cost
+
+                if i == 0:
+                    first_cost = cost
+                
+                # Print iter cost step_norm cost_change with 3 decimals and scientific notation
+                # if verbose:
+                #     print("Iter: ", i, " - Cost: ", "{:.3e}".format(cost), " - Step norm: ", "{:.3e}".format(step_norm), " - Cost change: ", "{:.3e}".format(cost_change))
+
+                if step_norm < step_tol:
+                    print("breaking because of step_norm < step_tol")
+                    break
+
+                if torch.abs(cost_change/cost) < cost_tol:
+                    print("breaking because of abs(cost_change/cost) < cost_tol")
+                    break
+                prev_cost = cost
+
+
+            #print("\nNumber of iterations: ", i.cpu().numpy(), " - State step norm: ", torch.norm(state - state_init).cpu().numpy())
+
+            vel, _, _ = self.motion_model.getVelPosRot(state, with_jac=False)
+            if (torch.abs(torch.norm(vel[-1,:]) - self.previous_vel) > self.max_diff_vel):
+                if not degraded:
+                    state = self.solve_(state_init, nb_iter=nb_iter, cost_tol=cost_tol, step_tol=step_tol, verbose=verbose, degraded=True)
+                    if isinstance(self.motion_model, ConstBodyAccGyro):
+                        state[-1] = 0
+                #elif (torch.abs(torch.norm(vel[-1,:]) - self.previous_vel) > self.max_diff_vel):
+                #    state = state_init.clone()
+                #    if isinstance(self.motion_model, ConstBodyAccGyro):
+                #        state[-1] = 0
+
+            if not degraded:
+                vel, _, _ = self.motion_model.getVelPosRot(state, with_jac=False)
+                self.previous_vel = torch.norm(vel[-1,:])
+                self.max_diff_vel = self.motion_model.time[-1] * self.max_acc
+            
+
+            # fig, axs = plt.subplots(1, 2, figsize=(12, 6))  # Adjust figsize as needed
+
+            # # # First plot
+            # axs[0].set_title("Blurred Local Map")
+            # im1 = axs[0].imshow(self.local_map_blurred.cpu().numpy())
+            # fig.colorbar(im1, ax=axs[0])
+
+
+            # # Second plot
+            # axs[1].set_title("Sparse Polar Intensity Repeat Scan")
+            # im2 = axs[1].imshow((temp_polar_intensity_sparse.cpu().numpy()*10000).astype(np.uint8))
+            # fig.colorbar(im2, ax=axs[1])
+
+            # # Adjust spacing and show
+            # plt.tight_layout()
+            # plt.show()
+            
+            return state
+        
+
+    def solve2_(self, state_init, map, nb_iter=20, cost_tol=1e-6, step_tol=1e-6, verbose=False, degraded=False):
+        self.degraded_log = degraded
+        with torch.no_grad():
+            if self.estimate_ang_vel and self.step_counter == 0:
+                remove_angular = torch.tensor(True).to(self.device)
+            else:
+                remove_angular = torch.tensor(False).to(self.device)
+
+
+            if degraded and isinstance(self.motion_model, ConstBodyAccGyro):
+                self.motion_model.block_acc = True
+            state = state_init.clone()
+            first_cost = torch.tensor(np.inf).to(self.device)
+            prev_cost = first_cost
+            first_quantum = self.optimisation_first_step
+            step_quantum = first_quantum
+            last_decreasing_state = state.clone()
+            last_decreasing_grad = torch.zeros_like(state)
+            for i in torch.arange(nb_iter, device=self.device):
+                
+                res, jac = self.localMapToLocalMapCostFunctionAndJacobian_(state, map, degraded)
+
+                print("res shape", res.shape)
+
+                print(" res sum:"   , torch.sum(res))
 
                 if remove_angular and not self.use_gyro:
                     jac = jac[:, :-1]

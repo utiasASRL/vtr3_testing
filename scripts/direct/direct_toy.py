@@ -10,7 +10,7 @@ np.set_printoptions(suppress=True)
 # import argparse
 
 import sys
-parent_folder = "/home/samqiao/ASRL/vtr3_testing"
+parent_folder = "/home/leonardo/sam/vtr3_testing"
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
@@ -30,7 +30,7 @@ import gp_doppler as gpd
 import torch
 import torchvision
 
-from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
+# from cv_bridge import CvBridge # Package to convert between ROS and OpenCV Images
 
 from utils import *
 
@@ -59,7 +59,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_leo.yaml'))
 
 
 db_bool = config['bool']
@@ -67,6 +67,7 @@ SAVE = db_bool.get('SAVE')
 PLOT = db_bool.get('PLOT')
 DEBUG = db_bool.get('DEBUG')
 USE_LOCAL_MAP = db_bool.get('USE_LOCAL_MAP')
+LOCAL_TO_LOCAL = db_bool.get('LOCAL_TO_LOCAL')
 UNDISTORTION = db_bool.get('UNDISTORTION')
 SET_INITIAL_GUESS = db_bool.get('SET_INITIAL_GUESS')
 
@@ -336,7 +337,16 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
 
         teach_local_map = load_local_map(teach_local_map_file)
         state = gp_state_estimator.toLocalMapRegistration(teach_local_map, teach_frame, teach_frame)
+    elif LOCAL_TO_LOCAL:
+        print("Using local to local registration")
+        # use the local map to local map registration
+        teach_local_map_file, _ = find_closest_local_map(teach_local_maps, teach_times[repeat_vertex_idx][0])
+        # repeat_local_map_file, _ = find_closest_local_map(teach_local_maps, repeat_times[repeat_vertex_idx][0])
 
+        teach_local_map = load_local_map(teach_local_map_file)
+        # repeat_local_map = load_local_map(repeat_local_map_file)
+
+        state = gp_state_estimator.localMaptoLocalMapRegistration(teach_local_map, teach_local_map, teach_frame.azimuths)
     else:
         state = gp_state_estimator.pairwiseRegistration(teach_frame, repeat_frame)
 
