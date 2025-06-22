@@ -136,4 +136,19 @@ def radar_polar_to_cartesian(fft_data, azimuths, radar_resolution, cart_resoluti
     return cv2.remap(fft_data, polar_to_cart_warp, None, cv2.INTER_LINEAR)
 
 
+import torch
+import torchvision.transforms.functional
+def preprocessing_polar_image(polar_image, device):
+    polar_intensity = torch.tensor(polar_image).to(device)
+    polar_std = torch.std(polar_intensity, dim=1)
+    polar_mean = torch.mean(polar_intensity, dim=1)
+    polar_intensity -= (polar_mean.unsqueeze(1) + 2*polar_std.unsqueeze(1))
+    polar_intensity[polar_intensity < 0] = 0
+    polar_intensity = torchvision.transforms.functional.gaussian_blur(polar_intensity.unsqueeze(0), (9,1), 3).squeeze()
+    polar_intensity /= torch.max(polar_intensity, dim=1, keepdim=True)[0]
+    polar_intensity[torch.isnan(polar_intensity)] = 0
+
+    return polar_intensity
+
+
     

@@ -77,7 +77,7 @@ DEBUG = db_bool.get('DEBUG')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
+out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -125,7 +125,7 @@ def align_trajectories(odom, gt):
 
 # print(result_folder)
 
-sequence = "parking_t3_r4"
+sequence = "grassy_t2_r3"
 
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
