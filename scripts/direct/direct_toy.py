@@ -10,13 +10,13 @@ np.set_printoptions(suppress=True)
 # import argparse
 
 import sys
-parent_folder = "/home/leonardo/sam/vtr3_testing"
+parent_folder = "/home/samqiao/ASRL/vtr3_testing"
 
 # Insert path at index 0 so it's searched first
 sys.path.insert(0, parent_folder)
 
-from deps.path_tracking_error.fcns import *
-# from scripts.radar.utils.helper import *
+# from deps.path_tracking_error.fcns import *
+from scripts.radar.utils.helper import *
 
 # # point cloud vis
 # from sensor_msgs_py.point_cloud2 import read_points
@@ -59,7 +59,7 @@ def load_config(config_path='config.yaml'):
         config = yaml.safe_load(file)
     return config
 
-config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_leo.yaml'))
+config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 
 
 db_bool = config['bool']
@@ -126,7 +126,7 @@ teach_azimuth_timestamps = teach_df['teach_azimuth_timestamps']
 teach_vertex_timestamps = teach_df['teach_vertex_timestamps']
 # 5. Pose at each vertex: (932,4,4)
 teach_vertex_transforms = teach_df['teach_vertex_transforms']
-# 6. teach vertext time
+# 6. Teach times: (932,1)
 teach_times = teach_df['teach_times']
 
 if DEBUG:

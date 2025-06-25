@@ -13,8 +13,11 @@ radar_data:
       repeat1: "/home/samqiao/ASRL/vtr3_testing/localization_data/rosbags/grassy3"
     pose_graph_path: 
       grassy_t2_r3: "/home/samqiao/ASRL/vtr3_testing/localization_data/posegraphes/grassy_t2_r3/graph"
-    teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3/local_map_dro_mid_scan"
-    repeat_local_maps_path: none
+    teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3/dro_local_map_grassy_t2"
+    teach_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3/dro_undistorted_scans_grassy_t2"
+    ### repeat local map and scans location
+    repeat_local_maps_path:  "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3/dro_local_map_grassy_t3"
+    repeat_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3/dro_undistorted_scans_grassy_t3"
 
   parking:
     pose_graph_path:
@@ -42,6 +45,7 @@ bool:
   PLOT: False
   DEBUG: True
   USE_LOCAL_MAP: False
+  LOCAL_TO_LOCAL: False
   UNDISTORTION: True
   SET_INITIAL_GUESS: False
 

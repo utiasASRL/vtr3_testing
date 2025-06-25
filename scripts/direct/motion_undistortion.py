@@ -481,7 +481,7 @@ if __name__ == "__main__":
 
             # call the motion undistortion function
             polar_intensity, undistorted = motion_undistortion(
-                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=0
+                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=199
             )
 
             # print("undistorted shape:", undistorted.shape)
@@ -618,7 +618,7 @@ if __name__ == "__main__":
         # print("azimuth_timestamps shape:", azimuth_timestamps.shape)
         # call the motion undistortion function
         polar_intensity, undistorted = motion_undistortion(
-            polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=0
+            polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=199
         )
 
         # # print("undistorted shape:", undistorted.shape)
