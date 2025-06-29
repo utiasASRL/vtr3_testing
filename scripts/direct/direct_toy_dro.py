@@ -189,6 +189,7 @@ def find_closest_local_map(teach_local_maps, timestamp):
     print("closest key:", closest_key)
     return teach_local_maps[closest_key], closest_key
 
+# here I wanto enforce a temporal constraint as well
 def find_associated_map_timestamp_given_undistorted_scan(repeat_undistorted_scan, teach_local_maps, gt_teach, gt_repeat):
     """
     Find the associated map timestamp given an undistorted scan timestamp.
@@ -215,8 +216,9 @@ def find_associated_map_timestamp_given_undistorted_scan(repeat_undistorted_scan
 
     # now we need to find the closest teach gps timestamp based on minimum distance with teach_gps
     distances = np.linalg.norm(gt_teach[:, 1:4] - repeat_gps_xyz, axis=1)
-    closest_teach_idx = np.argmin(distances)    
+    closest_teach_idx = np.argmin(distances) 
     print("closest teach idx:", closest_teach_idx)
+    print("the min distance is:", distances[closest_teach_idx],"meters")   
     closest_teach_timestamp = gt_teach[closest_teach_idx, 0]
     print("closest teach timestamp:", closest_teach_timestamp)
 
@@ -254,9 +256,15 @@ print("repeat_ppk shape:", r2_pose_repeat_ppk_dirty.shape)
 print(len(teach_undistorted_scans.keys()))
 # loop through all the undistorted scans actually 
 
-direct_se2_pose = []
+dro_se2_pose = []
+repeat_scan_stamps = []
+
+timestamp_association = []
+
+nframe = 0
+
 for timestamp in sorted(repeat_undistorted_scans.keys()):
-    print("------------------------------Processing undistorted scan with timestamp:", timestamp, "------------------------------")
+    print(f"------------------------------Processing undistorted scan with timestamp: {timestamp} -----------------------------frame number: {nframe}")
     # load the undistorted scan
     undistorted_scan = load_undistorted_scan(repeat_undistorted_scans[timestamp])
     print("undistorted scan polar shape:", undistorted_scan.polar.shape)
@@ -273,31 +281,91 @@ for timestamp in sorted(repeat_undistorted_scans.keys()):
     cart_target = pb.utils.radar.radar_polar_to_cartesian(undistorted_scan.azimuths, undistorted_scan.polar, 0.040308, 0.224, 640, False, True)
 
     # find the closest local map
-    local_map_path, local_map_key = find_closest_local_map(teach_local_maps, float(timestamp))
+    local_map_path, local_map_key = find_closest_local_map(teach_local_maps, float(associated_map_timestamp))
+
+    timestamp_association.append({undistorted_scan.timestamps[-1]/1e6: local_map_key})  # save the association between undistorted scan timestamp and local map key
+
     # print("local map path:", local_map_path)
     local_map = load_local_map(local_map_path)
     # print("local map shape:", local_map.shape)
     
-    # we can see the local map to verify lets actually plot the local map and the undistorted scan
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
-    plt.imshow(local_map, cmap='gray')
-    plt.title(f"Local Map {local_map_key}")
-    plt.axis('off')
-    plt.subplot(1, 2, 2)
-    plt.imshow(cart_target, cmap='gray')
-    plt.title(f"Undistorted Scan {timestamp}")
-    plt.axis('off')
-    plt.show()
+    # # # we can see the local map to verify lets actually plot the local map and the undistorted scan # how do I make it interactive?
+    # plt.clf()  # 
+  
+    # plt.subplot(1, 2, 1)
+    # plt.imshow(local_map, cmap='gray')
+    # plt.title(f"Local Map {local_map_key}")
+    # plt.axis('off')
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(cart_target, cmap='gray')
+    # plt.title(f"Undistorted Scan {timestamp}")
+    # plt.axis('off')
+    # plt.tight_layout()
+
+    # fig.canvas.draw()
+
+    # plt.pause(0.1)  # Pause to update the plot
+
+
+    # fig.canvas.flush_events()
+    # time.sleep(0.05)  # 
+  
+
 
     # lets set up the gp state estimator
     state = gp_state_estimator.toLocalMapRegistration_dro(local_map,undistorted_scan)
+    dro_se2_pose.append(state)
+    repeat_scan_stamps.append(float(timestamp))
     
     print("State shape:", state.shape)
 
     print("direct estimated state:", state)
 
+    nframe += 1
+
     # break
 # now we need to find the association between the undistorted scan and the local map
 # they are from different sequences
 
+dro_se2_pose = np.array(dro_se2_pose)
+repeat_scan_stamps = np.array(repeat_scan_stamps).reshape(-1, 1)
+timestamp_association = np.array(timestamp_association).reshape(-1, 1)
+
+print("Direct SE2 Pose shape:", dro_se2_pose.shape)
+print("Repeat Scan Stamps shape:", repeat_scan_stamps.shape)
+
+# now we plot the direct se2 pose in x,y, and yaw in 3 by 1 fashion
+
+plt.figure(figsize=(10, 5))
+plt.subplot(3, 1, 1)
+plt.plot(repeat_scan_stamps, dro_se2_pose[:, 0], label='X Position', color='r')
+plt.title('Direct SE2 Pose - X Position')
+plt.xlabel('Timestamp')
+plt.ylabel('X Position (m)')
+plt.grid()
+plt.subplot(3, 1, 2)
+plt.plot(repeat_scan_stamps, dro_se2_pose[:, 1], label='Y Position', color='g')
+plt.title('Direct SE2 Pose - Y Position')
+plt.xlabel('Timestamp')
+plt.ylabel('Y Position (m)')
+plt.grid()
+plt.subplot(3, 1, 3)
+plt.plot(repeat_scan_stamps, dro_se2_pose[:, 2], label='Yaw', color='b')
+plt.title('Direct SE2 Pose - Yaw')
+plt.xlabel('Timestamp')
+plt.ylabel('Yaw (rad)')
+plt.grid()  
+
+plt.tight_layout()
+
+plt.show()
+
+
+# save the direct se2 pose
+# I would like to save a few things to avoid loading everything again
+np.savez(os.path.join(out_path_folder, "direct/dro_toy.npz"), 
+            dro_se2_pose=dro_se2_pose,
+            repeat_scan_stamps=repeat_scan_stamps,
+            timestamp_association=timestamp_association
+            )
+    
