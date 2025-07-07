@@ -10,6 +10,31 @@ import yaml
 from pylgmath import Transformation
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import sys
+
+sys.path.append('../../src/')
+from vtr_regression_testing.odometry_chain import *
+GRAPH_DIR = "/home/sahakhsh/Documents/vtr3_testing/localization_data/posegraphs/grassy_t2_r3/graph"
+graphbuilder = OdometryChainFactory(GRAPH_DIR)
+time_transform_pairs = graphbuilder.get_timestamp_transform_dict() 
+
+import bisect
+
+NS_125_MS = 125000000          # 125 ms in nanoseconds
+
+# 1.  Prepare a sorted list of timestamps (do this *once*, outside the loop)
+if 'k_ts_list' not in globals():
+    k_ts_list = sorted(time_transform_pairs.keys())
+
+def closest(ts):
+    idx = bisect.bisect_left(k_ts_list, ts)
+    if idx == 0:
+        return k_ts_list[0]
+    if idx == len(k_ts_list):
+        return k_ts_list[-1]
+    before = k_ts_list[idx - 1]
+    after  = k_ts_list[idx]
+    return after if (after - ts) < (ts - before) else before
 
 from utils import radar_polar_to_cartesian # this is a custom function to convert polar radar images to cartesian
 
@@ -70,11 +95,11 @@ def motion_undistortion(
     )               
     # print("Tw_radar =", Tw_radar)
 
-    # v_xy = Tw_radar[:2, 3] / dt                  # m s⁻¹ in radar axes
-    v_xy = torch.tensor([0., 5000.], dtype=torch.float64)
-    # yaw  = torch.atan2(Tw_radar[1, 0], Tw_radar[0, 0])
-    # w_z  = yaw / dt
-    w_z = 0.
+    v_xy = Tw_radar[:2, 3] / dt                  # m s⁻¹ in radar axes
+    # v_xy = torch.tensor([0., 5000.], dtype=torch.float64)
+    yaw  = torch.atan2(Tw_radar[1, 0], Tw_radar[0, 0])
+    w_z  = yaw / dt
+    # w_z = 0.
     print(f"v_xy = {v_xy}")
     print(f"w_z = {w_z}")
     print(f"dt = {dt}")
@@ -361,7 +386,7 @@ def main(parent_folder: str = "/home/sahakhsh/Documents/vtr3_testing") -> None:
 
     print("✅  all scans processed and saved.")
 
-
+ 
 if __name__ == "__main__":
     # here is the game plan:
 
@@ -436,29 +461,49 @@ if __name__ == "__main__":
         for teach_vertex_idx in range(0,teach_times.shape[0]): # there is an edge case for the last vertex but we can handle that later
             print("-------------processing teach vertex idx:",teach_vertex_idx, "-----------------")
             # get the pose at the teach vertex
-            teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
+            # teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
             
             # find the next vertex witha different vertex id
-            for next_idx in range(teach_vertex_idx+1, teach_times.shape[0]):
-                if teach_vertex_ids[next_idx] != teach_vertex_id_k:
-                    teach_vertex_id_next = teach_vertex_ids[next_idx]
-                    teach_vertex_idx_next = next_idx
-                    print("Next vertex id found:", teach_vertex_id_next)
-                    print("Next vertex index found:", teach_vertex_idx_next)
-                    break
+            # for next_idx in range(teach_vertex_idx+1, teach_times.shape[0]):
+            #     if teach_vertex_ids[next_idx] != teach_vertex_id_k:
+            #         teach_vertex_id_next = teach_vertex_ids[next_idx]
+            #         teach_vertex_idx_next = next_idx
+            #         print("Next vertex id found:", teach_vertex_id_next)
+            #         print("Next vertex index found:", teach_vertex_idx_next)
+            #         break
 
 
-            teach_vertex_time_k = teach_times[teach_vertex_idx]
-            teach_vertex_time_k_p_1 = teach_vertex_timestamps[teach_vertex_idx_next]
+            teach_vertex_time_k = int(teach_times[teach_vertex_idx] * 1e9)
+            # t_scan_ns = int(teach_vertex_time_k[0] * 1e9)
+            print(f"teach_vertex_time_k: , {teach_vertex_time_k}")
+            ts_before_target = teach_vertex_time_k - NS_125_MS
+            ts_after_target  = teach_vertex_time_k + NS_125_MS            # teach_vertex_time_k_p_1 = teach_vertex_timestamps[teach_vertex_idx_next]
+            ts_before = closest(ts_before_target)
+            print(f"ts_before: {ts_before}")
+            ts_after  = closest(ts_after_target)
+            print(f"ts_after: {ts_after}")
 
-            dt = teach_vertex_time_k_p_1[0] - teach_vertex_time_k[0]
+            T_before  = time_transform_pairs[ts_before]      # Transformation instance
+            T_after   = time_transform_pairs[ts_after]
 
-            T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
+            # 4.  Increment = before  →  after   (world frame cancels)
+            T_increment = np.linalg.inv(T_before.matrix()) @ T_after.matrix()
+
+            # 5.  Δt in nanoseconds
+            dt = (ts_after - ts_before) * 1e-9
+            # dt = teach_vertex_time_k_p_1[0] - teach_vertex_time_k[0]
+            
+            # get transform from other file replace with more accurate version
+            # more accurate version of Ts is over here: /home/sahakhsh/Documents/vtr3_testing/localization_data/posegraphs/grassy_t2_r3/graph/data/odometry_result
+            # file that reads from above file: /home/sahakhsh/Documents/vtr3_testing/src/vtr_regression_testing/odometry_chain.py. make sure to read from teach (id 0)
+            # T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
             # T_gps_world_teach = T_novatel_robot @ T_teach_world
+            
+            # then loop through this graph and find 125ms behind and forward
 
-            T_teach_world_next = teach_vertex_transforms[teach_vertex_idx_next][0][teach_vertex_time_k_p_1[0]]
+            # T_teach_world_next = teach_vertex_transforms[teach_vertex_idx_next][0][teach_vertex_time_k_p_1[0]]
 
-            T_increment = T_teach_world_current.inverse() @ T_teach_world_next
+            # T_increment = T_teach_world_current.inverse() @ T_teach_world_next
 
             # print("T_increment:",T_increment.matrix())
             # print("dt :",dt)
@@ -468,7 +513,6 @@ if __name__ == "__main__":
             # polar_image[:, :] = 0.
             # polar_image[:, 150:200] = 100.0
             azimuth_angles = teach_azimuth_angles[teach_vertex_idx].squeeze()
-            print(len(azimuth_angles))
             azimuth_timestamps = teach_azimuth_timestamps[teach_vertex_idx].squeeze()
 
 
@@ -478,7 +522,7 @@ if __name__ == "__main__":
 
             # call the motion undistortion function
             polar_intensity, undistorted = motion_undistortion(
-                polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu"), t_idx=200
+                polar_image, azimuth_angles, azimuth_timestamps, T_increment, dt, device=torch.device("cpu"), t_idx=200
             )
 
             # print("undistorted shape:", undistorted.shape)
@@ -525,47 +569,47 @@ if __name__ == "__main__":
             plt.tight_layout()
             # interactive mode
             plt.show()
-            cart_imgs.append(cart_image)
-            cart_undist_imgs.append(cart_undistorted)
-            diff_imgs.append(diff)
+            # cart_imgs.append(cart_image)
+            # cart_undist_imgs.append(cart_undistorted)
+            # diff_imgs.append(diff)
 
-            # lets handle the last vertex case
-            if teach_vertex_idx == teach_times.shape[0] - 1:
-            # I would just use the previous velocity estimates
+            # # lets handle the last vertex case
+            # if teach_vertex_idx == teach_times.shape[0] - 1:
+            # # I would just use the previous velocity estimates
 
-                print("Last vertex, using the previous velocity estimates")
-                # find the next vertex witha different vertex id
-                for prev_idx in range(teach_vertex_idx, 0,-1):
-                    if teach_vertex_ids[prev_idx] != teach_vertex_id_k:
-                        teach_vertex_id_prev = teach_vertex_ids[prev_idx]
-                        teach_vertex_idx_prev = prev_idx
-                        print("Previous vertex id found:", teach_vertex_id_prev)
-                        print("Previous vertex index found:", teach_vertex_idx_prev)
-                        break
+            #     print("Last vertex, using the previous velocity estimates")
+            #     # find the next vertex witha different vertex id
+            #     for prev_idx in range(teach_vertex_idx, 0,-1):
+            #         if teach_vertex_ids[prev_idx] != teach_vertex_id_k:
+            #             teach_vertex_id_prev = teach_vertex_ids[prev_idx]
+            #             teach_vertex_idx_prev = prev_idx
+            #             print("Previous vertex id found:", teach_vertex_id_prev)
+            #             print("Previous vertex index found:", teach_vertex_idx_prev)
+            #             break
 
-                teach_vertex_time_k_p_1 = teach_times[teach_vertex_idx_prev]
+            #     teach_vertex_time_k_p_1 = teach_times[teach_vertex_idx_prev]
+                
+            #     T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
 
-                T_teach_world_current = teach_vertex_transforms[teach_vertex_idx][0][teach_vertex_time_k[0]]
+            #     T_teach_world_prev = teach_vertex_transforms[teach_vertex_idx_prev][0][teach_vertex_time_k_p_1[0]]
 
-                T_teach_world_prev = teach_vertex_transforms[teach_vertex_idx_prev][0][teach_vertex_time_k_p_1[0]]
+            #     T_increment = T_teach_world_prev.inverse() @ T_teach_world_current
 
-                T_increment = T_teach_world_prev.inverse() @ T_teach_world_current
-
-                dt = teach_vertex_time_k[0] - teach_vertex_time_k_p_1[0]
+            #     dt = teach_vertex_time_k[0] - teach_vertex_time_k_p_1[0]
 
 
-                polar_intensity, undistorted = motion_undistortion(
-                    polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
-                )
+            #     polar_intensity, undistorted = motion_undistortion(
+            #         polar_image, azimuth_angles, azimuth_timestamps, T_increment.matrix(), dt, device=torch.device("cpu")
+            #     )
 
-                teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
+            #     teach_vertex_id_k = teach_vertex_ids[teach_vertex_idx]
 
-            # print("polar image:", polar_image)
-            # print("undistorted plar image", undistorted)
-            # print("undistorted shape:", undistorted.shape)
-            # save the undistorted image in the teach_polar_imgs_undistorted array
+            # # print("polar image:", polar_image)
+            # # print("undistorted plar image", undistorted)
+            # # print("undistorted shape:", undistorted.shape)
+            # # save the undistorted image in the teach_polar_imgs_undistorted array
     
-            teach_polar_imgs_undistorted[teach_vertex_idx] = undistorted.detach().cpu().clone().numpy().reshape(400, 1712)
+            # teach_polar_imgs_undistorted[teach_vertex_idx] = undistorted.detach().cpu().clone().numpy().reshape(400, 1712)
 
 
 
@@ -626,7 +670,7 @@ if __name__ == "__main__":
         ]
     )
 
-    ani.save(os.path.join(out_path_folder, "undistortion.mp4"),
+    ani.save(os.path.join(out_path_folder, "undistortion_middle.mp4"),
             writer=writer, dpi=100)
     # SAVE TEACH CONTENT IN THE TEACH FOLDER
     np.savez_compressed(TEACH_FOLDER + "/teach_undistorted.npz",
