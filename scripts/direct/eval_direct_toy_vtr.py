@@ -76,8 +76,11 @@ DEBUG = db_bool.get('DEBUG')
 
 result_folder = config.get('output')
 
+
+sequence = "mars_t1_r2"
+
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,sequence)
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -124,8 +127,6 @@ def align_trajectories(odom, gt):
 
 
 # print(result_folder)
-
-sequence = "grassy_t2_r3"
 
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
@@ -181,6 +182,8 @@ direct_se2_pose = result_df['direct_se2_pose']
 vtr_se2_pose = result_df['vtr_se2_pose']
 gps_teach_pose = result_df['gps_teach_pose']
 gps_repeat_pose = result_df['gps_repeat_pose']
+
+timestamp_association= result_df['timestamp_association']
 
 print("gps_teach_pose", gps_teach_pose.shape)
 
@@ -283,7 +286,7 @@ print("repeat_world_vtr shape:", repeat_world_vtr.shape)
 # plotter.plot_traj(teach_world,repeat_world_direct)
 # plotter.show_plots()
 
-window_size = 50
+window_size = 100
 
 errorx_direct = []
 errory_direct = []
@@ -589,11 +592,31 @@ print(f"Max error y improvement: {max_error_y_improvement:.2f}%")
 print(f"Max error norm improvement: {max_error_norm_improvement:.2f}%")
 
 
+
+# hey I want to do a path tracking error plot here as well and save the 
+vtr_pte = []
+vtr_loc_error = []
+direct_pte = []
+direct_loc_error = []
+
+# we are going to use pathtracking error and localization error as a metric
+
+plotter.set_data(sequence_path)
+
+plotter.plot_localziation_error()
+
+# assign the pte and loc_error
+vtr_pte = plotter.vtr_estimated_ptr
+direct_pte = plotter.dir_ptr
+
+vtr_loc_error = plotter.loc_error_vtr
+direct_loc_error = plotter.loc_error_dir
+
 # plotter.set_data(sequence_path)
 # plotter.plot_localziation_error()
 plotter.show_plots()
     
-
+print("timestamp association shape:", timestamp_association.shape)
 np.savez(os.path.join(out_path_folder, "direct/result.npz"),
          vtr_norm=vtr_norm,
          gps_norm=gps_norm,
@@ -604,5 +627,10 @@ np.savez(os.path.join(out_path_folder, "direct/result.npz"),
          gps_repeat_pose=gps_repeat_pose, errorx_direct=errorx_direct,
          errory_direct=errory_direct,
          errorx_vtr=errorx_vtr,
-         errory_vtr=errory_vtr)
+         errory_vtr=errory_vtr,
+         timestamp_association=timestamp_association,
+         vtr_pte = vtr_pte,
+         vtr_loc_error = vtr_loc_error,
+         direct_pte = direct_pte,
+         direct_loc_error = direct_loc_error)
     

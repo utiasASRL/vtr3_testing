@@ -66,7 +66,7 @@ def load_config(config_path='config.yaml'):
 # rosbag_path = "/home/samqiao/ASRL/vtr3_data/routes/mars/0907/mars_t1" #mars_t1
 
 
-rosbag_path = "/home/samqiao/ASRL/vtr3_data/rss_routes/250114/mars_t1" #new parking data
+rosbag_path = "/home/samqiao/ASRL/vtr3_data/rss_routes/woody_t3" #new parking data
 
 # # lets try a grassy loop and see what is going on
 # rosbag_path = "/home/samqiao/ASRL/vtr3_data/new_rss_routes/grassy/grassy2" # new grassy data

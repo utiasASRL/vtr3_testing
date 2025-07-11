@@ -70,3 +70,5 @@ localization_data/*
 *.pyc
 
 .vscode/*
+
+*.mp4

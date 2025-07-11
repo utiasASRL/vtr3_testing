@@ -27,7 +27,6 @@ from pylgmath import Transformation
 # import time
 
 import yaml
-# import gp_doppler as gpd
 import torch
 import torchvision
 
@@ -35,7 +34,7 @@ import torchvision
 
 # from process_vtr import get_vtr_ptr_baseline
 
-# from utils import *
+from utils import *
 from scripts.visualization.plotter import Plotter
 
 
@@ -76,8 +75,11 @@ DEBUG = db_bool.get('DEBUG')
 
 result_folder = config.get('output')
 
+
+sequence = "grassy_t2_r3"
+
 # change here
-out_path_folder = os.path.join(result_folder,f"parking_t3_r4/")
+out_path_folder = os.path.join(result_folder,sequence)
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -85,12 +87,11 @@ else:
     print(f"Folder '{out_path_folder}' already exists.")    
 
 
-sequence = "parking_t3_r4"  # change this to the sequence you want to visualize
-
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
     print("ERROR: No sequence found in " + sequence_path)
     exit(0)
+
 
 TEACH_FOLDER = os.path.join(sequence_path, "teach")
 REPEAT_FOLDER = os.path.join(sequence_path, "repeat")
@@ -142,87 +143,48 @@ vtr_se2_pose = result_df['vtr_se2_pose']
 gps_teach_pose = result_df['gps_teach_pose']
 gps_repeat_pose = result_df['gps_repeat_pose']
 
-print("gps_teach_pose", gps_teach_pose.shape)
+timestamp_association= result_df['timestamp_association']
+
+vtr_pte = result_df['vtr_pte']
+vtr_loc_error = result_df['vtr_loc_error']
+direct_pte = result_df['direct_pte']
+direct_loc_error = result_df['direct_loc_error']
 
 
-local_maps_folder = config['radar_data']['parking']['teach_local_maps_path']
-print("local_map_folder", local_maps_folder)
+# okay now we want to output areas where loc errors differences are high and give the timestamps
+# we will use the vtr_loc_error and direct_loc_error to find the high error regions
+high_error_threshold = 0.05  # Define a threshold for high localization error
+high_error_indices = np.where(np.abs(vtr_loc_error - direct_loc_error) > high_error_threshold)[0]
 
-import os
-import argparse
-import cv2
-import imageio
-from datetime import datetime
-import numpy as np
+print(f"High error indices: {high_error_indices}")
 
-def create_video(image_folder, output_file, fps=30, output_size=None, format='mp4'):
-    """
-    Create a video/GIF from timestamped images
-    :param image_folder: Path to folder containing timestamped images
-    :param output_file: Output file path (include extension)
-    :param fps: Frame rate of output video
-    :param output_size: Optional (width, height) to resize output
-    :param format: 'mp4' or 'gif'
-    """
-    # Get sorted list of image files with timestamps
-    images = []
-    for f in os.listdir(image_folder):
-        if f.lower().endswith(('.png', '.jpg', '.jpeg')):
-            try:
-                # Try to parse both numerical and datetime formats
-                timestamp_str = os.path.splitext(f)[0]
-                if '.' in timestamp_str:  # Handle decimal timestamps
-                    timestamp = float(timestamp_str)
-                else:
-                    timestamp = datetime.strptime(timestamp_str, "%Y-%m-%d_%H-%M-%S").timestamp()
-                images.append((timestamp, f))
-            except (ValueError, TypeError):
-                continue
+# I want to group these indices into regions maybe have some lee way where it does not have to be consecutive but within a certain range of indeices 
+window = 30
+regions = []
+current_region = []
 
-    if not images:
-        raise ValueError("No valid timestamped images found")
-
-    # Sort by timestamp
-    images.sort(key=lambda x: x[0])
-    
-    # Determine output dimensions from first image
-    first_image = cv2.imread(os.path.join(image_folder, images[0][1]))
-    if output_size:
-        h, w = output_size[::-1]  # OpenCV uses (width, height)
+for i in range(len(high_error_indices)):
+    if not current_region:
+        current_region.append(high_error_indices[i])
     else:
-        h, w = first_image.shape[:2]
-
-    # Create writer based on format
-    if format.lower() == 'mp4':
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(output_file, fourcc, fps, (w, h))
-    elif format.lower() == 'gif':
-        writer = imageio.get_writer(output_file, mode='I', fps=fps)
-    else:
-        raise ValueError("Unsupported format. Use 'mp4' or 'gif'")
-
-    # Process images
-    for ts, filename in images:
-        img_path = os.path.join(image_folder, filename)
-        frame = cv2.imread(img_path)
-        
-        if output_size:
-            frame = cv2.resize(frame, (w, h))
-            
-        if format == 'mp4':
-            writer.write(frame)
+        # Check if the current index is within the window of the last index in the current region
+        if high_error_indices[i] - current_region[-1] <= window:
+            current_region.append(high_error_indices[i])
         else:
-            # Convert BGR to RGB for GIF
-            writer.append_data(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            
-        print(f"Processed {filename} ({datetime.fromtimestamp(ts).isoformat()})")
+            # If not, save the current region and start a new one
+            regions.append(current_region)
+            current_region = [high_error_indices[i]]
 
-    writer.release()
-    print(f"Output saved to {output_file}")
+regions.append(current_region)  # Add the last region if it exists
 
+# how many regions do we have?
+print(f"Number of regions with high localization error differences: {len(regions)}")
+print(f"Regions with high localization error differences: {regions}")
 
-out_path_folder = os.path.join(result_folder,f"parking_t3_r4")
-create_video(local_maps_folder, os.path.join(out_path_folder, "parking_local_maps_dro.mp4"), fps=30, output_size=(4001, 4001), format='mp4')
-
-
-
+# I want to print the starting and ending timestamps of these regions using repeat_times
+for region in regions:
+    start_index = region[0]
+    end_index = region[-1]
+    start_time = repeat_times[start_index][0]
+    end_time = repeat_times[end_index][0]
+    print(f"Region from index {start_index} to {end_index}: Start time: {start_time}, End time: {end_time}")

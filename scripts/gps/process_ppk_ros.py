@@ -88,7 +88,7 @@ def load_config(config_path='config.yaml'):
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 
 # Access database configuration
-db = config['radar_data']['mars']
+db = config['radar_data']['woody']
 db_rosbag_path = db.get('rosbag_path')
 
 # teach_rosbag_path = db_rosbag_path.get('teach')
@@ -113,7 +113,7 @@ print("DEBUG:",DEBUG)
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"mars_t1_r2") # change path here
+out_path_folder = os.path.join(result_folder,f"woody_t3_r2") # change path here
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -121,16 +121,16 @@ else:
     print(f"Folder '{out_path_folder}' already exists.")    
 
 # basically, an array of (n by 3) ros_time, x, y
-teach_ppk_folder = config['ppk']['mars']['teach']
-repeat_ppk_folder = config['ppk']['mars']['repeat']
+teach_ppk_folder = config['ppk']['woody']['teach']
+repeat_ppk_folder = config['ppk']['woody']['repeat']
 print("teach_ppk_folder:",teach_ppk_folder)
 print("repeat_ppk_folder:",repeat_ppk_folder)
 
 
-teach_ppk = os.path.join(teach_ppk_folder, "mars_t1.txt")
-teach_ppk_ros = os.path.join(teach_ppk_folder, "mars_t1_ros.txt")
-repeat_ppk = os.path.join(repeat_ppk_folder, "mars_t2.txt")
-repeat_ppk_ros = os.path.join(repeat_ppk_folder, "mars_t2_ros.txt")
+teach_ppk = os.path.join(teach_ppk_folder, "woody_t3.txt")
+teach_ppk_ros = os.path.join(teach_ppk_folder, "woody_t3_ros.txt")
+repeat_ppk = os.path.join(repeat_ppk_folder, "woody_t2.txt")
+repeat_ppk_ros = os.path.join(repeat_ppk_folder, "woody_t2_ros.txt")
 
 # lets get teach first
 t_teach_ppk = read_gps_ros_txt(teach_ppk_ros)

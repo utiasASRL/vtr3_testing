@@ -77,7 +77,7 @@ DEBUG = db_bool.get('DEBUG')
 result_folder = config.get('output')
 
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"mars_t1_r2/") #TOCHANGE
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -193,7 +193,7 @@ def parse_dro_odometry_trajectory(path_to_odometry_result):
 
 # print(result_folder)
 
-sequence = "grassy_t2_r3"
+sequence = "mars_t1_r2" #TOCHANGE
 
 sequence_path = os.path.join(result_folder, sequence)
 if not os.path.exists(sequence_path):
@@ -270,24 +270,27 @@ timestamp_association = dro_toy_df['timestamp_association']
 # plot the vtr and direct results
 plt.figure(figsize=(15, 5))
 plt.subplot(3, 1, 1)
-plt.plot(repeat_scan_stamps, dro_se2_pose[:, 0], label='DRO X Position')
-plt.plot(repeat_times, vtr_se2_pose[:, 0], label='VTR X Position')
-plt.plot(repeat_times, direct_se2_pose[:, 0], label='Direct X Position')
+# plt.plot(repeat_scan_stamps[1:], dro_se2_pose[1:, 0], label='DRO X')
+plt.plot(repeat_times[1:], vtr_se2_pose[1:, 0], label='VTR X')
+plt.plot(repeat_times[1:], direct_se2_pose[1:, 0], label='DRO X')
 plt.xlabel('Timestamp')
-plt.ylabel('X Position (m)')
-plt.title('Direct SE2 Pose - X Position')
+plt.ylabel('X (m)')
+plt.legend()
+plt.title('SE2 Pose - X')
 plt.grid()
 plt.subplot(3, 1, 2)
-plt.plot(repeat_scan_stamps, dro_se2_pose[:, 1], label='DRO Y Position')
-plt.plot(repeat_times, vtr_se2_pose[:, 1], label='VTR Y Position')
-plt.plot(repeat_times, direct_se2_pose[:, 1], label='Direct Y Position')
-plt.ylabel('Y Position (m)')
+# plt.plot(repeat_scan_stamps[1:], dro_se2_pose[1:, 1], label='DRO Y')
+plt.plot(repeat_times[1:], vtr_se2_pose[1:, 1], label='VTR Y')
+plt.plot(repeat_times[1:], direct_se2_pose[1:, 1], label='DRO Y')
+plt.title('SE2 Pose - Y')
+plt.ylabel('Y (m)')
 plt.grid()
+plt.legend()
 plt.subplot(3, 1, 3)
-plt.plot(repeat_scan_stamps, dro_se2_pose[:, 2], label='DRO Yaw')
-plt.plot(repeat_times, vtr_se2_pose[:, 2], label='VTR Yaw')
-plt.plot(repeat_times, direct_se2_pose[:, 2], label='Direct Yaw')
-plt.title('Direct SE2 Pose - Yaw')
+# plt.plot(repeat_scan_stamps[1:], dro_se2_pose[1:, 2], label='DRO Yaw')
+plt.plot(repeat_times[1:], vtr_se2_pose[1:, 2], label='VTR Yaw')
+plt.plot(repeat_times[1:], direct_se2_pose[1:, 2], label='DRO Yaw')
+plt.title('SE2 Pose - Yaw')
 plt.xlabel('Timestamp')
 plt.ylabel('Yaw (rad)')
 plt.grid()  
@@ -308,11 +311,11 @@ plotter.show_plots()
 # as well as dro odometry results (I will deal with that later)
 # now we are doing it
 print("sequence path:", sequence_path)
-grassy_t2_dro_result = os.path.join(sequence_path, "dro_odometry_result", "grassy_t2.txt")
+grassy_t2_dro_result = os.path.join(sequence_path, "dro_odometry_result", "mars_t1.txt")
 if not os.path.exists(grassy_t2_dro_result):
     print("ERROR: No DRO odometry result found in " + grassy_t2_dro_result)
     exit(0)
-grassy_t3_dro_result = os.path.join(sequence_path, "dro_odometry_result", "grassy_t3.txt")
+grassy_t3_dro_result = os.path.join(sequence_path, "dro_odometry_result", "mars_t1.txt")
 if not os.path.exists(grassy_t3_dro_result):
     print("ERROR: No DRO odometry result found in " + grassy_t3_dro_result)
     exit(0)
@@ -338,12 +341,12 @@ dro_t3_timestamps, dro_t3_estimates = parse_dro_odometry_trajectory(grassy_t3_dr
 
 
 
-# # plot it in 2d
+# # # plot it in 2d
 # plt.figure(figsize=(10, 5))
 # # plt.subplot(1, 2, 1)
-# plt.plot(x_temp, y_temp, label='DRO T2 Estimates', color='blue')
+# # plt.plot(x_temp, y_temp, label='DRO T2 Estimates', color='blue')
 # # plt.plot(x_temp_2, y_temp_2, label='DRO T3 Estimates', color='orange')
-# # plt.plot(dro_t3_estimates[:, 0], dro_t3_estimates[:, 1], label='DRO T3 Estimates', color='orange')
+# plt.plot(dro_t3_estimates[:, 0], dro_t3_estimates[:, 1], label='DRO T3 Estimates', color='orange')
 # plt.axis('equal')
 # plt.title('DRO Odometry Estimates')
 # plt.xlabel('X Position (m)')
@@ -492,48 +495,71 @@ print("timestamp_association shape:", timestamp_association.shape)
 r_teach_world_dro = []
 r_repeat_world_dro = [] # this is for the dro estimate
 
-for dro_odomtry_idx in range(0, dro_se2_pose.shape[0]):
-    
-    # for the teach pose
-    T_radar_world_in_world_dro = dro_t2_estimates[dro_odomtry_idx][0] # this is the transformation from the radar to the world in the teach odometry frame 
+USE_DRO_ODOM = True
 
-    T_robot_world_in_world_dro = T_radar_robot.inverse() @ T_radar_world_in_world_dro # this is the transformation from the robot to the world in the teach odometry frame
-    T_gps_world_in_world_dro = T_novatel_robot @ T_robot_world_in_world_dro # this is the transformation from the gps to the world in the teach odometry frame
+if USE_DRO_ODOM:
+    for vertex_idx in range(0, dro_se2_pose.shape[0]): 
 
-    # now there is no correspondence here
-    r_repeat_teach_in_teach_se2_dro = dro_se2_pose[dro_odomtry_idx]
-    # print("sam: this is direct estimate in se2: ",r_repeat_teach_in_teach_se2)
-    T_teach_repeat_dro = Transformation(T_ba = se2_to_se3(r_repeat_teach_in_teach_se2_dro))
+        repeat_time = repeat_times[vertex_idx]
+        teach_time = teach_times[vertex_idx]
 
+        # ok now I need to find the closest timestamp in the dro_t2_timestamps to the teach time
+        dro_teach_idx = np.argmin(np.abs(dro_t2_timestamps - teach_time))
 
+        # for the teach pose
+        T_radar_world_in_world_dro = dro_t2_estimates[dro_teach_idx][0] # this is the transformation from the radar to the world in the teach odometry frame 
 
-    # we can recover the repeat pose in the teach odometry frame
-     # this chunk is for the direct estimate # this is not true need to use the assiociation to find it: T_robot_world_in_world_dro
-    # lets try....
-    association_at_idx = timestamp_association[dro_odomtry_idx][0]
-    teach_time_dro = float(list(association_at_idx.values())[0])
-    repeat_time_dro = float(list(association_at_idx.keys())[0])
+        T_robot_world_in_world_dro = T_radar_robot.inverse() @ T_radar_world_in_world_dro # this is the transformation from the robot to the world in the teach odometry frame
+        T_gps_world_in_world_dro = T_novatel_robot @ T_robot_world_in_world_dro # this is the transformation from the gps to the world in the teach odometry frame
 
+        # now there is no correspondence here
+        r_repeat_teach_in_teach_se2_dro = dro_se2_pose[vertex_idx]
+        # print("sam: this is direct estimate in se2: ",r_repeat_teach_in_teach_se2)
+        T_teach_repeat_dro = Transformation(T_ba = se2_to_se3(r_repeat_teach_in_teach_se2_dro))
 
-    # so! I need to what the pose of the teach is at the time of the repeat (use timestamp to find the closest one)
-    dro_teach_idx = np.argmin(np.abs(dro_t2_timestamps - teach_time_dro))
-
-    T_radar_world_in_world_dro_corresponding_to_map = dro_t2_estimates[dro_teach_idx][0] # this is the transformation from the radar to the world in the teach odometry frame at the time of the repeat
-    T_robot_world_in_world_dro_corresponding_to_map = T_radar_robot.inverse() @ T_radar_world_in_world_dro_corresponding_to_map # this is the transformation from the robot to the world in the teach odometry frame at the time of the repeat
-    T_gps_world_in_world_dro_corresponding_to_map = T_novatel_robot @ T_robot_world_in_world_dro_corresponding_to_map # this is the transformation from the gps to the world in the teach odometry frame at the time of the repeat
-
-    r_teach_world_dro.append(T_gps_world_in_world_dro_corresponding_to_map.r_ba_ina()[0:2].T) # where the gps is in the world in the teach odometry frame
+        r_teach_world_dro.append(T_gps_world_in_world_dro.r_ba_ina()[0:2].T) # where the gps is in the world in the teach odometry frame
 
 
-    # for repeat pose
-    T_r_w = T_teach_repeat_dro.inverse() @ T_radar_world_in_world_dro_corresponding_to_map # here there might a frame issue TODO
+        # for repeat pose
+        T_r_w = T_teach_repeat_dro.inverse() @ T_radar_world_in_world_dro # here there might a frame issue TODO
+        T_gps_w_in_w_repeat = T_novatel_robot @ T_radar_robot.inverse() @ T_r_w # here there might be a frame issue TODO I think this is correct
+        r_gps_w_in_w_repeat = T_gps_w_in_w_repeat.r_ba_ina() # where the gps is in the world
 
-    T_gps_w_in_w_repeat = T_novatel_robot @ T_radar_robot.inverse() @ T_r_w # here there might be a frame issue TODO I think this is correct
-    # r_r_w_in_world = T_r_w.r_ba_ina().T
+        r_repeat_world_dro.append(r_gps_w_in_w_repeat[0:2].T)
 
-    r_gps_w_in_w_repeat = T_gps_w_in_w_repeat.r_ba_ina() # where the gps is in the world
+else:
+    for idx in range(0,dro_se2_pose.shape[0]):
+        # the time stamps
+        teach_vertex_time = teach_times[idx]
+        repeat_vertex_time = repeat_times[idx]
 
-    r_repeat_world_dro.append(r_gps_w_in_w_repeat[0:2].T)
+        T_teach_world = teach_vertex_transforms[idx][0][teach_vertex_time[0]]
+        T_gps_world_teach = T_novatel_robot @ T_teach_world
+        r_gps_w_in_w_teach = T_gps_world_teach.r_ba_ina()[0:2] # where the gps is in the world
+        # r_teach_world_in_world = T_teach_world.r_ba_ina()
+        r_teach_world_dro.append(r_gps_w_in_w_teach.T)
+
+        # dro result we can actually do everything in SE(3)
+        r_repeat_teach_in_teach_se2 = dro_se2_pose[idx]
+        # print("sam: this is direct estimate in se2: ",r_repeat_teach_in_teach_se2)
+        T_teach_repeat_direct = Transformation(T_ba = se2_to_se3(r_repeat_teach_in_teach_se2))
+        # print("sam: this is direct estimate in se(3): \n",T_teach_repeat_direct.matrix())
+
+
+        T_r_w = T_teach_repeat_direct.inverse() @ T_radar_robot @ T_teach_world # here there might a frame issue TODO
+
+        T_gps_w_in_w_repeat = T_novatel_robot @ T_radar_robot.inverse() @ T_r_w # here there might be a frame issue TODO I think this is correct
+        # r_r_w_in_world = T_r_w.r_ba_ina().T
+
+        r_gps_w_in_w_repeat = T_gps_w_in_w_repeat.r_ba_ina() # where the gps is in the world
+        # print("sam: direct r_gps_w_in_w_repeat: \n", r_gps_w_in_w_repeat)
+
+        # print("r_r_w_in_world shape:", r_r_w_in_world.shape)
+        # print("r_r_w_in_world:", r_r_w_in_world.T[0:2])
+
+        # print("double check:", r_gps_w_in_w_repeat[0:2].shape)
+        r_repeat_world_dro.append(r_gps_w_in_w_repeat[0:2].T)
+
 
 
 # lets plot the results teach and repeat
@@ -543,270 +569,362 @@ print("r_repeat_world_dro shape:", r_repeat_world_dro.shape)
 print("r_teach_world_dro shape:", r_teach_world_dro.shape)
 
 plt.figure(figsize=(10, 5))
-plt.scatter(r_teach_world_dro[:, 0], r_teach_world_dro[:, 1], label='DRO Teach World', color='blue')
-plt.scatter(r_repeat_world_dro[:, 0], r_repeat_world_dro[:, 1], label='DRO Repeat World', color='orange')
+plt.scatter(r_teach_world_dro[:, 0], r_teach_world_dro[:, 1], label='DRO Odom Teach World', color='blue',s=2)
+plt.scatter(r_repeat_world_dro[:, 0], r_repeat_world_dro[:, 1], label='DRO Loc Repeat World', color='red',s=2)
 plt.axis('equal')
-plt.title('DRO Odometry Estimates')
+plt.title('DRO Odometry and Localization Estimates')
 plt.xlabel('X Position (m)')
 plt.ylabel('Y Position (m)')
 plt.grid()
 plt.legend()
 plt.show()
 
-# # lets see the first 10 elements of repeat dro
-# print("r_repeat_world_dro first 10 elements:", r_repeat_world_dro[:10,:])
 
-# now we have to do some hacky align trajectory logic as before
-window_size = 50
+USE_NEW_METRIC = False
 
-errorx_dro = []
-errory_dro = []
-
-# first window size
-def get_piecewise_path_length(gt_trajectory):
-    pose = gt_trajectory[:,1:] # this is a 3 by 1 
-
-    length = np.sum(np.sqrt(np.sum(np.diff(pose, axis=0)**2, axis=1)))
-
-    return length
-# the first window size points we use the future window size points 20 points lets say
-for dro_repeat_idx in range(0,window_size):
-    print("--------------Processing repeat_idx:", dro_repeat_idx ,"-----------------")
-    corr_gps_teach = []
-    corr_gps_repeat = []
-    for window_idx in range(0,window_size):
-
-        # the get time is different: we use the association of the timestamps
-        association_at_idx = timestamp_association[dro_repeat_idx + window_idx][0]
-
-        # print("association_at_idx:", association_at_idx)
-
-        teach_time_dro = float(list(association_at_idx.values())[0])
-        repeat_time_dro = float(list(association_at_idx.keys())[0])
-
-        # print("teach_time:", teach_time_dro)
-        # print("repeat_time:", repeat_time_dro)
+np.savez(os.path.join(out_path_folder, "direct/dro_result.npz"),
+        r_teach_world_dro=r_teach_world_dro,
+        r_repeat_world_dro=r_repeat_world_dro,dro_se2_pose=dro_se2_pose)
 
 
-        # get the gps pose at the time (time correspondence)
-        corr_gps_pose_teach = gps_teach_pose[np.argmin(np.abs(gps_teach_pose[:,0] - teach_time_dro)),:]
-        corr_gps_pose_repeat = gps_repeat_pose[np.argmin(np.abs(gps_repeat_pose[:,0] - repeat_time_dro)),:]
+# we are going to use pathtracking error and localization error as a metric
+path_to_sequence_folder = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2/"
 
-        corr_gps_teach.append(corr_gps_pose_teach)
-        corr_gps_repeat.append(corr_gps_pose_repeat)
-  
+plotter.set_data(path_to_sequence_folder)
+
+plotter.plot_localziation_error()
+
+# print(plotter.dir_ptr)
+
+plotter.show_plots()
+
+
+# if USE_NEW_METRIC:
+#     # now we have to do some hacky align trajectory logic as before
+#     window_size = 50
+
+#     errorx_dro = []
+#     errory_dro = []
+
+#     # first window size
+#     def get_piecewise_path_length(gt_trajectory):
+#         pose = gt_trajectory[:,1:] # this is a 3 by 1 
+
+#         length = np.sum(np.sqrt(np.sum(np.diff(pose, axis=0)**2, axis=1)))
+
+#         return length
+
+#     # the first window size points we use the future window size points 20 points lets say
+#     for dro_repeat_idx in range(0,window_size):
+#         print("--------------Processing repeat_idx:", dro_repeat_idx ,"-----------------")
+#         corr_gps_teach = []
+#         corr_gps_repeat = []
+#         for window_idx in range(0,window_size):
+
+#             # the get time is different: we use the association of the timestamps
+#             association_at_idx = timestamp_association[dro_repeat_idx + window_idx][0]
+
+#             # print("association_at_idx:", association_at_idx)
+
+#             teach_time_dro = float(list(association_at_idx.values())[0])
+#             repeat_time_dro = float(list(association_at_idx.keys())[0])
+
+#             # print("teach_time dro:", teach_time_dro)
+#             # print("repeat_time dro:", repeat_time_dro)
+
+#             # get the gps pose at the time (time correspondence)
+#             corr_gps_pose_teach = gps_teach_pose[np.argmin(np.abs(gps_teach_pose[:,0] - teach_time_dro)),:]
+#             corr_gps_pose_repeat = gps_repeat_pose[np.argmin(np.abs(gps_repeat_pose[:,0] - repeat_time_dro)),:]
+
+#             corr_gps_teach.append(corr_gps_pose_teach)
+#             corr_gps_repeat.append(corr_gps_pose_repeat)
     
-    corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
-    corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
+        
+#         corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
+#         corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
 
-    segment_length = get_piecewise_path_length(corr_gps_teach)
-    print("the segment teach length is: ", segment_length,"m")
-    if segment_length < 5:
-        print("segment length is too small!")
-        # continue
-        # raise ValueError("segment length is too small!")
+#         # # we can plot the corr gps teach and repeat
+#         # plt.figure(figsize=(10, 5))
+#         # plt.scatter(corr_gps_teach[:, 1], corr_gps_teach[:, 2], label='GPS Teach', color='blue',s=1.5)
+#         # plt.scatter(corr_gps_repeat[:, 1], corr_gps_repeat[:, 2], label='GPS Repeat', color='red',s=1.5)
+#         # plt.axis('equal')
+#         # plt.title('GPS Teach and Repeat Correspondence')
+#         # plt.xlabel('X Position (m)')
+#         # plt.ylabel('Y Position (m)')
+#         # plt.grid()
+#         # plt.legend()
+#         # plt.show()
 
-
-    # now we do the alignment for teach
-    window_estimated_teach = r_teach_world_dro[dro_repeat_idx:dro_repeat_idx+window_size,:2]
-
-    window_estimated_repeat_dro = r_repeat_world_dro[dro_repeat_idx:dro_repeat_idx+window_size,:2]
-    aligned_teach_ppk_in_odom, R_teach_ppk, t_teach_ppk = align_trajectories(window_estimated_teach,corr_gps_teach[:,1:3]) # align x,y to x,y
-
-
-    # we transform the repeat gps pose to the odom frame
-    repeat_ppk_in_odom = []
-    for idx in range(0,window_size):
-        gt_repeat = corr_gps_repeat[idx, 1:3]
-
-        gt_repeat = np.dot(gt_repeat, R_teach_ppk)
-        gt_repeat += t_teach_ppk
-        repeat_ppk_in_odom.append(gt_repeat)
-
-    repeat_ppk_in_odom = np.array(repeat_ppk_in_odom).reshape(-1,2)
-
-    # they are all expressed in the odom frame
-    repeat_ppk_at_idx = repeat_ppk_in_odom[0]
-
-    repeat_estimated = window_estimated_repeat_dro[0]
-
-    print("repeat_ppk_at_idx:", repeat_ppk_at_idx)
-    print("repeat_estimated dro:", repeat_estimated)
-
-    error = repeat_estimated - repeat_ppk_at_idx
-
-    print("error :", error)
-
-    errorx_dro.append(error[0])
-    errory_dro.append(error[1])
+#         segment_length = get_piecewise_path_length(corr_gps_teach)
+#         print("the segment teach length is: ", segment_length,"m")
+#         if segment_length < 5:
+#             print("segment length is too small!")
+#             # continue
+#             # raise ValueError("segment length is too small!")
 
 
-# we do that for the next window case
-# this takes care of window size to N-window size points
-for dro_repeat_idx in range(window_size,dro_se2_pose.shape[0]-window_size,1):
-    print("--------------Processing repeat_idx:", dro_repeat_idx ,"-----------------")
-    if(dro_repeat_idx + window_size) > dro_se2_pose.shape[0]:
-        break # exit when it is out of bounds
-    corr_gps_teach = []
-    corr_gps_repeat = []
+#         # now we do the alignment for teach
+#         window_estimated_teach = r_teach_world_dro[dro_repeat_idx:dro_repeat_idx+window_size,:2]
 
-    half_window_size = int(window_size/2)
-    for window_idx in range(-half_window_size,half_window_size,1):
-        # the get time is different: we use the association of the timestamps
-        association_at_idx = timestamp_association[dro_repeat_idx + window_idx][0]
-
-        # print("association_at_idx:", association_at_idx)
-
-        teach_time_dro = float(list(association_at_idx.values())[0])
-        repeat_time_dro = float(list(association_at_idx.keys())[0])
-
-        # print("teach_time:", teach_time_dro)
-        # print("repeat_time:", repeat_time_dro)
+#         window_estimated_repeat_dro = r_repeat_world_dro[dro_repeat_idx:dro_repeat_idx+window_size,:2]
+#         aligned_teach_ppk_in_odom, R_teach_ppk, t_teach_ppk = align_trajectories(window_estimated_teach,corr_gps_teach[:,1:3]) # align x,y to x,y
 
 
-        # get the gps pose at the time (time correspondence)
-        corr_gps_pose_teach = gps_teach_pose[np.argmin(np.abs(gps_teach_pose[:,0] - teach_time_dro)),:]
-        corr_gps_pose_repeat = gps_repeat_pose[np.argmin(np.abs(gps_repeat_pose[:,0] - repeat_time_dro)),:]
+#         # we transform the repeat gps pose to the odom frame
+#         repeat_ppk_in_odom = []
+#         for idx in range(0,window_size):
+#             gt_repeat = corr_gps_repeat[idx, 1:3]
 
-        corr_gps_teach.append(corr_gps_pose_teach)
-        corr_gps_repeat.append(corr_gps_pose_repeat)
+#             gt_repeat = np.dot(gt_repeat, R_teach_ppk)
+#             gt_repeat += t_teach_ppk
+#             repeat_ppk_in_odom.append(gt_repeat)
+
+#         repeat_ppk_in_odom = np.array(repeat_ppk_in_odom).reshape(-1,2)
+
+#         # they are all expressed in the odom frame
+#         repeat_ppk_at_idx = repeat_ppk_in_odom[0]
+
+#         repeat_estimated = window_estimated_repeat_dro[0]
+
+#         print("repeat_ppk_at_idx:", repeat_ppk_at_idx)
+#         print("repeat_estimated dro:", repeat_estimated)
+
+#         error = repeat_estimated - repeat_ppk_at_idx
+
+#         print("error :", error)
+
+#         errorx_dro.append(error[0])
+#         errory_dro.append(error[1])
+
+
+#     # # we do that for the next window case
+#     # this takes care of window size to N-window size points
+#     for dro_repeat_idx in range(window_size,dro_se2_pose.shape[0]-window_size,1):
+#         print("--------------Processing repeat_idx:", dro_repeat_idx ,"-----------------")
+#         if(dro_repeat_idx + window_size) > dro_se2_pose.shape[0]:
+#             break # exit when it is out of bounds
+#         corr_gps_teach = []
+#         corr_gps_repeat = []
+
+#         half_window_size = int(window_size/2)
+#         for window_idx in range(-half_window_size,half_window_size,1):
+#             # the get time is different: we use the association of the timestamps
+#             association_at_idx = timestamp_association[dro_repeat_idx + window_idx][0]
+
+#             # print("association_at_idx:", association_at_idx)
+
+#             teach_time_dro = float(list(association_at_idx.values())[0])
+#             repeat_time_dro = float(list(association_at_idx.keys())[0])
+
+#             # print("teach_time:", teach_time_dro)
+#             # print("repeat_time:", repeat_time_dro)
+
+
+#             # get the gps pose at the time (time correspondence)
+#             corr_gps_pose_teach = gps_teach_pose[np.argmin(np.abs(gps_teach_pose[:,0] - teach_time_dro)),:]
+#             corr_gps_pose_repeat = gps_repeat_pose[np.argmin(np.abs(gps_repeat_pose[:,0] - repeat_time_dro)),:]
+
+#             corr_gps_teach.append(corr_gps_pose_teach)
+#             corr_gps_repeat.append(corr_gps_pose_repeat)
+        
+#         corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
+#         corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
+
+#         # # we can plot the corr gps teach and repeat
+#         # plt.figure(figsize=(10, 5))
+#         # plt.scatter(corr_gps_teach[:, 1], corr_gps_teach[:, 2], label='GPS Teach', color='blue',s=1.5)
+#         # plt.scatter(corr_gps_repeat[:, 1], corr_gps_repeat[:, 2], label='GPS Repeat', color='red',s=1.5)
+#         # plt.axis('equal')
+#         # plt.title('GPS Teach and Repeat Correspondence')
+#         # plt.xlabel('X Position (m)')
+#         # plt.ylabel('Y Position (m)')
+#         # plt.grid()
+#         # plt.legend()
+#         # plt.show()
+
+#         segment_length = get_piecewise_path_length(corr_gps_teach)
+#         print("the segment teach length is: ", segment_length,"m")
+#         if segment_length < 5:
+#             print("segment length is too small!")
+#             # continue
+#             raise ValueError("segment length is too small!")
+        
+#         # now we do the alignment for teach
+#             # now we do the alignment for teach (half window size)
+#         window_estimated_teach = r_teach_world_dro[dro_repeat_idx-half_window_size:dro_repeat_idx+half_window_size,:2]
+#         window_estimated_repeat_dro = r_repeat_world_dro[dro_repeat_idx-half_window_size:dro_repeat_idx+half_window_size,:2]
+        
+#         aligned_teach_ppk_in_odom, R_teach_ppk, t_teach_ppk = align_trajectories(window_estimated_teach,corr_gps_teach[:,1:3]) # align x,y to x,y
+
+#         # we transform the repeat gps pose to the odom frame
+#         repeat_ppk_in_odom = []
+
+#         for idx in range(0,window_size):
+#             gt_repeat = corr_gps_repeat[idx, 1:3]
+
+#             gt_repeat = np.dot(gt_repeat, R_teach_ppk)
+#             gt_repeat += t_teach_ppk
+#             repeat_ppk_in_odom.append(gt_repeat)
+
+#         repeat_ppk_in_odom = np.array(repeat_ppk_in_odom).reshape(-1,2)
+#         # they are all expressed in the odom frame
+#         repeat_ppk_at_idx = repeat_ppk_in_odom[half_window_size]
+#         repeat_estimated = window_estimated_repeat_dro[half_window_size]
+#         print("repeat_ppk_at_idx:", repeat_ppk_at_idx)
+#         print("repeat_estimated dro:", repeat_estimated)
+
+#         error = repeat_estimated - repeat_ppk_at_idx
+#         errorx_dro.append(error[0])
+#         errory_dro.append(error[1])
+
+#         print("error :", error)
+
+#     # the last window size to the end
+#     for dro_repeat_idx in range(dro_se2_pose.shape[0]-window_size,dro_se2_pose.shape[0]):
+#         print("--------------Processing repeat_idx:", dro_repeat_idx ,"-----------------")
+#         # if(repeat_idx - window_size) > repeat_times.shape[0]:
+#         #     break # exit when it is out of bounds
+#         corr_gps_teach = []
+#         corr_gps_repeat = []
+
+#         # use the past window size points
+#         for window_idx in range(-window_size,0,1):
+
+#             # the get time is different: we use the association of the timestamps
+#             association_at_idx = timestamp_association[dro_repeat_idx + window_idx][0]
+
+#             # print("association_at_idx:", association_at_idx)
+
+#             teach_time_dro = float(list(association_at_idx.values())[0])
+#             repeat_time_dro = float(list(association_at_idx.keys())[0])
+
+#             # get the gps pose at the time
+#             corr_gps_pose_teach = gps_teach_pose[np.argmin(np.abs(gps_teach_pose[:,0] - teach_time_dro)),:]
+#             corr_gps_pose_repeat = gps_repeat_pose[np.argmin(np.abs(gps_repeat_pose[:,0] - repeat_time_dro)),:]
+
+#             corr_gps_teach.append(corr_gps_pose_teach)
+#             corr_gps_repeat.append(corr_gps_pose_repeat)
+        
+#         corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
+#         corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
+
+#         segment_length = get_piecewise_path_length(corr_gps_teach)
+#         print("the segment teach length is: ", segment_length,"m")
+#         if segment_length < 10:
+#             print("segment length is too small!")
+#             # continue
+#             # raise ValueError("segment length is too small!")
+
+#         # print("corr_gps_teach shape:", corr_gps_teach.shape)
+
+#         # now we do the alignment for teach
+#         window_estimated_teach = r_teach_world_dro[dro_repeat_idx-window_size:dro_repeat_idx,:2]
+#         window_estimated_repeat_dro = r_repeat_world_dro[dro_repeat_idx-window_size:dro_repeat_idx,:2]
+
+#         aligned_teach_ppk_in_odom, R_teach_ppk, t_teach_ppk = align_trajectories(window_estimated_teach,corr_gps_teach[:,1:3]) # align x,y to x,y
+#         # we transform the repeat gps pose to the odom frame
+#         repeat_ppk_in_odom = []
+#         for idx in range(0,window_size):
+#             gt_repeat = corr_gps_repeat[idx, 1:3]
+
+#             gt_repeat = np.dot(gt_repeat, R_teach_ppk)
+#             gt_repeat += t_teach_ppk
+#             repeat_ppk_in_odom.append(gt_repeat)
+#         repeat_ppk_in_odom = np.array(repeat_ppk_in_odom).reshape(-1,2)
+#         repeat_ppk_at_idx = repeat_ppk_in_odom[window_size-1]  
+#         repeat_estimated = window_estimated_repeat_dro[window_size-1]
+
+
+#         error = repeat_estimated - repeat_ppk_at_idx
+
+#         errorx_dro.append(error[0])
+#         errory_dro.append(error[1])
+#         print("repeat_ppk_at_idx:", repeat_ppk_at_idx)
+#         print("repeat_estimated dro:", repeat_estimated)
+#         print("error :", error)
+
+
+#     # now we have the error in x and y
+#     errorx_dro = np.array(errorx_dro).reshape(-1,1)
+#     errory_dro = np.array(errory_dro).reshape(-1,1)
+
+#     print("errorx_dro shape:", errorx_dro.shape)
+#     print("errory_dro shape:", errory_dro.shape)
     
-    corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
-    corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
 
-    segment_length = get_piecewise_path_length(corr_gps_teach)
-    print("the segment teach length is: ", segment_length,"m")
-    if segment_length < 5:
-        print("segment length is too small!")
-        # continue
-        raise ValueError("segment length is too small!")
-    
-    # now we do the alignment for teach
-        # now we do the alignment for teach (half window size)
-    window_estimated_teach = r_teach_world_dro[dro_repeat_idx-half_window_size:dro_repeat_idx+half_window_size,:2]
-    window_estimated_repeat_dro = r_repeat_world_dro[dro_repeat_idx-half_window_size:dro_repeat_idx+half_window_size,:2]
-    
-    aligned_teach_ppk_in_odom, R_teach_ppk, t_teach_ppk = align_trajectories(window_estimated_teach,corr_gps_teach[:,1:3]) # align x,y to x,y
+#     errorx_dro[np.abs(errorx_dro)>1]=0
+#     errory_dro[np.abs(errory_dro)>1]=0
 
-    # we transform the repeat gps pose to the odom frame
-    repeat_ppk_in_odom = []
+#     starting_plot_idx = 1
 
-    for idx in range(0,window_size):
-        gt_repeat = corr_gps_repeat[idx, 1:3]
+#     # RMSE in x
+#     rmse_x_vtr = np.sqrt(np.mean(errorx_vtr[starting_plot_idx:]**2))
+#     rmse_x_direct = np.sqrt(np.mean(errorx_direct[starting_plot_idx:]**2))
+#     rmse_x_dro = np.sqrt(np.mean(errorx_dro[starting_plot_idx:]**2))
 
-        gt_repeat = np.dot(gt_repeat, R_teach_ppk)
-        gt_repeat += t_teach_ppk
-        repeat_ppk_in_odom.append(gt_repeat)
+#     rmse_x_improvement = (rmse_x_vtr - rmse_x_dro) / rmse_x_vtr * 100 
 
-    repeat_ppk_in_odom = np.array(repeat_ppk_in_odom).reshape(-1,2)
-    # they are all expressed in the odom frame
-    repeat_ppk_at_idx = repeat_ppk_in_odom[half_window_size]
-    repeat_estimated = window_estimated_repeat_dro[half_window_size]
-    print("repeat_ppk_at_idx:", repeat_ppk_at_idx)
-    print("repeat_estimated dro:", repeat_estimated)
+#     # Max error in x
+#     max_error_x_vtr = np.max(np.abs(errorx_vtr[starting_plot_idx:]))
+#     max_error_x_direct = np.max(np.abs(errorx_direct[starting_plot_idx:]))
+#     max_error_x_dro = np.max(np.abs(errorx_dro[starting_plot_idx:]))
 
-    error = repeat_estimated - repeat_ppk_at_idx
-    errorx_dro.append(error[0])
-    errory_dro.append(error[1])
+#     max_error_x_improvement = (max_error_x_vtr - max_error_x_dro) / max_error_x_vtr * 100
 
-    print("error :", error)
+#     # RMSE in y
+#     rmse_y_vtr = np.sqrt(np.mean(errory_vtr[starting_plot_idx:]**2))
+#     rmse_y_direct = np.sqrt(np.mean(errory_direct[starting_plot_idx:]**2))
+#     rmse_y_dro = np.sqrt(np.mean(errory_dro[starting_plot_idx:]**2))
 
-# the last window size to the end
-for dro_repeat_idx in range(dro_se2_pose.shape[0]-window_size,dro_se2_pose.shape[0]):
-    print("--------------Processing repeat_idx:", dro_repeat_idx ,"-----------------")
-    # if(repeat_idx - window_size) > repeat_times.shape[0]:
-    #     break # exit when it is out of bounds
-    corr_gps_teach = []
-    corr_gps_repeat = []
+#     rmse_y_improvement = (rmse_y_vtr - rmse_y_dro) / rmse_y_vtr * 100
+#     # Max error in y
+#     max_error_y_vtr = np.max(np.abs(errory_vtr[starting_plot_idx:]))
+#     max_error_y_direct = np.max(np.abs(errory_direct[starting_plot_idx:]))
+#     max_error_y_dro = np.max(np.abs(errory_dro[starting_plot_idx:]))        
 
-     # use the past window size points
-    for window_idx in range(-window_size,0,1):
+#     max_error_y_improvement = (max_error_y_vtr - max_error_y_dro) / max_error_y_vtr * 100
 
-        # the get time is different: we use the association of the timestamps
-        association_at_idx = timestamp_association[dro_repeat_idx + window_idx][0]
-
-        # print("association_at_idx:", association_at_idx)
-
-        teach_time_dro = float(list(association_at_idx.values())[0])
-        repeat_time_dro = float(list(association_at_idx.keys())[0])
-
-        # get the gps pose at the time
-        corr_gps_pose_teach = gps_teach_pose[np.argmin(np.abs(gps_teach_pose[:,0] - teach_time_dro)),:]
-        corr_gps_pose_repeat = gps_repeat_pose[np.argmin(np.abs(gps_repeat_pose[:,0] - repeat_time_dro)),:]
-
-        corr_gps_teach.append(corr_gps_pose_teach)
-        corr_gps_repeat.append(corr_gps_pose_repeat)
-    
-    corr_gps_teach = np.array(corr_gps_teach).reshape(-1,4)
-    corr_gps_repeat = np.array(corr_gps_repeat).reshape(-1,4)
-
-    segment_length = get_piecewise_path_length(corr_gps_teach)
-    print("the segment teach length is: ", segment_length,"m")
-    if segment_length < 10:
-        print("segment length is too small!")
-        # continue
-        # raise ValueError("segment length is too small!")
-
-    # print("corr_gps_teach shape:", corr_gps_teach.shape)
-
-    # now we do the alignment for teach
-    window_estimated_teach = r_teach_world_dro[dro_repeat_idx-window_size:dro_repeat_idx,:2]
-    window_estimated_repeat_dro = r_repeat_world_dro[dro_repeat_idx-window_size:dro_repeat_idx,:2]
-
-    aligned_teach_ppk_in_odom, R_teach_ppk, t_teach_ppk = align_trajectories(window_estimated_teach,corr_gps_teach[:,1:3]) # align x,y to x,y
-    # we transform the repeat gps pose to the odom frame
-    repeat_ppk_in_odom = []
-    for idx in range(0,window_size):
-        gt_repeat = corr_gps_repeat[idx, 1:3]
-
-        gt_repeat = np.dot(gt_repeat, R_teach_ppk)
-        gt_repeat += t_teach_ppk
-        repeat_ppk_in_odom.append(gt_repeat)
-    repeat_ppk_in_odom = np.array(repeat_ppk_in_odom).reshape(-1,2)
-    repeat_ppk_at_idx = repeat_ppk_in_odom[window_size-1]  
-    repeat_estimated = window_estimated_repeat_dro[window_size-1]
+#     print("RMSE X VTR:", rmse_x_vtr)
+#     print("RMSE X Direct:", rmse_x_direct)
+#     print("RMSE X DRO:", rmse_x_dro)
+#     print("RMSE X Improvement:", rmse_x_improvement, "%")
+#     print("Max Error X VTR:", max_error_x_vtr)
+#     print("Max Error X Direct:", max_error_x_direct)
+#     print("Max Error X DRO:", max_error_x_dro)
+#     print("Max Error X Improvement:", max_error_x_improvement, "%")
+#     print("RMSE Y VTR:", rmse_y_vtr)
+#     print("RMSE Y Direct:", rmse_y_direct)
+#     print("RMSE Y DRO:", rmse_y_dro)
+#     print("RMSE Y Improvement:", rmse_y_improvement, "%")
+#     print("Max Error Y VTR:", max_error_y_vtr)
+#     print("Max Error Y Direct:", max_error_y_direct)
+#     print("Max Error Y DRO:", max_error_y_dro)
+#     print("Max Error Y Improvement:", max_error_y_improvement, "%")
 
 
-    error = repeat_estimated - repeat_ppk_at_idx
-
-    errorx_dro.append(error[0])
-    errory_dro.append(error[1])
-    print("repeat_ppk_at_idx:", repeat_ppk_at_idx)
-    print("repeat_estimated dro:", repeat_estimated)
-    print("error :", error)
 
 
-# now we have the error in x and y
-errorx_dro = np.array(errorx_dro).reshape(-1,1)
-errory_dro = np.array(errory_dro).reshape(-1,1)
 
-print("errorx_dro shape:", errorx_dro.shape)
-print("errory_dro shape:", errory_dro.shape)
- 
-
-errorx_dro[np.abs(errorx_dro)>1]=0
-errory_dro[np.abs(errory_dro)>1]=0
-
- # can we plot the error? in 2 by 1 plot
-plt.figure(figsize=(10, 5))
-plt.subplot(2, 1, 1)
-plt.plot(dro_t3_timestamps[1:],errorx_dro, label='DRO X Error', color='blue')
-plt.plot(repeat_times, errorx_direct, label='Direct X Error', color='green')
-plt.plot(repeat_times, errorx_vtr, label='VTR X Error', color='red')
-plt.title('Error in X (m)')
-plt.xlabel('timestamp')
-plt.ylabel('X Error (m)')
-plt.grid()
-plt.legend()
-plt.subplot(2, 1, 2)
-plt.plot(dro_t3_timestamps[1:], errory_dro, label='DRO Y Error', color='orange')
-plt.plot(repeat_times, errory_direct, label='Direct Y Error', color='green')
-plt.plot(repeat_times, errory_vtr, label='VTR Y Error', color='red')
-plt.title('Error in Y (m)')
-plt.xlabel('timestamp')
-plt.ylabel('Y Error (m)')
-plt.grid()
-plt.legend()
-plt.tight_layout()
-plt.show()
+#     # can we plot the error? in 2 by 1 plot
+#     plt.figure(figsize=(10, 5))
+#     plt.subplot(2, 1, 1)
+#     plt.plot(repeat_times[1:],errorx_dro[1:], label=f'RMSE x dro:{rmse_x_dro:.4f}', color='blue')
+#     plt.plot(repeat_times[1:], errorx_direct[1:], label=f'RMSE x direct:{rmse_x_direct:.4f} m', color='green')
+#     plt.plot(repeat_times[1:], errorx_vtr[1:], label=f'RMSE x vtr: {rmse_x_vtr:.4f} m', color='red')
+#     plt.title('Error in X (m)')
+#     plt.xlabel('timestamp')
+#     plt.ylabel('X Error (m)')
+#     plt.grid()
+#     plt.legend()
+#     plt.subplot(2, 1, 2)
+#     plt.plot(repeat_times[1:], errory_dro[1:], label=f'RMSE y dro:{rmse_y_dro:.4f}', color='orange')
+#     plt.plot(repeat_times[1:], errory_direct[1:], label=f'RMSE y direct:{rmse_y_direct:.4f}', color='green')
+#     plt.plot(repeat_times[1:], errory_vtr[1:], label=f'RMSE y vtr:{rmse_y_vtr:.4f}', color='red')
+#     plt.title('Error in Y (m)')
+#     plt.xlabel('timestamp')
+#     plt.ylabel('Y Error (m)')
+#     plt.grid()
+#     plt.legend()
+#     plt.tight_layout()
+#     plt.show()
 

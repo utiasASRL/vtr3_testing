@@ -23,12 +23,26 @@ radar_data:
   parking:
     pose_graph_path:
       parking_t3_r4: "/home/samqiao/ASRL/vtr3_testing/localization_data/posegraphes/parking_t3_r4/graph"
-    teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4/local_map_vtr"
+    teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4/dro_local_map_parking_t3"
+    teach_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4/dro_undistorted_scans_parking_t3"
+    repeat_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4/dro_undistorted_scans_parking_t4"
+    vtr_teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/parking_t3_r4/local_map_vtr"
 
   mars:
     pose_graph_path:
       mars_t1_r2: "/home/samqiao/ASRL/vtr3_testing/localization_data/posegraphes/mars_t1_r2/graph"
-    teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2/local_map_vtr"
+    teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2/dro_local_map_mars_t1"
+    teach_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2/dro_undistorted_scans_mars_t1"
+    repeat_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2/dro_undistorted_scans_mars_t2"
+    vtr_teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/mars_t1_r2/local_map_vtr"
+
+  woody:
+    pose_graph_path:
+      woody_t3_r2: "/home/samqiao/ASRL/vtr3_testing/localization_data/posegraphes/woody_t3_r2/graph"
+    teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/woody_t3_r2/dro_local_map_woody_t3"
+    teach_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/woody_t3_r2/dro_undistorted_scans_woody_t3"
+    repeat_undistorted_scans_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/woody_t3_r2/dro_undistorted_scans_woody_t2"
+    vtr_teach_local_maps_path: "/home/samqiao/ASRL/vtr3_testing/scripts/direct/woody_t3_r2/local_map_vtr"
 
 ppk:
   grassy:
@@ -40,14 +54,17 @@ ppk:
   mars:
     teach: "/home/samqiao/ASRL/vtr3_testing/localization_data/ppk/mars_t1"
     repeat: "/home/samqiao/ASRL/vtr3_testing/localization_data/ppk/mars_t2"
+  woody:
+    teach: "/home/samqiao/ASRL/vtr3_testing/localization_data/ppk/woody_t3"
+    repeat: "/home/samqiao/ASRL/vtr3_testing/localization_data/ppk/woody_t2"
 
 bool:
   SAVE: False
   PLOT: False
   DEBUG: True
-  USE_LOCAL_MAP: False
+  USE_LOCAL_MAP: True
   LOCAL_TO_LOCAL: False
   UNDISTORTION: False
-  SET_INITIAL_GUESS: False
+  SET_INITIAL_GUESS: True
 
 output: "/home/samqiao/ASRL/vtr3_testing/scripts/direct"

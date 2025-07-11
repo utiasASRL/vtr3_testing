@@ -81,8 +81,11 @@ print("SET_INITIAL_GUESS:", SET_INITIAL_GUESS)
 
 result_folder = config.get('output')
 
+
+sequence = "woody_t3_r2"  # this is the sequence name, you can change it to whatever you want
+
 # change here
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,sequence)
 if not os.path.exists(out_path_folder):
     os.makedirs(out_path_folder)
     print(f"Folder '{out_path_folder}' created.")
@@ -246,7 +249,7 @@ direct_se2_pose = []
 
 # load all the local maps of the teach path
 # open the directory
-teach_local_maps_path = config["radar_data"]["grassy"]["vtr_teach_local_maps_path"]
+teach_local_maps_path = config["radar_data"]["woody"]["vtr_teach_local_maps_path"]
 print(teach_local_maps_path)
 teach_local_maps_files = os.listdir(teach_local_maps_path)
 
@@ -282,6 +285,7 @@ def find_closest_local_map(teach_local_maps, timestamp):
     return teach_local_maps[closest_key], closest_key
 
 # print("------ dir norm ------")
+timestamp_association = []
 # now we can set up the direct localization stuff
 for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     print("------------------ repeat idx: ", repeat_vertex_idx,"------------------")
@@ -297,9 +301,11 @@ for repeat_vertex_idx in range(0,repeat_times.shape[0]):
     teach_vertex_time = teach_vertex_timestamps[repeat_vertex_idx]
     print("sam: teach vertex time:", teach_vertex_time[0])
 
+    # this is helping to set up direct_toy_dro problem
+    timestamp_association.append({repeat_vertex_time[0]: teach_vertex_time[0]})  # save the association between undistorted scan timestamp and teach vertex timestamp
+
     teach_cv_scan_cartesian = radar_polar_to_cartesian(teach_cv_scan_polar,teach_scan_azimuth_angles, radar_resolution, cart_resolution, 640)
     
-
     repeat_cv_scan_polar = repeat_polar_imgs[repeat_vertex_idx]
     repeat_scan_azimuth_angles = repeat_azimuth_angles[repeat_vertex_idx][:]
     repeat_scan_timestamps = repeat_azimuth_timestamps[repeat_vertex_idx]
@@ -377,6 +383,9 @@ dir_norm = np.array(dir_norm)
 direct_se2_pose = np.array(direct_se2_pose)
 vtr_se2_pose = np.array(vtr_se2_pose)
 
+# for direct_toy_dro
+timestamp_association = np.array(timestamp_association).reshape(-1,1)
+
 # also want to save the gps here t,x,y
 gps_teach_pose = r2_pose_teach_ppk_dirty
 gps_repeat_pose = r2_pose_repeat_ppk_dirty
@@ -392,6 +401,7 @@ print("gps_teach_pose shape:", gps_teach_pose.shape)
 print("gps_repeat_pose shape:", gps_repeat_pose.shape)
 print("direct_se2_pose shape:", direct_se2_pose.shape)
 print("vtr_se2_pose shape:", vtr_se2_pose.shape)
+print("timestamp_association shape:", timestamp_association.shape)
 
 
 np.savez(os.path.join(result_folder, "result.npz"),
@@ -401,7 +411,8 @@ np.savez(os.path.join(result_folder, "result.npz"),
          direct_se2_pose=direct_se2_pose,
          vtr_se2_pose=vtr_se2_pose, 
          gps_teach_pose=gps_teach_pose,
-         gps_repeat_pose=gps_repeat_pose)
+         gps_repeat_pose=gps_repeat_pose,
+         timestamp_association=timestamp_association)
 
 
 

@@ -109,6 +109,17 @@ class Plotter:
         self.gps_teach_pose = result_df['gps_teach_pose']
         self.gps_repeat_pose = result_df['gps_repeat_pose']
 
+        # load dro results
+        dro_df = np.load(os.path.join(RESULT_FOLDER, f"dro_result.npz"),allow_pickle=True)
+        # make sure the dro result is there
+        if not dro_df:
+            raise FileNotFoundError(f"DRO result folder {RESULT_FOLDER} does not exist.")
+        
+        # in the dro
+        self.r_teach_world_dro = dro_df['r_teach_world_dro'] # this is actually redundant here
+        self.r_repeat_world_dro = dro_df['r_repeat_world_dro']
+        self.dro_se2_pose = dro_df['dro_se2_pose']
+
         # teach_ppk
         teach_ppk_df = np.load(os.path.join(TEACH_FOLDER, "teach_ppk.npz"),allow_pickle=True)
         if not teach_ppk_df:
@@ -130,6 +141,12 @@ class Plotter:
         # direct ptr
         self.dir_ptr = self.get_direct_path_tracking_error()
         print("dir_ptr shape:", self.dir_ptr.shape)
+
+
+        # dor ptr 
+        self.dro_ptr = self.get_dro_path_tracking_error()
+        print("dro_ptr shape:", self.dro_ptr.shape)
+
 
     def plot(self):
 
@@ -189,6 +206,12 @@ class Plotter:
         print("vtr ptr shape:", self.vtr_estimated_ptr.shape)
         print("dir ptr shape:", self.dir_ptr.shape)
         print("gps ptr shape:", self.gps_ptr.shape)
+        print("dro ptr shape:", self.dro_ptr.shape)
+
+        self.vtr_estimated_ptr = -1* self.vtr_estimated_ptr.reshape(-1,1) # make it a column vector
+
+        # also crop the dro path tracking 
+        # self.dro_ptr[self.dro_ptr < -0.33] = 0 # this is a threshold to remove outliers   
 
         # yeah make it abs (optional)
         # self.vtr_estimated_ptr = np.abs(self.vtr_estimated_ptr)
@@ -196,12 +219,13 @@ class Plotter:
         # self.gps_ptr = np.abs(self.gps_ptr)
 
         # I want to plot it in a 2 by 1
-        plt.figure(1)
+        plt.figure()
         plt.subplot(2, 1, 1)
         plt.title('VTR and Direct Estimated Localization Error')
 
-        loc_error_vtr = []
-        loc_error_dir = []
+        self.loc_error_vtr = []
+        self.loc_error_dir = []
+        self.loc_error_dro = []
 
         start_plot_idx = 1 # you can change when the plot starts
 
@@ -211,7 +235,7 @@ class Plotter:
             gps_idx = np.argmin(np.abs(self.gps_repeat_pose[:,0] - repeat_vertex_time))
 
             vtr_error = self.vtr_estimated_ptr[idx] - self.gps_ptr[gps_idx]
-            loc_error_vtr.append(vtr_error)
+            self.loc_error_vtr.append(vtr_error)
 
         for idx in range(0,self.dir_ptr.shape[0]):
             repeat_vertex_time = self.repeat_times[idx]
@@ -219,32 +243,69 @@ class Plotter:
             gps_idx = np.argmin(np.abs(self.gps_repeat_pose[:,0] - repeat_vertex_time))
 
             dir_error = self.dir_ptr[idx] - self.gps_ptr[gps_idx]
-            loc_error_dir.append(dir_error)
-        
-        loc_error_vtr = np.array(loc_error_vtr).reshape(-1,1)
-        loc_error_dir = np.array(loc_error_dir).reshape(-1,1)
+            self.loc_error_dir.append(dir_error)
 
-        plt.plot(self.repeat_times[start_plot_idx:], loc_error_vtr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(loc_error_vtr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_vtr[start_plot_idx:])):.3f}m')
-        plt.plot(self.repeat_times[start_plot_idx:], loc_error_dir[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(loc_error_dir[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dir[start_plot_idx:])):.3f}m',color='green')
+        # for idx in range(0,self.dro_ptr.shape[0]):
+        #     repeat_vertex_time = self.repeat_times[idx]
+
+        #     gps_idx = np.argmin(np.abs(self.gps_repeat_pose[:,0] - repeat_vertex_time))
+
+        #     dro_error = self.dro_ptr[idx] - self.gps_ptr[gps_idx]
+        #     loc_error_dro.append(dro_error)
+        
+        self.loc_error_vtr = np.array(self.loc_error_vtr).reshape(-1,1)
+        self.loc_error_dir = np.array(self.loc_error_dir).reshape(-1,1)
+        # self.loc_error_dro = np.array(loc_error_dro).reshape(-1,1)
+
+
+
+        # plt.plot(self.repeat_times[start_plot_idx:], loc_error_vtr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(loc_error_vtr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_vtr[start_plot_idx:])):.3f}m')
+        # # plt.plot(self.repeat_times[start_plot_idx:], loc_error_dir[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(loc_error_dir[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dir[start_plot_idx:])):.3f}m',color='green')
+        # plt.plot(self.repeat_times[start_plot_idx:], loc_error_dro[start_plot_idx:], label=f'DRO RMSE: {np.sqrt(np.mean(loc_error_dro[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dro[start_plot_idx:])):.3f}m',color='orange')
+        # plt.grid()
+        # plt.legend()
+        # plt.xlabel('Repeat Times')
+        # plt.ylabel('Localization Error (m)')
+        
+
+        # plt.subplot(2, 1, 2)
+        # # just plot the path tracking error
+
+        # plt.title('VTR and DRO Estimated Path Tracking Error')
+        # plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m')
+        # plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m")
+        # plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green')
+        # # plt.plot(self.repeat_times[start_plot_idx:], self.dro_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dro_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dro_ptr[start_plot_idx:])):.3f}m',color='orange')
+        # plt.grid()
+        # plt.legend()
+        # plt.xlabel('Repeat Times')
+        # plt.ylabel('Path Tracking Error (m)')
+        # plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+
+        # ## I will plot an identical one but with three errors
+        plt.figure(2)
+        plt.subplot(2, 1, 1)
+        plt.title('Plot2: VTR and Direct Estimated Localization Error')
+        plt.plot(self.repeat_times[start_plot_idx:], self.loc_error_vtr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.loc_error_vtr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.loc_error_vtr[start_plot_idx:])):.3f}m')
+        plt.plot(self.repeat_times[start_plot_idx:], self.loc_error_dir[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.loc_error_dir[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.loc_error_dir[start_plot_idx:])):.3f}m',color='green')
+        # plt.plot(self.repeat_times[start_plot_idx:], loc_error_dro[start_plot_idx:], label=f'DRO RMSE: {np.sqrt(np.mean(loc_error_dro[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(loc_error_dro[start_plot_idx:])):.3f}m',color='orange')
         plt.grid()
         plt.legend()
         plt.xlabel('Repeat Times')
         plt.ylabel('Localization Error (m)')
-        
-
         plt.subplot(2, 1, 2)
-        # just plot the path tracking error
-
-        plt.title('VTR and Direct Estimated Path Tracking Error')
+        plt.title('Plot2: VTR and Direct Estimated Path Tracking Error')
         plt.plot(self.repeat_times[start_plot_idx:], self.vtr_estimated_ptr[start_plot_idx:], label=f'VTR RMSE: {np.sqrt(np.mean(self.vtr_estimated_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.vtr_estimated_ptr[start_plot_idx:])):.3f}m')
         plt.plot(self.gps_repeat_pose[start_plot_idx:,0], self.gps_ptr[start_plot_idx:], label=f"PPK RMSE: {np.sqrt(np.mean(self.gps_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.gps_ptr[start_plot_idx:])):.3f}m")
         plt.plot(self.repeat_times[start_plot_idx:], self.dir_ptr[start_plot_idx:], label=f'Direct RMSE: {np.sqrt(np.mean(self.dir_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dir_ptr[start_plot_idx:])):.3f}m',color='green')
-
+        # plt.plot(self.repeat_times[start_plot_idx:], self.dro_ptr[start_plot_idx:], label=f'DRO RMSE: {np.sqrt(np.mean(self.dro_ptr[start_plot_idx:]**2)):.3f}m for Repeat Max Error: {np.max(np.abs(self.dro_ptr[start_plot_idx:])):.3f}m',color='orange')
         plt.grid()
         plt.legend()
         plt.xlabel('Repeat Times')
         plt.ylabel('Path Tracking Error (m)')
         plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
+        plt.gcf().set_size_inches(10, 10)
+        plt.tight_layout()
 
         plt.show()
 
@@ -344,21 +405,22 @@ class Plotter:
         self.repeat_world_direct = np.array(r_repeat_world).reshape(-1,2)
         self.repeat_world_vtr = np.array(r_repeat_world_vtr).reshape(-1,3)
 
-        plt.figure()
-        plt.title('Teach and Direct Repeat World')
-        plt.plot(self.teach_world[:,0], self.teach_world[:,1], label='RTR Teach World in GPS', linewidth = 1)
-        plt.scatter(self.repeat_world_direct[:,0], self.repeat_world_direct[:,1], label='Direct Repeat World in GPS', s=10,marker='o',color="green")
-        plt.scatter(self.repeat_world_vtr[:,0], self.repeat_world_vtr[:,1], label='VTR Repeat World in GPS', s=10,marker='x')
-        plt.xlabel('X Coordinate')
-        plt.ylabel('Y Coordinate')
-        plt.grid()
-        plt.legend()
-        plt.axis('equal')
-        plt.show()
+        # plt.figure()
+        # plt.title('Teach and Direct Repeat World')
+        # plt.plot(self.teach_world[:,0], self.teach_world[:,1], label='RTR Teach World in GPS', linewidth = 1)
+        # plt.scatter(self.repeat_world_direct[:,0], self.repeat_world_direct[:,1], label='Direct Repeat World in GPS', s=10,marker='o',color="green")
+        # plt.scatter(self.repeat_world_vtr[:,0], self.repeat_world_vtr[:,1], label='VTR Repeat World in GPS', s=10,marker='x')
+        # plt.xlabel('X Coordinate')
+        # plt.ylabel('Y Coordinate')
+        # plt.grid()
+        # plt.legend()
+        # plt.axis('equal')
+        # plt.show()
 
         # now we are ready to set up the path matrix
         self.teach_world[:,2] = 0 # we are in a plane otherwise need to change line 232 to the height of the gps
         path_matrix = path_to_matrix(self.teach_world) 
+        print("in function get_direct_path_tracking_error the shape of self.teach_world is:", self.teach_world.shape)
 
         # self.repeat world shape (:,2)
 
@@ -371,14 +433,40 @@ class Plotter:
             error = signed_distance_to_path(repeat_x_y_z,path_matrix)
 
             product = error*previous_error
-            if product<0 and abs(error)>0.05 and abs(previous_error)>0.05:
-                error = -1*error
+            if product<0 and (abs(error)>0.10 and abs(previous_error)>0.10):
+                error = -1* error
             # print("error:", error)
             dir_ptr.append(error)
             previous_error = error
         
         dir_ptr = np.array(dir_ptr).reshape(-1,1) # n by 1
         return dir_ptr
+    
+
+    def get_dro_path_tracking_error(self):
+        print("--------In function get_dro_path_tracking_error--------")
+        # need to get dro_path_tracking_error
+        # step 1: make a path matrix
+        # step 2: accumulate the signed distance
+        z_dummy = np.zeros_like(self.r_teach_world_dro[:,0]) # we need to make sure the z is 0
+        self.r_teach_world_dro = np.hstack((self.r_teach_world_dro, z_dummy.reshape(-1,1)))
+        self.r_repeat_world_dro = np.hstack((self.r_repeat_world_dro, z_dummy.reshape(-1,1)))
+
+        print("r_teach_world_dro shape:", self.r_teach_world_dro.shape)
+        path_matrix = path_to_matrix(self.r_teach_world_dro)
+
+        dro_ptr = []
+        previous_error = 0
+        for idx in range(0,self.r_repeat_world_dro.shape[0]):
+            # get the signed distance to the path
+            error = signed_distance_to_path(self.r_repeat_world_dro[idx],path_matrix)
+
+            product = error*previous_error
+            if product<0 and (abs(error)>0.10 and abs(previous_error)>0.10):
+                error = -1* error
+            dro_ptr.append(error)
+            previous_error = error
+        return np.array(dro_ptr).reshape(-1,1) # n by 1
 
 
     def get_gps_path_tracking_error(self):
@@ -402,8 +490,8 @@ class Plotter:
             error = signed_distance_to_path(gps_repeat_pose_without_time[idx],path_matrix)
 
             product = error*previous_error
-            if product<0 and abs(error)>0.05 and abs(previous_error)>0.05: # this value can be tuned
-                error = -1*error
+            if product<0 and (abs(error)>0.07 and abs(previous_error)>0.07): # this value can be tuned
+                error = -1 * error
             gps_ptr.append(error)
             previous_error = error
 

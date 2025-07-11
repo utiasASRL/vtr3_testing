@@ -147,7 +147,7 @@ local_map_polar = localMapToPolarCoord(local_map_xy)
 # change here
 config = load_config(os.path.join(parent_folder,'scripts/direct/direct_configs/direct_config_sam.yaml'))
 result_folder = config.get('output')
-out_path_folder = os.path.join(result_folder,f"grassy_t2_r3/")
+out_path_folder = os.path.join(result_folder,f"woody_t3_r2/")
 
 # boolean values
 db_bool = config['bool']
@@ -202,7 +202,7 @@ max_distance = 3 # 2 m
 max_time_dist = 4 # 4 secs
 
 # save path for local maps
-local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/grassy_t2_r3"
+local_map_path = "/home/samqiao/ASRL/vtr3_testing/scripts/direct/woody_t3_r2"
 local_map_vtr_path = local_map_path + '/local_map_vtr/'
 local_map_blurred_path = local_map_path + '/local_map_vtr_blurred/'
 

@@ -54,6 +54,47 @@ class OdometryChainFactory (GraphFactory):
         return g
 
 
+    def get_timestamp_transform_dict(self) -> dict[int, "Transformation"]:
+        """Return ``{timestamp: T_v_w}`` for all odometry messages.
+
+        * **timestamp** – raw integer / nanosecond timestamp from the bag.
+        * **T_v_w**      – vehicle‑to‑world transform (strict inverse of *T_w_v*).
+
+        Raises
+        ------
+        AttributeError
+            If :py:meth:`Transformation.inverse` is not implemented. No silent
+            fallbacks are used.
+        """
+        odo_access = self.cache[self.odom_path]
+
+        ts_T_map: dict[int, "Transformation"] = {}
+        first_ts = None
+        last_ts = None
+
+        for _, odom_msg in odo_access.get_bag_msgs_iter("odometry_result"):
+            ts = odom_msg.timestamp
+            T_w_v = Transformation(
+                xi_ab=np.array(odom_msg.t_world_robot.xi).reshape(6, 1)
+            )
+
+            # Strict requirement: Transformation must support .inverse()
+            T_v_w = T_w_v.inverse()
+
+            ts_T_map[ts] = T_v_w
+
+            if first_ts is None:
+                first_ts = ts
+            last_ts = ts
+
+        if first_ts is not None:
+            print(f"First timestamp: {first_ts}")
+            print(f"Last  timestamp: {last_ts}")
+        else:
+            print("No odometry messages found – dictionary is empty.")
+
+        return ts_T_map
+
 
 
 
